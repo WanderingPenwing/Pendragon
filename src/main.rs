@@ -117,3 +117,41 @@ fn demande(arguments: &str) -> Result<(), ErreurSophie> {
 }
 
 
+
+#[cfg(test)] // Compile and run only during testing
+mod tests {
+    use super::*;
+
+    #[test]
+    fn teste_conversion_nombres_texte() {
+        // Test on a limited set of numbers to ensure feasibility
+        for i in [0, 1, 42, 123, 999, 1031, 1_001_091, 72_036_854_775_807usize].iter() {
+            let texte = nombres::nombre_comme_texte(*i); // Convert number to text
+            match nombres::texte_comme_nombre(&texte) { // Convert text back to number
+                Ok(nombre) => {
+                    assert_eq!(*i, nombre, "Mismatch for number: {}, text: {}", i, texte);
+                }
+                Err(raison) => {
+                    panic!("Conversion failed for number: {} with error: {}", i, raison);
+                }
+            }
+        }
+    }
+
+	#[test]
+    fn teste_somme() {
+    	for (a, b) in [(5, 7), (1467,45678), (1001, 0), (72_036_854_775_807usize, 14_036_567_775_807usize)] {
+    		let texte_a = nombres::nombre_comme_texte(a);
+    		let texte_b = nombres::nombre_comme_texte(b);
+			let resultat = nombres::operation(&format!("{} plus {}", texte_a, texte_b));
+			match resultat { // Convert text back to number
+                Ok(nombre) => {
+                    assert_eq!(a+b, nombre, "Mismatch for {}+{}, got: {}", a, b, nombre);
+                }
+                Err(raison) => {
+                    panic!("Conversion failed for number: ({},{}) with error: {}", a, b, raison);
+                }
+            }
+    	}
+    }
+}

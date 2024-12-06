@@ -93,46 +93,52 @@ fn petit_nombre_comme_texte(nombre: usize) -> String {
 }
 
 pub fn texte_comme_nombre(texte: &str) -> Result<usize, ErreurSophie> {
+	println!("texte:{}", texte);
+	if texte == "zéro" {
+		return Ok(0)
+	}
 	let pluriel = format!("s{}", UNION);
 	let mut petits_nombres_texte: Vec<&str> = vec![];
 	let mut texte_modifie = texte;
-	let mut dernier_separateur = 0;
-	for (index, separateur_texte) in NOMS_SEPARATEURS.iter().enumerate() {
-		if index == 0 {
+	for (index, separateur_texte) in NOMS_SEPARATEURS.iter().rev().enumerate() {
+		if index == NOMS_SEPARATEURS.len() - 1 {
 			continue
 		}
-		let mille: bool = texte_modifie.starts_with("mille");
+		let mut un_mille: bool = false;
+		if texte_modifie.starts_with("mille") && separateur_texte == &"mille" {
+			un_mille = true;
+		}
 		let texte_separe: Vec<&str> = texte_modifie.split(separateur_texte).collect();
 		if texte_separe.len() > 2 {
 			return Err(ErreurSophie::OrthographeNombre(texte.to_string()))
 		}
 		if texte_separe.len() > 1 {
-			let petit_nombre_texte = texte_separe[1]
+			let petit_nombre_texte = texte_separe[0]
 				.trim_start_matches(&pluriel)
 				.trim_start_matches(UNION)
 				.trim_end_matches(UNION);
-			petits_nombres_texte.push(petit_nombre_texte);
-			texte_modifie = if mille {
-				"un"
+			if un_mille {
+				petits_nombres_texte.push("un");
 			} else {
-				texte_separe[0]
-			};
-			dernier_separateur = index;
-		} else if !petits_nombres_texte.is_empty() {
-			petits_nombres_texte.push("");
+				petits_nombres_texte.push(petit_nombre_texte);
+			}
+			texte_modifie = texte_separe[1].trim_start_matches(UNION);
 		}
+		println!("{}/{:?}", &texte_modifie, petits_nombres_texte);
 	}
 	let petit_nombre_texte = texte_modifie
 			.trim_start_matches(&pluriel)
 			.trim_start_matches(UNION)
 			.trim_end_matches(UNION);
-	petits_nombres_texte.insert(dernier_separateur, petit_nombre_texte);
+	petits_nombres_texte.push(petit_nombre_texte);
+
+	println!("ptn:{:?}", petits_nombres_texte);
 
 	let mut nombre: usize = 0;
 
 	for (index, petit_nombre_texte) in petits_nombres_texte.iter().enumerate() {
 		let petit_nombre = texte_comme_petit_nombre(petit_nombre_texte)?;
-		nombre += petit_nombre * 1000usize.pow(index as u32);
+		nombre += petit_nombre * 1000usize.pow((petits_nombres_texte.len() - index - 1) as u32);
 	}
 	
 	Ok(nombre)
@@ -187,6 +193,9 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 			}
 			nombre += 10 + chiffre;
 			dernier_chiffre_texte = chiffre_texte;
+			continue
+		}
+		if chiffre_texte == "et" {
 			continue
 		}
 		return Err(ErreurSophie::OrthographeNombre(texte.to_string()))
