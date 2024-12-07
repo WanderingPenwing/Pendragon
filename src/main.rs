@@ -127,17 +127,24 @@ impl Sophie {
 	pub fn operation(&self, arguments: &str) -> Result<usize, ErreurSophie> {
 		let somme_texte: Vec<&str> = arguments.split("plus").collect();
 		let mut somme : usize = 0;
-		for element in somme_texte {
-			let element_propre: &str = element.trim();
-			let Some(first_char) = element_propre.chars().next() else {
-				return Err(ErreurSophie::MauvaisArgument("il y a un argument vide pour l'operation".to_string()))
-			};
-			let nombre = if first_char.is_uppercase() {
-				self.variables[element_propre]
-			} else {
-				nombres::texte_comme_nombre(element_propre)?
-			};
-			somme += nombre;
+		for somme_element in somme_texte {
+			let somme_element_propre: &str = somme_element.trim();
+			let produit_texte: Vec<&str> = somme_element_propre.split("fois").collect();
+
+			let mut produit : usize = 1;
+			for produit_element in produit_texte {
+				let produit_element_propre: &str = produit_element.trim();
+				let Some(first_char) = produit_element_propre.chars().next() else {
+					return Err(ErreurSophie::MauvaisArgument("il y a un argument vide pour l'operation".to_string()))
+				};
+				let nombre = if first_char.is_uppercase() {
+					self.variables[produit_element_propre]
+				} else {
+					nombres::texte_comme_nombre(produit_element_propre)?
+				};
+				produit *= nombre;
+			}
+			somme += produit;
 		}
 		Ok(somme)
 	}
@@ -236,6 +243,20 @@ mod tests {
 			}
 			Err(raison) => {
                 panic!("Execution échouée pour \"Variable plus {}\", avec l'erreur : {}", nombres::nombre_comme_texte(b), raison);
+            }
+		}
+    }
+
+	#[test]
+    fn teste_multiplication() {
+    	let sophie = Sophie::new();
+    	let resultat = sophie.operation("trois fois deux plus quatre fois sept");
+		match resultat {
+			Ok(nombre) => {
+				assert_eq!(nombre, 34, "Echec de la multiplication de 3*2+4*7, got {}", nombre);
+			}
+			Err(raison) => {
+                panic!("Execution échouée pour multiplication, avec l'erreur : {}", raison);
             }
 		}
     }

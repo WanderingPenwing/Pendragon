@@ -1,3 +1,1 @@
-Modifie Variable avec trois plus douze.
-Affiche "Resultat : ", Variable.
-Affiche "Test : ", Variable plus soixante-dix.
+Affiche deux fois ouvre la parenthèse quatre plus seize ferme la parenthèse.
