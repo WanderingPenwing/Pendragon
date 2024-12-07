@@ -78,7 +78,7 @@ fn petit_nombre_comme_texte(nombre: usize) -> String {
 
 	let séparation = if unité == 1 && ![0, 1, 8, 9].contains(&dizaine) {UNION.to_string() + "et"} else {"".to_string()};
 
-	let unité_union = if nombre - unité > 0 && unité > 0 {
+	let unité_union = if nombre - unité > 0 && unité > 0 && nombre > 16 {
 		UNION.to_string()
 	} else {
 		"".to_string()
@@ -93,7 +93,6 @@ fn petit_nombre_comme_texte(nombre: usize) -> String {
 }
 
 pub fn texte_comme_nombre(texte: &str) -> Result<usize, ErreurSophie> {
-	println!("texte:{}", texte);
 	if texte == "zéro" {
 		return Ok(0)
 	}
@@ -124,15 +123,12 @@ pub fn texte_comme_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 			}
 			texte_modifie = texte_separe[1].trim_start_matches(UNION);
 		}
-		println!("{}/{:?}", &texte_modifie, petits_nombres_texte);
 	}
 	let petit_nombre_texte = texte_modifie
 			.trim_start_matches(&pluriel)
 			.trim_start_matches(UNION)
 			.trim_end_matches(UNION);
 	petits_nombres_texte.push(petit_nombre_texte);
-
-	println!("ptn:{:?}", petits_nombres_texte);
 
 	let mut nombre: usize = 0;
 
@@ -202,14 +198,4 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 	}
 
     Ok(nombre)
-}
-
-pub fn operation(arguments: &str) -> Result<usize, ErreurSophie> {
-	let somme_texte: Vec<&str> = arguments.split("plus").collect();
-	let mut somme : usize = 0;
-	for element in somme_texte {
-		let element_propre: &str = element.trim();
-		somme += texte_comme_nombre(element_propre)?
-	}
-	Ok(somme)
 }
