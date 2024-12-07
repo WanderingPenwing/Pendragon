@@ -1,10 +1,112 @@
 use super::ErreurSophie;
+use super::Sophie;
 
 const NOMS_UNITES: [&str; 10] = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"];
 const NOMS_UNITES_DIX: [&str; 10] = ["dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
 const NOMS_DIZAINES: [&str; 9] = ["", "dix", "vingt", "trente", "quarante", "cinquante", "soixante", "x", "quatre-vingts"];
 const NOMS_SEPARATEURS: [&str; 7] = ["", "mille", "million", "milliard", "billion", "billiard", "trillion"];
 const UNION: &str = "-";
+
+impl Sophie {
+	pub fn operation(&self, arguments: &str) -> Result<usize, ErreurSophie> {
+		//return self.operation_elementaire(arguments);
+		let texte = arguments
+					.replace("ouvre la parenthèse", "ouvre-la-parenthese")
+					.replace("ferme la parenthèse", "ferme-la-parenthese")
+					.replace("divisé par", "divise-par");
+		let mut expression: Vec<String> = texte.split(" ").map(String::from).collect();
+		
+		while expression.contains(&"ouvre-la-parenthese".to_string()) {
+			let mut ouverture: Option<usize> = None;
+			let mut fermeture: Option<usize> = None;
+			for index in 0..expression.len() {
+				if expression[index] == "ouvre-la-parenthese" {
+					ouverture = Some(index);
+				}
+				if expression[index] == "ferme-la-parenthese" && ouverture.is_some() {
+					fermeture = Some(index);
+					break;
+				}
+			}
+			let Some(index_ouverture) = ouverture else {
+				return Err(ErreurSophie::DesequilibreParenthese);
+			};
+			let Some(index_fermeture) = fermeture else {
+				return Err(ErreurSophie::DesequilibreParenthese);
+			};
+			let contenu: String = expression[(index_ouverture+1)..(index_fermeture)].join(" ");
+			let nombre = self.operation_elementaire(&contenu)?;
+			let nombre_texte = nombre_comme_texte(nombre);
+			expression[index_ouverture] = nombre_texte;
+			for _ in 0..(index_fermeture-index_ouverture) {
+				expression.remove(index_ouverture+1);
+			}
+		}
+		if expression.contains(&"ferme-la-parenthese".to_string()) {
+			return Err(ErreurSophie::DesequilibreParenthese);
+		}
+		self.operation_elementaire(&expression.join(" "))
+	}
+
+	pub fn operation_elementaire(&self, arguments: &str) -> Result<usize, ErreurSophie> {
+		let texte = arguments.replace("divisé par", "divise-par");
+		let mut expression: Vec<String> = texte.split(" ").map(String::from).collect();
+
+		let mut index = 0;
+		while index < expression.len() {
+			if expression[index] != "fois" && expression[index] != "divise-par" {
+				index += 1;
+				continue;
+			}
+			if index == 0 || index == expression.len() - 1 {
+				return Err(ErreurSophie::ManqueArgument(expression[index].to_string()));
+			}
+			let a = self.texte_comme_nombre(&expression[index - 1])?;
+			let b = self.texte_comme_nombre(&expression[index + 1])?;
+			let produit = if expression[index] == "fois" {a*b} else {a/b};
+			let produit_texte: String = nombre_comme_texte(produit);
+			index -= 1;
+			expression[index] = produit_texte;
+			expression.remove(index + 1);
+			expression.remove(index + 1);
+		}
+
+		let mut index = 0;
+		while index < expression.len() {
+			if expression[index] != "plus" && expression[index] != "moins" {
+				index += 1;
+				continue;
+			}
+			if index == 0 || index == expression.len() - 1 {
+				return Err(ErreurSophie::ManqueArgument(expression[index].to_string()));
+			}
+			let a = self.texte_comme_nombre(&expression[index - 1])?;
+			let b = self.texte_comme_nombre(&expression[index + 1])?;
+			let somme = if expression[index] == "plus" {a+b} else {a-b};
+			let somme_texte: String = nombre_comme_texte(somme);
+			index -= 1;
+			expression[index] = somme_texte;
+			expression.remove(index + 1);
+			expression.remove(index + 1);
+		}
+
+		if expression.len() > 1 {
+			return Err(ErreurSophie::MauvaisArgument("expression mathématique".to_string()))
+		}
+		self.texte_comme_nombre(&expression[0])
+	}
+
+	fn texte_comme_nombre(&self, texte: &str) -> Result<usize, ErreurSophie> {
+		if texte.chars().next().map_or(false, |c| c.is_uppercase()) {
+			if self.variables.contains_key(texte) {
+				return Ok(self.variables[texte]);
+			} else {
+				return Err(ErreurSophie::VariableInconnue(texte.to_string()))
+			}
+		}
+		texte_comme_nombre(texte)
+	}
+}
 
 pub fn nombre_comme_texte(nombre: usize) -> String {
 	if nombre == 0 {

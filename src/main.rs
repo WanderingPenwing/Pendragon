@@ -11,6 +11,8 @@ enum ErreurSophie {
 	ManqueArgument(String),
 	OrthographeNombre(String),
 	MauvaisArgument(String),
+	DesequilibreParenthese,
+	VariableInconnue(String),
 }
 
 impl fmt::Display for ErreurSophie {
@@ -20,7 +22,9 @@ impl fmt::Display for ErreurSophie {
             Self::PhraseVide => write!(f, "La phrase est vide."),
             Self::ManqueArgument(commande) => write!(f, "Il manque un argument pour \"{}\".", commande),
             Self::OrthographeNombre(nombre) => write!(f, "Le nombre \"{}\" est mal orthographié.", nombre),
-			Self::MauvaisArgument(message) => write!(f, "La commande a reçu un mauvais argument, {}.", message)
+			Self::MauvaisArgument(message) => write!(f, "La commande a reçu un mauvais argument, {}.", message),
+        	Self::DesequilibreParenthese => write!(f, "Les parenthèses sont déséquilibrés."),
+        	Self::VariableInconnue(nom) => write!(f, "La variable \"{}\" est inconnue", nom),
         }
     }
 }
@@ -123,31 +127,6 @@ impl Sophie {
 		println!("- demande : {}", arguments);
 		Ok(())
 	}
-
-	pub fn operation(&self, arguments: &str) -> Result<usize, ErreurSophie> {
-		let somme_texte: Vec<&str> = arguments.split("plus").collect();
-		let mut somme : usize = 0;
-		for somme_element in somme_texte {
-			let somme_element_propre: &str = somme_element.trim();
-			let produit_texte: Vec<&str> = somme_element_propre.split("fois").collect();
-
-			let mut produit : usize = 1;
-			for produit_element in produit_texte {
-				let produit_element_propre: &str = produit_element.trim();
-				let Some(first_char) = produit_element_propre.chars().next() else {
-					return Err(ErreurSophie::MauvaisArgument("il y a un argument vide pour l'operation".to_string()))
-				};
-				let nombre = if first_char.is_uppercase() {
-					self.variables[produit_element_propre]
-				} else {
-					nombres::texte_comme_nombre(produit_element_propre)?
-				};
-				produit *= nombre;
-			}
-			somme += produit;
-		}
-		Ok(somme)
-	}
 }
 
 fn main() {
@@ -172,6 +151,8 @@ fn main() {
 }
 
 
+// -------------------------------------------------------------------------
+
 
 #[cfg(test)] // Compile and run only during testing
 mod tests {
@@ -179,7 +160,6 @@ mod tests {
 
     #[test]
     fn teste_conversion_nombres_texte() {
-        // Test on a limited set of numbers to ensure feasibility
         for i in [0, 1, 42, 123, 999, 1031, 1_001_091, 72_036_854_775_807usize].iter() {
             let texte = nombres::nombre_comme_texte(*i); // Convert number to text
             match nombres::texte_comme_nombre(&texte) { // Convert text back to number
@@ -231,7 +211,7 @@ mod tests {
     	let mut sophie = Sophie::new();
     	let a = 2345678;
     	let b = 987654;
-    	let phrase = format!("Modifie Variable avec {}", nombres::nombre_comme_texte(a));
+    	let phrase = format!("Modifie Variable avec {} ", nombres::nombre_comme_texte(a));
     	if let Err(raison) = sophie.execute_phrase(&phrase) {
     		panic!("Execution échouée pour \"{}\", avec l'erreur : {}", phrase, raison);
     	}
@@ -248,12 +228,23 @@ mod tests {
     }
 
 	#[test]
-    fn teste_multiplication() {
+    fn teste_maths() {
     	let sophie = Sophie::new();
-    	let resultat = sophie.operation("trois fois deux plus quatre fois sept");
+    	let a = 2345678;
+    	let b = 987654;
+    	let c = 34523456;
+    	let d = 45678;
+    	let e = 2;
+    	let resultat = sophie.operation(&format!("{} fois {} plus ouvre la parenthèse {} moins {} ferme la parenthèse divisé par {}",
+			nombres::nombre_comme_texte(a),
+			nombres::nombre_comme_texte(b),
+			nombres::nombre_comme_texte(c),
+			nombres::nombre_comme_texte(d),
+			nombres::nombre_comme_texte(e)
+    	));
 		match resultat {
 			Ok(nombre) => {
-				assert_eq!(nombre, 34, "Echec de la multiplication de 3*2+4*7, got {}", nombre);
+				assert_eq!(nombre, a*b+(c-d)/e, "Echec de l'opération mathématique, got {}", nombre);
 			}
 			Err(raison) => {
                 panic!("Execution échouée pour multiplication, avec l'erreur : {}", raison);
