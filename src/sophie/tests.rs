@@ -103,10 +103,26 @@ fn teste_maths() {
 		nombres::nombre_comme_texte(e)));
 	match resultat {
 		Ok(nombre) => {
-			assert_eq!(nombre, a*b+(c-d)/e, "Echec de l'opération mathématique, got {}", nombre);
+			assert_eq!(nombre, a*b+(c-d)/e, "Echec de l'opération mathématique, résultat : {}", nombre);
 		}
 		Err(raison) => {
 			panic!("Execution échouée pour multiplication, avec l'erreur : {}", raison);
 		}
 	}
+}
+
+// --------------------------------------------- anti-test
+
+#[test]
+fn teste_echec_modification() {
+	let mut sophie = Sophie::new();
+	let resultat = sophie.execute_phrase("Modifie Variable avec deux");
+	let Err(raison) = resultat else {
+		panic!("Ne devrais pas pouvoir modifier une variable non définie");
+	};
+	if let ErreurSophie::VariableInconnue(nom) = raison {
+		assert_eq!(nom, "Variable", "Mauvais nom de variable reconnu : {}", nom);
+	} else {
+		panic!("Modification échouée avec erreur imprévue : {}", raison);
+	}			
 }

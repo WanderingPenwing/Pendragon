@@ -101,7 +101,7 @@ impl Sophie {
 		if texte.chars().next().map_or(false, |c| c.is_uppercase()) {
 			if self.variables.contains_key(texte) {
 				let Variable::Entier(nombre) = self.variables[texte] else {
-					return Err(ErreurSophie::MauvaisType("attendais entier".to_string()))
+					return Err(ErreurSophie::MauvaisType(texte.into(), self.variables[texte].nom_type(), "entier".into()))
 				};
 				return Ok(nombre);
 			} else {
@@ -184,7 +184,7 @@ fn petit_nombre_comme_texte(nombre: usize) -> String {
 
 	let séparation = if unité == 1 && ![0, 1, 8, 9].contains(&dizaine) {UNION.to_string() + "et"} else {"".to_string()};
 
-	let unité_union = if nombre - unité > 0 && unité > 0 && nombre > 16 {
+	let unité_union = if nombre - unité > 0 && unité > 0 && (nombre%100 > 16 || nombre%100 < 10) {
 		UNION.to_string()
 	} else {
 		"".to_string()
@@ -303,5 +303,5 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 		return Err(ErreurSophie::OrthographeNombre(texte.to_string()))
 	}
 
-    Ok(nombre)
+	Ok(nombre)
 }

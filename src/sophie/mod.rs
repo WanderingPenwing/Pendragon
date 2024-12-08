@@ -1,10 +1,27 @@
 use std::fmt;
+use std::io;
 use std::collections::HashMap;
 
 pub mod nombres;
+pub mod texte;
 
 #[cfg(test)]
 mod tests;
+
+#[derive(PartialEq, Debug)]
+pub enum Variable {
+	Entier(usize),
+	Texte(String),
+}
+
+impl Variable {
+	pub fn nom_type(&self) -> String {
+		match self {
+			Self::Entier(_) => "entier".into(),
+			Self::Texte(_) => "texte".into(),
+		}
+	}
+}
 
 pub enum ErreurSophie {
 	CommandeInconnue(String),
@@ -14,13 +31,8 @@ pub enum ErreurSophie {
 	MauvaisArgument(String),
 	DesequilibreParenthese,
 	VariableInconnue(String),
-	MauvaisType(String),
-}
-
-#[derive(PartialEq, Debug)]
-pub enum Variable {
-	Entier(usize),
-	Texte(String),
+	MauvaisType(String, String, String),
+	ProblemeTerminal(String),
 }
 
 impl fmt::Display for ErreurSophie {
@@ -33,7 +45,8 @@ impl fmt::Display for ErreurSophie {
 			Self::MauvaisArgument(message) => write!(f, "La commande a reçu un mauvais argument, {}.", message),
 			Self::DesequilibreParenthese => write!(f, "Les parenthèses sont déséquilibrés."),
 			Self::VariableInconnue(nom) => write!(f, "La variable \"{}\" est inconnue.", nom),
-			Self::MauvaisType(attendu) => write!(f, "La variable est du mauvais type, {}.", attendu),
+			Self::MauvaisType(nom, type_variable, type_attendu) => write!(f, "La variable {} est du mauvais type ({}), attendais {}.", nom, type_variable, type_attendu),
+			Self::ProblemeTerminal(probleme) => write!(f, "Problème d'accès terminal : {}.", probleme),
 		}
 	}
 }
@@ -114,41 +127,54 @@ impl Sophie {
 			return Err(ErreurSophie::VariableInconnue(variable_nom))
 		}
 
-		let valeur = self.operation(&contenu)?;
-		self.variables.insert(variable_nom, Variable::Entier(valeur));
+		let valeur = match self.variables[&variable_nom] {
+			Variable::Entier(_) => Variable::Entier(self.operation(&contenu)?),
+			Variable::Texte(_) => Variable::Texte(self.texte(&contenu)?),
+		};
+		self.variables.insert(variable_nom, valeur);
 		
 		Ok(())
 	}
 
 	fn affiche(&self, arguments: &str) -> Result<(), ErreurSophie> {
-		let liste_arguments: Vec<&str> = arguments.split(',').collect();
-
-		let mut texte = "".to_string();
-
-		for argument in liste_arguments {
-			let argument: &str = argument.trim();
-			if argument.starts_with('"') {
-				if argument.ends_with('"') {
-					texte += &argument[1..argument.len()-1];
-				}
-			} else {
-				let resultat = self.operation(argument)?;
-				texte += &nombres::nombre_comme_texte(resultat);
-			}
-		}
-		println!("{}", texte);
+		println!("{}", self.texte(arguments)?);
 		Ok(())
 	}
 
-	fn demande(&self, arguments: &str) -> Result<(), ErreurSophie> {
-		println!("- demande : {}", arguments);
+	fn demande(&mut self, arguments: &str) -> Result<(), ErreurSophie> {
+		let (variable_nom, _) = nom_de_variable(arguments, "")?;
+		
+		if !self.variables.contains_key(&variable_nom) {
+			return Err(ErreurSophie::VariableInconnue(variable_nom))
+		}
+		
+		println!("Quelle valeur pour {} ?", variable_nom);
+		let mut reponse: String = String::new();
+		if let Err(_) = io::stdin().read_line(&mut reponse) {
+			return Err(ErreurSophie::ProblemeTerminal("lecture d'entrées utilisateur impossible".into()))
+		}
+		
+		let contenu = reponse.trim();
+		
+		let valeur = match self.variables[&variable_nom] {
+			Variable::Entier(_) => Variable::Entier(self.operation(contenu)?),
+			Variable::Texte(_) => Variable::Texte(contenu.into()),
+		};
+		self.variables.insert(variable_nom, valeur);
+		
 		Ok(())
 	}
 }
 
 fn nom_de_variable(arguments: &str, separateur: &str) -> Result<(String, String), ErreurSophie> {
-	let parties: Vec<&str> = arguments.splitn(2, separateur).collect();
-	let nom_variable: String = parties[0].trim().to_string();
+	let parties = if separateur == "" {
+		vec![arguments, ""]
+	} else {
+		arguments.splitn(2, separateur).collect()
+	};
+	
+	let nom_variable = parties[0].trim().to_string();
+	
 	if parties.len() == 1 {
 		return Err(ErreurSophie::ManqueArgument)
 	}
