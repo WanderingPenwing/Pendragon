@@ -8,11 +8,18 @@ mod nombres;
 enum ErreurSophie {
 	CommandeInconnue(String),
 	PhraseVide,
-	ManqueArgument(String),
+	ManqueArgument,
 	OrthographeNombre(String),
 	MauvaisArgument(String),
 	DesequilibreParenthese,
 	VariableInconnue(String),
+	MauvaisType(String),
+}
+
+#[derive(PartialEq, Debug)]
+enum Variable {
+	Entier(usize),
+	Texte(String),
 }
 
 impl fmt::Display for ErreurSophie {
@@ -20,17 +27,18 @@ impl fmt::Display for ErreurSophie {
         match self {
         	Self::CommandeInconnue(commande) => write!(f, "La commande \"{}\" est inconnue.", commande),
             Self::PhraseVide => write!(f, "La phrase est vide."),
-            Self::ManqueArgument(commande) => write!(f, "Il manque un argument pour \"{}\".", commande),
+            Self::ManqueArgument => write!(f, "Il manque un argument."),
             Self::OrthographeNombre(nombre) => write!(f, "Le nombre \"{}\" est mal orthographié.", nombre),
 			Self::MauvaisArgument(message) => write!(f, "La commande a reçu un mauvais argument, {}.", message),
         	Self::DesequilibreParenthese => write!(f, "Les parenthèses sont déséquilibrés."),
-        	Self::VariableInconnue(nom) => write!(f, "La variable \"{}\" est inconnue", nom),
+        	Self::VariableInconnue(nom) => write!(f, "La variable \"{}\" est inconnue.", nom),
+        	Self::MauvaisType(attendu) => write!(f, "La variable est du mauvais type, {}.", attendu),
         }
     }
 }
 
 struct Sophie {
-	variables: HashMap<String, usize>,
+	variables: HashMap<String, Variable>,
 }
 
 impl Sophie {
@@ -63,10 +71,13 @@ impl Sophie {
 		}
 
 		if parties.len() == 1 {
-			return Err(ErreurSophie::ManqueArgument(parties[0].to_string()))
+			return Err(ErreurSophie::ManqueArgument)
 		}
 
 		match parties[0] {
+			"Définie" => {
+				self.definie(parties[1])?;
+			}
 			"Modifie" => {
 				self.modifie(parties[1])?;
 			},
@@ -83,22 +94,27 @@ impl Sophie {
 		Ok(())
 	}
 
+	fn definie(&mut self, arguments: &str) -> Result<(), ErreurSophie> {
+	    let (variable_nom, variable_type) = nom_de_variable(arguments, "comme")?;
+	
+	    let contenu = match variable_type.as_str() {
+	        "entier" => Variable::Entier(0),
+	        "texte" => Variable::Texte("".to_string()),
+	        _ => return Err(ErreurSophie::MauvaisArgument("type de variable inconnu".into())),
+	    };
+	
+	    self.variables.insert(variable_nom, contenu);
+	    Ok(())
+	}
+	
 	fn modifie(&mut self, arguments: &str) -> Result<(), ErreurSophie> {
-		let parties: Vec<&str> = arguments.splitn(2, "avec").collect();
-		if parties.len() == 1 {
-			return Err(ErreurSophie::ManqueArgument(format!("Modifie {}", parties[0])))
-		}
-		let variable: String = parties[0].trim().to_string();
-
-		let Some(first_char) = variable.chars().next() else {
-			return Err(ErreurSophie::MauvaisArgument("il n'y a pas de variable pour la commande Modifie".to_string()))
-		};
-		if !first_char.is_uppercase() {
-			return Err(ErreurSophie::MauvaisArgument("il manque une majuscule à la variable pour la commande Modifie".to_string()))
+		let (variable_nom, contenu) = nom_de_variable(arguments, "avec")?;
+		if !self.variables.contains_key(&variable_nom) {
+			return Err(ErreurSophie::VariableInconnue(variable_nom))
 		}
 
-		let valeur = self.operation(parties[1].trim())?;
-		self.variables.insert(variable, valeur);
+		let valeur = self.operation(&contenu)?;
+		self.variables.insert(variable_nom, Variable::Entier(valeur));
 		
 		Ok(())
 	}
@@ -129,6 +145,21 @@ impl Sophie {
 	}
 }
 
+fn nom_de_variable(arguments: &str, separateur: &str) -> Result<(String, String), ErreurSophie> {
+	let parties: Vec<&str> = arguments.splitn(2, separateur).collect();
+	let nom_variable: String = parties[0].trim().to_string();
+	if parties.len() == 1 {
+		return Err(ErreurSophie::ManqueArgument)
+	}
+	let Some(first_char) = nom_variable.chars().next() else {
+		return Err(ErreurSophie::MauvaisArgument("il n'y a pas de variable".to_string()))
+	};
+	if !first_char.is_uppercase() {
+		return Err(ErreurSophie::MauvaisArgument("il manque une majuscule à la variable".to_string()))
+	}
+	Ok((nom_variable, parties[1].trim().to_string()))
+}
+
 fn main() {
 	let arguments: Vec<String> = env::args().collect();
 
@@ -154,7 +185,7 @@ fn main() {
 // -------------------------------------------------------------------------
 
 
-#[cfg(test)] // Compile and run only during testing
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -192,16 +223,33 @@ mod tests {
     }
     
     #[test]
-    fn teste_initialisation_variable() {
+    fn teste_definition_variable() {
     	let mut sophie = Sophie::new();
-    	let phrase = "Modifie Variable avec trois plus cent-deux";
-    	let resultat = sophie.execute_phrase(phrase);
+    	let resultat = sophie.execute_phrase("Définie Variable comme entier");
 		match resultat {
 			Ok(_) => {
-				assert_eq!(sophie.variables["Variable"], 105, "Echec d'initialisation de variable");
+				assert_eq!(sophie.variables["Variable"], Variable::Entier(0), "Variable mal définie");
 			}
 			Err(raison) => {
-                panic!("Execution échouée pour \"{}\", avec l'erreur : {}", phrase, raison);
+                panic!("Définition de variable échouée : {}", raison);
+            }
+		}
+    }
+
+	#[test]
+    fn teste_modification_variable() {
+    	let mut sophie = Sophie::new();
+    	if let Err(raison) = sophie.execute_phrase("Définie Variable comme entier") {
+    		panic!("Définition de variable échouée : {}", raison);
+    	}
+    	let a = 2345678;
+    	let resultat = sophie.execute_phrase(&format!("Modifie Variable avec {} ", nombres::nombre_comme_texte(a)));
+    	match resultat {
+			Ok(_) => {
+				assert_eq!(sophie.variables["Variable"], Variable::Entier(a), "Variable mal modifiée");
+			}
+			Err(raison) => {
+                panic!("Modification de variable échouée : {}", raison);
             }
 		}
     }
@@ -209,12 +257,14 @@ mod tests {
     #[test]
     fn teste_operation_variable() {
     	let mut sophie = Sophie::new();
-    	let a = 2345678;
-    	let b = 987654;
-    	let phrase = format!("Modifie Variable avec {} ", nombres::nombre_comme_texte(a));
-    	if let Err(raison) = sophie.execute_phrase(&phrase) {
-    		panic!("Execution échouée pour \"{}\", avec l'erreur : {}", phrase, raison);
+    	if let Err(raison) = sophie.execute_phrase("Définie Variable comme entier") {
+    		panic!("Définition de variable échouée : {}", raison);
     	}
+    	let a = 2345678;
+    	if let Err(raison) = sophie.execute_phrase(&format!("Modifie Variable avec {} ", nombres::nombre_comme_texte(a))) {
+    		panic!("Modification de variable échouée : {}", raison);
+    	}
+    	let b = 987654;
     	let resultat = sophie.operation(&format!("Variable plus {}", nombres::nombre_comme_texte(b)));
 
     	match resultat {
@@ -222,7 +272,7 @@ mod tests {
 				assert_eq!(nombre, a+b, "Echec de la somme d'un entier et d'une variable, attendais {}, a reçu {}", a+b, nombre);
 			}
 			Err(raison) => {
-                panic!("Execution échouée pour \"Variable plus {}\", avec l'erreur : {}", nombres::nombre_comme_texte(b), raison);
+                panic!("Opération de variable échouée : {}", raison);
             }
 		}
     }

@@ -1,5 +1,6 @@
 use super::ErreurSophie;
 use super::Sophie;
+use super::Variable;
 
 const NOMS_UNITES: [&str; 10] = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"];
 const NOMS_UNITES_DIX: [&str; 10] = ["dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
@@ -59,7 +60,7 @@ impl Sophie {
 				continue;
 			}
 			if index == 0 || index == expression.len() - 1 {
-				return Err(ErreurSophie::ManqueArgument(expression[index].to_string()));
+				return Err(ErreurSophie::ManqueArgument);
 			}
 			let a = self.texte_comme_nombre(&expression[index - 1])?;
 			let b = self.texte_comme_nombre(&expression[index + 1])?;
@@ -78,7 +79,7 @@ impl Sophie {
 				continue;
 			}
 			if index == 0 || index == expression.len() - 1 {
-				return Err(ErreurSophie::ManqueArgument(expression[index].to_string()));
+				return Err(ErreurSophie::ManqueArgument);
 			}
 			let a = self.texte_comme_nombre(&expression[index - 1])?;
 			let b = self.texte_comme_nombre(&expression[index + 1])?;
@@ -99,7 +100,10 @@ impl Sophie {
 	fn texte_comme_nombre(&self, texte: &str) -> Result<usize, ErreurSophie> {
 		if texte.chars().next().map_or(false, |c| c.is_uppercase()) {
 			if self.variables.contains_key(texte) {
-				return Ok(self.variables[texte]);
+				let Variable::Entier(nombre) = self.variables[texte] else {
+					return Err(ErreurSophie::MauvaisType("attendais entier".to_string()))
+				};
+				return Ok(nombre);
 			} else {
 				return Err(ErreurSophie::VariableInconnue(texte.to_string()))
 			}

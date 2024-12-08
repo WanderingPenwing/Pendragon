@@ -1,2 +1,3 @@
-Affiche dix plus sept fois sept.
-Affiche deux fois ouvre la parenthèse quatre plus seize ferme la parenthèse.
+Définie A comme entier.
+Modifie A avec mille-cinq-cent-cinquante-cinq fois treize.
+Affiche "A : ", A.
