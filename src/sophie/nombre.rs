@@ -97,7 +97,7 @@ impl Sophie {
 		self.texte_comme_nombre(&expression[0])
 	}
 
-	fn texte_comme_nombre(&self, texte: &str) -> Result<usize, ErreurSophie> {
+	pub fn texte_comme_nombre(&self, texte: &str) -> Result<usize, ErreurSophie> {
 		if texte.chars().next().map_or(false, |c| c.is_uppercase()) {
 			if self.variables.contains_key(texte) {
 				let Variable::Entier(nombre) = self.variables[texte] else {
@@ -215,7 +215,7 @@ pub fn texte_comme_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 		}
 		let texte_separe: Vec<&str> = texte_modifie.split(separateur_texte).collect();
 		if texte_separe.len() > 2 {
-			return Err(ErreurSophie::OrthographeNombre(texte.to_string()))
+			return Err(ErreurSophie::NombreInvalide(texte.to_string()))
 		}
 		if texte_separe.len() > 1 {
 			let petit_nombre_texte = texte_separe[0]
@@ -258,7 +258,7 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 				nombre = 1;
 			}
 			if nombre >= 100 {
-				return Err(ErreurSophie::OrthographeNombre(texte.to_string()))
+				return Err(ErreurSophie::NombreInvalide(texte.to_string()))
 			}
 			nombre *= 100;
 			dernier_chiffre_texte = chiffre_texte;
@@ -270,12 +270,12 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 				dernier_chiffre_texte = chiffre_texte;
 				continue
 			} else {
-				return Err(ErreurSophie::OrthographeNombre(texte.to_string()))
+				return Err(ErreurSophie::NombreInvalide(texte.to_string()))
 			}
 		}
 		if let Some(chiffre) = NOMS_UNITES.iter().position(|&s| s == chiffre_texte) {
 			if nombre%10 > 0 {
-				return Err(ErreurSophie::OrthographeNombre(texte.to_string()))
+				return Err(ErreurSophie::NombreInvalide(texte.to_string()))
 			}
 			nombre += chiffre;
 			dernier_chiffre_texte = chiffre_texte;
@@ -283,7 +283,7 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 		}
 		if let Some(chiffre) = NOMS_DIZAINES.iter().position(|&s| s == chiffre_texte) {
 			if nombre%100 > 0 && chiffre != 1 {
-				return Err(ErreurSophie::OrthographeNombre(texte.to_string()))
+				return Err(ErreurSophie::NombreInvalide(texte.to_string()))
 			}
 			nombre += chiffre*10;
 			dernier_chiffre_texte = chiffre_texte;
@@ -291,7 +291,7 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 		}
 		if let Some(chiffre) = NOMS_UNITES_DIX.iter().position(|&s| s == chiffre_texte) {
 			if nombre%10 > 0 {
-				return Err(ErreurSophie::OrthographeNombre(texte.to_string()))
+				return Err(ErreurSophie::NombreInvalide(texte.to_string()))
 			}
 			nombre += 10 + chiffre;
 			dernier_chiffre_texte = chiffre_texte;
@@ -300,7 +300,7 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 		if chiffre_texte == "et" {
 			continue
 		}
-		return Err(ErreurSophie::OrthographeNombre(texte.to_string()))
+		return Err(ErreurSophie::NombreInvalide(texte.to_string()))
 	}
 
 	Ok(nombre)

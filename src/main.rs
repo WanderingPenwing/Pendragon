@@ -17,7 +17,7 @@ fn main() {
 	
 	match fs::read_to_string(chemin_de_fichier) {
 		Ok(contenu) => {
-			sophie.execute(contenu);
+			let _ = sophie.execute(contenu);
 		}
 		Err(raison) => {
 			eprintln!("Fichier illisible : {}", raison);
