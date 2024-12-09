@@ -17,7 +17,7 @@ fn main() {
 	
 	match fs::read_to_string(chemin_de_fichier) {
 		Ok(contenu) => {
-			let _ = pendragon.execute(contenu);
+			let _ = pendragon.compile(contenu);
 		}
 		Err(raison) => {
 			eprintln!("Fichier illisible : {}", raison);

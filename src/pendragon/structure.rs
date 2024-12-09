@@ -20,6 +20,16 @@ impl Expression {
 			contenu: vec![]
 		}
 	}
+	
+	fn avec_arguments(type_expression: TypeElement, arguments: &str) -> Result<Self, ErreurPendragon> {
+		let expression = Self {
+			type_expression,
+			contenu: vec![]
+		}
+		
+		Ok(expression)
+	}
+	
 	fn ajoute(&mut self, element: Element) -> Result<(), ErreurPendragon> {
 		let type_element = element.type_element();
 		if self.type_expression != type_element {

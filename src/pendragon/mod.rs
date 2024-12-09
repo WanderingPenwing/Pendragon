@@ -20,7 +20,7 @@ impl Pendragon {
 			variables: HashMap::new(),
 		}
 	}
-	pub fn execute(&mut self, contenu: String) -> Result<(), ErreurPendragon> {
+	pub fn compile(&mut self, contenu: String) -> Result<Vec<Commande>, ErreurPendragon> {
 		let contenu_propre = contenu.replace("\n", "");
 		let mut texte: Vec<&str> = contenu_propre.split('.').collect();
 		let reste = texte.pop();
@@ -28,56 +28,50 @@ impl Pendragon {
 			eprintln!("Erreur phrase {} : Il manque un point.", texte.len() + 1);
 			return Err(ErreurPendragon::ManquePoint)
 		}
+		let mut liste_commandes = Vec<Commande> = vec![];
 		for (index_phrase, phrase) in texte.iter().enumerate() {
-			match self.execute_phrase(phrase) {
-				Ok(_) => {},
+			match self.compile_phrase(phrase) {
+				Ok(commande) => {liste_commandes.push(commande)},
 				Err(raison) => {
 					eprintln!("Erreur phrase {} : {}", index_phrase + 1, raison);
 					return Err(raison)
 				}
 			}
 		}
-		Ok(())
+		Ok(liste_commande)
 	}
-
-	fn execute_phrase(&mut self, phrase: &str) -> Result<(), ErreurPendragon> {
+	
+	fn compile_phrase(&self, phrase: &str) -> Result<Commande, ErreurPendragon> {
 		let phrase = phrase.trim();
 		let parties: Vec<&str> = phrase.splitn(2, ' ').collect();
-
-		if parties.is_empty() {
-			return Err(ErreurPendragon::PhraseVide)
-		}
-
-		if parties.len() == 1 {
-			return Err(ErreurPendragon::ManqueArgument)
-		}
-
+		
 		match parties[0] {
 			"Définis" => {
-				self.definie(parties[1])?;
-			}
+				self.definis(parties[1])
+			},
 			"Modifie" => {
-				self.modifie(parties[1])?;
+				self.modifie(parties[1])
 			},
 			"Affiche" => {
-				self.affiche(parties[1])?;
+				self.affiche(parties[1])
 			},
 			"Demande" => {
-				self.demande(parties[1])?;
+				self.demande(parties[1])
 			}
 			autre_commande => {
 				return Err(ErreurPendragon::CommandeInconnue(autre_commande.to_string()))
 			}
-		};
-		Ok(())
+		}
 	}
 
-	fn affiche(&self, arguments: &str) -> Result<(), ErreurPendragon> {
+	fn affiche(&self, arguments: &str) -> Result<Commande, ErreurPendragon> {
 		println!("{}", self.texte(arguments)?);
-		Ok(())
+		
+		let commande = Affiche(Expression::avec_arguments(TypeElement::Texte, arguments)?)
+		Ok(commande)
 	}
 	
-	fn definie(&mut self, arguments: &str) -> Result<(), ErreurPendragon> {
+	fn definis(&mut self, arguments: &str) -> Result<Commande, ErreurPendragon> {
 		let (variable_nom, variable_type) = self.nom_de_variable(arguments, "comme")?;
 		
 		let possible_variable = self.recupere_variable(&variable_nom);
@@ -97,10 +91,12 @@ impl Pendragon {
 		};
 	
 		self.variables.insert(variable_nom, contenu);
-		Ok(())
+		
+		let commande = Definis(variable_nom.into(), contenu.type_element());
+		Ok(commande)
 	}
 	
-	fn modifie(&mut self, arguments: &str) -> Result<(), ErreurPendragon> {
+	fn modifie(&mut self, arguments: &str) -> Result<Commande, ErreurPendragon> {
 		let (variable_nom, contenu) = self.nom_de_variable(arguments, "avec")?;
 		let variable = self.recupere_variable(&variable_nom)?;
 
@@ -111,10 +107,11 @@ impl Pendragon {
 		};
 		self.variables.insert(variable_nom, valeur);
 		
-		Ok(())
+		let commande = Modifie(variable_nom, Expression::avec_arguments(variable.type_element(), arguments)?),
+		Ok(commande)
 	}
 
-	fn demande(&mut self, arguments: &str) -> Result<(), ErreurPendragon> {
+	fn demande(&mut self, arguments: &str) -> Result<Commande, ErreurPendragon> {
 		let (variable_nom, _) = self.nom_de_variable(arguments, "")?;
 		
 		let _ = self.recupere_variable(&variable_nom)?;
@@ -134,7 +131,8 @@ impl Pendragon {
 		};
 		self.variables.insert(variable_nom, valeur);
 		
-		Ok(())
+		let commande = Demande(variable_nom.into());
+		Ok(commande)
 	}
 	
 	fn recupere_variable(&self, nom: &str) -> Result<Element, ErreurPendragon> {
