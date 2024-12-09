@@ -21,7 +21,7 @@ impl Variable {
 		match self {
 			Self::Entier(_) => "entier".into(),
 			Self::Texte(_) => "texte".into(),
-			Self::Booleen(_) => "booleen".into(),
+			Self::Booleen(_) => "booléen".into(),
 		}
 	}
 }
@@ -103,7 +103,7 @@ impl Sophie {
 		}
 
 		match parties[0] {
-			"Définie" => {
+			"Définis" => {
 				self.definie(parties[1])?;
 			}
 			"Modifie" => {
@@ -142,8 +142,8 @@ impl Sophie {
 		let contenu = match variable_type.as_str() {
 			"entier" => Variable::Entier(0),
 			"texte" => Variable::Texte("".to_string()),
-			"booleen" => Variable::Booleen(false),
-			_ => return Err(ErreurSophie::MauvaisArgument("type de variable inconnu".into())),
+			"booléen" => Variable::Booleen(false),
+			_ => return Err(ErreurSophie::MauvaisArgument(format!("type de variable \"{}\" inconnu", variable_type))),
 		};
 	
 		self.variables.insert(variable_nom, contenu);
