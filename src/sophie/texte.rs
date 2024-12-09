@@ -1,6 +1,6 @@
 use super::Sophie;
 use super::ErreurSophie;
-use super::Variable;
+use super::Element;
 use super::nombre;
 use super::booleen;
 
@@ -33,8 +33,8 @@ impl Sophie {
 			
 			let variable = self.recupere_variable(argument)?;
 			
-			let Variable::Texte(contenu) = variable else {
-				return Err(ErreurSophie::MauvaisType(argument.into(), variable.nom_type(), "texte".into()))
+			let Element::Texte(contenu) = variable else {
+				return Err(ErreurSophie::MauvaisType(argument.into(), variable.type_element().nom(), "texte".into()))
 			};
 			
 			texte += &contenu;

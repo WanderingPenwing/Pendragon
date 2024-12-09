@@ -1,6 +1,6 @@
 use super::ErreurSophie;
 use super::Sophie;
-use super::Variable;
+use super::Element;
 
 const NOMS_UNITES: [&str; 10] = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"];
 const NOMS_UNITES_DIX: [&str; 10] = ["dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
@@ -100,8 +100,8 @@ impl Sophie {
 	pub fn texte_comme_nombre(&self, texte: &str) -> Result<usize, ErreurSophie> {
 		if texte.chars().next().map_or(false, |c| c.is_uppercase()) {
 			if self.variables.contains_key(texte) {
-				let Variable::Entier(nombre) = self.variables[texte] else {
-					return Err(ErreurSophie::MauvaisType(texte.into(), self.variables[texte].nom_type(), "entier".into()))
+				let Element::Entier(nombre) = self.variables[texte] else {
+					return Err(ErreurSophie::MauvaisType(texte.into(), self.variables[texte].type_element().nom(), "entier".into()))
 				};
 				return Ok(nombre);
 			} else {

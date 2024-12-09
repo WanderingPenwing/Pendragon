@@ -1,6 +1,6 @@
 use super::Sophie;
 use super::ErreurSophie;
-use super::Variable;
+use super::Element;
 
 impl Sophie {
 	pub fn condition(&self, arguments: &str) -> Result<bool, ErreurSophie> {
@@ -64,8 +64,8 @@ impl Sophie {
 	pub fn texte_comme_booleen(&self, texte: &str) -> Result<bool, ErreurSophie> {
 		if texte.chars().next().map_or(false, |c| c.is_uppercase()) {
 			if self.variables.contains_key(texte) {
-				let Variable::Booleen(booleen) = self.variables[texte] else {
-					return Err(ErreurSophie::MauvaisType(texte.into(), self.variables[texte].nom_type(), "booleen".into()))
+				let Element::Booleen(booleen) = self.variables[texte] else {
+					return Err(ErreurSophie::MauvaisType(texte.into(), self.variables[texte].type_element().nom(), "booleen".into()))
 				};
 				return Ok(booleen);
 			} else {

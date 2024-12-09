@@ -36,10 +36,10 @@ fn teste_somme() {
 #[test]
 fn teste_definition_variable() {
 	let mut sophie = Sophie::new();
-	let resultat = sophie.execute_phrase("Définie Variable comme entier");
+	let resultat = sophie.execute_phrase("Définis Element comme entier");
 	match resultat {
 		Ok(_) => {
-			assert_eq!(sophie.variables["Variable"], Variable::Entier(0), "Variable mal définie");
+			assert_eq!(sophie.variables["Element"], Element::Entier(0), "Element mal définie");
 		}
 		Err(raison) => {
 			panic!("Définition de variable échouée : {}", raison);
@@ -50,14 +50,14 @@ fn teste_definition_variable() {
 #[test]
 fn teste_modification_variable() {
 	let mut sophie = Sophie::new();
-	if let Err(raison) = sophie.execute_phrase("Définie Variable comme entier") {
+	if let Err(raison) = sophie.execute_phrase("Définis Element comme entier") {
 		panic!("Définition de variable échouée : {}", raison);
 	}
 	let a = 2345678;
-	let resultat = sophie.execute_phrase(&format!("Modifie Variable avec {} ", nombre::nombre_comme_texte(a)));
+	let resultat = sophie.execute_phrase(&format!("Modifie Element avec {} ", nombre::nombre_comme_texte(a)));
 	match resultat {
 		Ok(_) => {
-			assert_eq!(sophie.variables["Variable"], Variable::Entier(a), "Variable mal modifiée");
+			assert_eq!(sophie.variables["Element"], Element::Entier(a), "Element mal modifiée");
 		}
 		Err(raison) => {
 			panic!("Modification de variable échouée : {}", raison);
@@ -68,15 +68,15 @@ fn teste_modification_variable() {
 #[test]
 fn teste_operation_variable() {
 	let mut sophie = Sophie::new();
-	if let Err(raison) = sophie.execute_phrase("Définie Variable comme entier") {
+	if let Err(raison) = sophie.execute_phrase("Définis Element comme entier") {
 		panic!("Définition de variable échouée : {}", raison);
 	}
 	let a = 2345678;
-	if let Err(raison) = sophie.execute_phrase(&format!("Modifie Variable avec {} ", nombre::nombre_comme_texte(a))) {
+	if let Err(raison) = sophie.execute_phrase(&format!("Modifie Element avec {} ", nombre::nombre_comme_texte(a))) {
 		panic!("Modification de variable échouée : {}", raison);
 	}
 	let b = 987654;
-	let resultat = sophie.operation(&format!("Variable plus {}", nombre::nombre_comme_texte(b)));
+	let resultat = sophie.operation(&format!("Element plus {}", nombre::nombre_comme_texte(b)));
 	match resultat {
 		Ok(nombre) => {
 				assert_eq!(nombre, a+b, "Echec de la somme d'un entier et d'une variable, attendais {}, a reçu {}", a+b, nombre);
@@ -114,14 +114,14 @@ fn teste_maths() {
 #[test]
 fn teste_texte() {
 	let mut sophie = Sophie::new();
-	if let Err(raison) = sophie.execute_phrase("Définie A comme entier") {
+	if let Err(raison) = sophie.execute_phrase("Définis A comme entier") {
 		panic!("Définition de variable échouée : {}", raison);
 	}
 	let a = 2345678;
 	if let Err(raison) = sophie.execute_phrase(&format!("Modifie A avec {} ", nombre::nombre_comme_texte(a))) {
 		panic!("Modification de variable échouée : {}", raison);
 	}
-	if let Err(raison) = sophie.execute_phrase("Définie B comme texte") {
+	if let Err(raison) = sophie.execute_phrase("Définis B comme texte") {
 		panic!("Définition de variable échouée : {}", raison);
 	}
 	if let Err(raison) = sophie.execute_phrase("Modifie B avec \"hello there\", \" general\", \" Kenobi\"") {
@@ -140,14 +140,14 @@ fn teste_texte() {
 #[test]
 fn teste_redefinition_variable() {
 	let mut sophie = Sophie::new();
-	if let Err(raison) = sophie.execute_phrase("Définie Variable comme entier") {
+	if let Err(raison) = sophie.execute_phrase("Définis Element comme entier") {
 		panic!("Définition de variable échouée : {}", raison);
 	};
-	let Err(raison) = sophie.execute_phrase("Définie Variable comme texte") else {
+	let Err(raison) = sophie.execute_phrase("Définis Element comme texte") else {
 		panic!("Ne devrais pas pouvoir redéfinir une variable");
 	};
 	if let ErreurSophie::MauvaisArgument(ref texte) = raison {
-		assert_eq!(texte, "la variable \"Variable\" existe déjà", "Définition échouée avec erreur imprévue : {}", raison);
+		assert_eq!(texte, "la variable \"Element\" existe déjà", "Définition échouée avec erreur imprévue : {}", raison);
 	} else {
 		panic!("Définition échouée avec erreur imprévue : {}", raison);
 	}
@@ -156,12 +156,12 @@ fn teste_redefinition_variable() {
 #[test]
 fn teste_echec_modification() {
 	let mut sophie = Sophie::new();
-	let resultat = sophie.execute_phrase("Modifie Variable avec deux");
+	let resultat = sophie.execute_phrase("Modifie Element avec deux");
 	let Err(raison) = resultat else {
 		panic!("Ne devrais pas pouvoir modifier une variable non définie");
 	};
 	if let ErreurSophie::VariableInconnue(nom) = raison {
-		assert_eq!(nom, "Variable", "Mauvais nom de variable reconnu : {}", nom);
+		assert_eq!(nom, "Element", "Mauvais nom de variable reconnu : {}", nom);
 	} else {
 		panic!("Modification échouée avec erreur imprévue : {}", raison);
 	}			
@@ -170,7 +170,7 @@ fn teste_echec_modification() {
 #[test]
 fn teste_majuscule_variable() {
 	let mut sophie = Sophie::new();
-	let resultat = sophie.execute_phrase("Définie variable comme entier");
+	let resultat = sophie.execute_phrase("Définis variable comme entier");
 	let Err(raison) = resultat else {
 		panic!("Ne devrais pas pouvoir definir une variable sans majuscule");
 	};
@@ -184,7 +184,7 @@ fn teste_majuscule_variable() {
 #[test]
 fn teste_point_phrase() {
 	let mut sophie = Sophie::new();
-	let resultat = sophie.execute("Définie Variable comme entier".into());
+	let resultat = sophie.execute("Définis Element comme entier".into());
 	let Err(raison) = resultat else {
 		panic!("Ne devrais pas pouvoir faire de commande sans point à la fin");
 	};

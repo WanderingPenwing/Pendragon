@@ -1,67 +1,17 @@
-use std::fmt;
 use std::io;
 use std::collections::HashMap;
 
 pub mod nombre;
 pub mod texte;
 pub mod booleen;
+pub mod structure;
+use structure::*;
 
 #[cfg(test)]
 mod tests;
 
-#[derive(PartialEq, Debug, Clone)]
-pub enum Variable {
-	Entier(usize),
-	Texte(String),
-	Booleen(bool),
-}
-
-impl Variable {
-	pub fn nom_type(&self) -> String {
-		match self {
-			Self::Entier(_) => "entier".into(),
-			Self::Texte(_) => "texte".into(),
-			Self::Booleen(_) => "booléen".into(),
-		}
-	}
-}
-
-pub enum ErreurSophie {
-	CommandeInconnue(String),
-	PhraseVide,
-	ManqueArgument,
-	NombreInvalide(String),
-	BooleenInvalide(String),
-	TexteInvalide(String),
-	MauvaisArgument(String),
-	DesequilibreParenthese,
-	VariableInconnue(String),
-	MauvaisType(String, String, String),
-	ProblemeTerminal(String),
-	ManquePoint,
-}
-
-impl fmt::Display for ErreurSophie {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
-		match self {
-			Self::CommandeInconnue(commande) => write!(f, "La commande \"{}\" est inconnue.", commande),
-			Self::PhraseVide => write!(f, "La phrase est vide."),
-			Self::ManqueArgument => write!(f, "Il manque un argument."),
-			Self::NombreInvalide(nombre) => write!(f, "Le nombre \"{}\" est mal orthographié.", nombre),
-			Self::TexteInvalide(raison) => write!(f, "Le texte est invalide, {}.", raison),
-			Self::BooleenInvalide(booleen) => write!(f, "Le booleen \"{}\" est mal orthographié.", booleen),
-			Self::MauvaisArgument(message) => write!(f, "La commande a reçu un mauvais argument, {}.", message),
-			Self::DesequilibreParenthese => write!(f, "Les parenthèses sont déséquilibrés."),
-			Self::VariableInconnue(nom) => write!(f, "La variable \"{}\" est inconnue.", nom),
-			Self::MauvaisType(nom, type_variable, type_attendu) => write!(f, "La variable {} est du mauvais type ({}), attendais {}.", nom, type_variable, type_attendu),
-			Self::ProblemeTerminal(probleme) => write!(f, "Problème d'accès terminal : {}.", probleme),
-			Self::ManquePoint => write!(f, "Il manque un point."),
-		}
-	}
-}
-
 pub struct Sophie {
-	variables: HashMap<String, Variable>,
+	variables: HashMap<String, Element>,
 }
 
 impl Sophie {
@@ -140,9 +90,9 @@ impl Sophie {
 		};
 	
 		let contenu = match variable_type.as_str() {
-			"entier" => Variable::Entier(0),
-			"texte" => Variable::Texte("".to_string()),
-			"booléen" => Variable::Booleen(false),
+			"entier" => Element::Entier(0),
+			"texte" => Element::Texte("".to_string()),
+			"booléen" => Element::Booleen(false),
 			_ => return Err(ErreurSophie::MauvaisArgument(format!("type de variable \"{}\" inconnu", variable_type))),
 		};
 	
@@ -154,10 +104,10 @@ impl Sophie {
 		let (variable_nom, contenu) = self.nom_de_variable(arguments, "avec")?;
 		let variable = self.recupere_variable(&variable_nom)?;
 
-		let valeur = match variable {
-			Variable::Entier(_) => Variable::Entier(self.operation(&contenu)?),
-			Variable::Texte(_) => Variable::Texte(self.texte(&contenu)?),
-			Variable::Booleen(_) => Variable::Booleen(self.condition(&contenu)?),
+		let valeur = match variable.type_element() {
+			TypeElement::Entier => Element::Entier(self.operation(&contenu)?),
+			TypeElement::Texte => Element::Texte(self.texte(&contenu)?),
+			TypeElement::Booleen => Element::Booleen(self.condition(&contenu)?),
 		};
 		self.variables.insert(variable_nom, valeur);
 		
@@ -177,17 +127,17 @@ impl Sophie {
 		
 		let contenu = reponse.trim();
 		
-		let valeur = match self.variables[&variable_nom] {
-			Variable::Entier(_) => Variable::Entier(nombre::texte_comme_nombre(contenu)?),
-			Variable::Texte(_) => Variable::Texte(contenu.into()),
-			Variable::Booleen(_) => Variable::Booleen(booleen::texte_comme_booleen(contenu)?),
+		let valeur = match self.variables[&variable_nom].type_element() {
+			TypeElement::Entier => Element::Entier(nombre::texte_comme_nombre(contenu)?),
+			TypeElement::Texte => Element::Texte(contenu.into()),
+			TypeElement::Booleen => Element::Booleen(booleen::texte_comme_booleen(contenu)?)
 		};
 		self.variables.insert(variable_nom, valeur);
 		
 		Ok(())
 	}
 	
-	fn recupere_variable(&self, nom: &str) -> Result<Variable, ErreurSophie> {
+	fn recupere_variable(&self, nom: &str) -> Result<Element, ErreurSophie> {
 		let Some(first_char) = nom.chars().next() else {
 			return Err(ErreurSophie::MauvaisArgument("il n'y a pas de variable".to_string()))
 		};
