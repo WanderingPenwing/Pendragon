@@ -20,7 +20,7 @@ fn teste_somme() {
 	for (a, b) in [(0, 0), (5, 7), (1467,45678), (1001, 0), (72_036_854_775_807usize, 14_036_567_775_807usize)] {
 		let texte_a = nombre::nombre_comme_texte(a);
 		let texte_b = nombre::nombre_comme_texte(b);
-		let sophie = Sophie::new();
+		let sophie = Pendragon::new();
 		let resultat = sophie.operation(&format!("{} plus {}", texte_a, texte_b));
 		match resultat { // Convert text back to number
 			Ok(nombre) => {
@@ -35,7 +35,7 @@ fn teste_somme() {
 
 #[test]
 fn teste_definition_variable() {
-	let mut sophie = Sophie::new();
+	let mut sophie = Pendragon::new();
 	let resultat = sophie.execute_phrase("Définis Element comme entier");
 	match resultat {
 		Ok(_) => {
@@ -49,7 +49,7 @@ fn teste_definition_variable() {
 
 #[test]
 fn teste_modification_variable() {
-	let mut sophie = Sophie::new();
+	let mut sophie = Pendragon::new();
 	if let Err(raison) = sophie.execute_phrase("Définis Element comme entier") {
 		panic!("Définition de variable échouée : {}", raison);
 	}
@@ -67,7 +67,7 @@ fn teste_modification_variable() {
 
 #[test]
 fn teste_operation_variable() {
-	let mut sophie = Sophie::new();
+	let mut sophie = Pendragon::new();
 	if let Err(raison) = sophie.execute_phrase("Définis Element comme entier") {
 		panic!("Définition de variable échouée : {}", raison);
 	}
@@ -89,7 +89,7 @@ fn teste_operation_variable() {
 
 #[test]
 fn teste_maths() {
-	let sophie = Sophie::new();
+	let sophie = Pendragon::new();
 	let a = 2345678;
 	let b = 987654;
 	let c = 34523456;
@@ -113,7 +113,7 @@ fn teste_maths() {
 
 #[test]
 fn teste_texte() {
-	let mut sophie = Sophie::new();
+	let mut sophie = Pendragon::new();
 	if let Err(raison) = sophie.execute_phrase("Définis A comme entier") {
 		panic!("Définition de variable échouée : {}", raison);
 	}
@@ -139,14 +139,14 @@ fn teste_texte() {
 
 #[test]
 fn teste_redefinition_variable() {
-	let mut sophie = Sophie::new();
+	let mut sophie = Pendragon::new();
 	if let Err(raison) = sophie.execute_phrase("Définis Element comme entier") {
 		panic!("Définition de variable échouée : {}", raison);
 	};
 	let Err(raison) = sophie.execute_phrase("Définis Element comme texte") else {
 		panic!("Ne devrais pas pouvoir redéfinir une variable");
 	};
-	if let ErreurSophie::MauvaisArgument(ref texte) = raison {
+	if let ErreurPendragon::MauvaisArgument(ref texte) = raison {
 		assert_eq!(texte, "la variable \"Element\" existe déjà", "Définition échouée avec erreur imprévue : {}", raison);
 	} else {
 		panic!("Définition échouée avec erreur imprévue : {}", raison);
@@ -155,12 +155,12 @@ fn teste_redefinition_variable() {
 
 #[test]
 fn teste_echec_modification() {
-	let mut sophie = Sophie::new();
+	let mut sophie = Pendragon::new();
 	let resultat = sophie.execute_phrase("Modifie Element avec deux");
 	let Err(raison) = resultat else {
 		panic!("Ne devrais pas pouvoir modifier une variable non définie");
 	};
-	if let ErreurSophie::VariableInconnue(nom) = raison {
+	if let ErreurPendragon::VariableInconnue(nom) = raison {
 		assert_eq!(nom, "Element", "Mauvais nom de variable reconnu : {}", nom);
 	} else {
 		panic!("Modification échouée avec erreur imprévue : {}", raison);
@@ -169,12 +169,12 @@ fn teste_echec_modification() {
 
 #[test]
 fn teste_majuscule_variable() {
-	let mut sophie = Sophie::new();
+	let mut sophie = Pendragon::new();
 	let resultat = sophie.execute_phrase("Définis variable comme entier");
 	let Err(raison) = resultat else {
 		panic!("Ne devrais pas pouvoir definir une variable sans majuscule");
 	};
-	if let ErreurSophie::MauvaisArgument(explication) = raison {
+	if let ErreurPendragon::MauvaisArgument(explication) = raison {
 		assert_eq!(explication, "il manque une majuscule à la variable", "Mauvaise explication : {}", explication);
 	} else {
 		panic!("Définition échouée avec erreur imprévue : {}", raison);
@@ -183,12 +183,12 @@ fn teste_majuscule_variable() {
 
 #[test]
 fn teste_point_phrase() {
-	let mut sophie = Sophie::new();
+	let mut sophie = Pendragon::new();
 	let resultat = sophie.execute("Définis Element comme entier".into());
 	let Err(raison) = resultat else {
 		panic!("Ne devrais pas pouvoir faire de commande sans point à la fin");
 	};
-	let ErreurSophie::ManquePoint = raison else {
+	let ErreurPendragon::ManquePoint = raison else {
 		panic!("Définition échouée avec erreur imprévue : {}", raison);
 	};
 }

@@ -1,5 +1,5 @@
-use super::ErreurSophie;
-use super::Sophie;
+use super::ErreurPendragon;
+use super::Pendragon;
 use super::Element;
 
 const NOMS_UNITES: [&str; 10] = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"];
@@ -8,8 +8,8 @@ const NOMS_DIZAINES: [&str; 9] = ["", "dix", "vingt", "trente", "quarante", "cin
 const NOMS_SEPARATEURS: [&str; 7] = ["", "mille", "million", "milliard", "billion", "billiard", "trillion"];
 const UNION: &str = "-";
 
-impl Sophie {
-	pub fn operation(&self, arguments: &str) -> Result<usize, ErreurSophie> {
+impl Pendragon {
+	pub fn operation(&self, arguments: &str) -> Result<usize, ErreurPendragon> {
 		//return self.operation_elementaire(arguments);
 		let texte = arguments
 					.replace("ouvre la parenthèse", "ouvre-la-parenthese")
@@ -30,10 +30,10 @@ impl Sophie {
 				}
 			}
 			let Some(index_ouverture) = ouverture else {
-				return Err(ErreurSophie::DesequilibreParenthese);
+				return Err(ErreurPendragon::DesequilibreParenthese);
 			};
 			let Some(index_fermeture) = fermeture else {
-				return Err(ErreurSophie::DesequilibreParenthese);
+				return Err(ErreurPendragon::DesequilibreParenthese);
 			};
 			let contenu: String = expression[(index_ouverture+1)..(index_fermeture)].join(" ");
 			let nombre = self.operation_elementaire(&contenu)?;
@@ -44,12 +44,12 @@ impl Sophie {
 			}
 		}
 		if expression.contains(&"ferme-la-parenthese".to_string()) {
-			return Err(ErreurSophie::DesequilibreParenthese);
+			return Err(ErreurPendragon::DesequilibreParenthese);
 		}
 		self.operation_elementaire(&expression.join(" "))
 	}
 
-	pub fn operation_elementaire(&self, arguments: &str) -> Result<usize, ErreurSophie> {
+	pub fn operation_elementaire(&self, arguments: &str) -> Result<usize, ErreurPendragon> {
 		let texte = arguments.replace("divisé par", "divise-par");
 		let mut expression: Vec<String> = texte.split(" ").map(String::from).collect();
 
@@ -60,7 +60,7 @@ impl Sophie {
 				continue;
 			}
 			if index == 0 || index == expression.len() - 1 {
-				return Err(ErreurSophie::ManqueArgument);
+				return Err(ErreurPendragon::ManqueArgument);
 			}
 			let a = self.texte_comme_nombre(&expression[index - 1])?;
 			let b = self.texte_comme_nombre(&expression[index + 1])?;
@@ -79,7 +79,7 @@ impl Sophie {
 				continue;
 			}
 			if index == 0 || index == expression.len() - 1 {
-				return Err(ErreurSophie::ManqueArgument);
+				return Err(ErreurPendragon::ManqueArgument);
 			}
 			let a = self.texte_comme_nombre(&expression[index - 1])?;
 			let b = self.texte_comme_nombre(&expression[index + 1])?;
@@ -92,20 +92,20 @@ impl Sophie {
 		}
 
 		if expression.len() > 1 {
-			return Err(ErreurSophie::MauvaisArgument("expression mathématique".to_string()))
+			return Err(ErreurPendragon::MauvaisArgument("expression mathématique".to_string()))
 		}
 		self.texte_comme_nombre(&expression[0])
 	}
 
-	pub fn texte_comme_nombre(&self, texte: &str) -> Result<usize, ErreurSophie> {
+	pub fn texte_comme_nombre(&self, texte: &str) -> Result<usize, ErreurPendragon> {
 		if texte.chars().next().map_or(false, |c| c.is_uppercase()) {
 			if self.variables.contains_key(texte) {
 				let Element::Entier(nombre) = self.variables[texte] else {
-					return Err(ErreurSophie::MauvaisType(texte.into(), self.variables[texte].type_element().nom(), "entier".into()))
+					return Err(ErreurPendragon::MauvaisType(texte.into(), self.variables[texte].type_element().nom(), "entier".into()))
 				};
 				return Ok(nombre);
 			} else {
-				return Err(ErreurSophie::VariableInconnue(texte.to_string()))
+				return Err(ErreurPendragon::VariableInconnue(texte.to_string()))
 			}
 		}
 		texte_comme_nombre(texte)
@@ -198,7 +198,7 @@ fn petit_nombre_comme_texte(nombre: usize) -> String {
 	format!("{}{}{}{}{}", centaine_texte, dizaine_union, dizaine_texte, séparation, unité_texte)
 }
 
-pub fn texte_comme_nombre(texte: &str) -> Result<usize, ErreurSophie> {
+pub fn texte_comme_nombre(texte: &str) -> Result<usize, ErreurPendragon> {
 	if texte == "zéro" {
 		return Ok(0)
 	}
@@ -215,7 +215,7 @@ pub fn texte_comme_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 		}
 		let texte_separe: Vec<&str> = texte_modifie.split(separateur_texte).collect();
 		if texte_separe.len() > 2 {
-			return Err(ErreurSophie::NombreInvalide(texte.to_string()))
+			return Err(ErreurPendragon::NombreInvalide(texte.to_string()))
 		}
 		if texte_separe.len() > 1 {
 			let petit_nombre_texte = texte_separe[0]
@@ -246,7 +246,7 @@ pub fn texte_comme_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 	Ok(nombre)
 }
 
-fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurSophie> {
+fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurPendragon> {
 	let elements: Vec<&str> = texte.split(UNION).collect();
 
 	let mut nombre = 0;
@@ -258,7 +258,7 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 				nombre = 1;
 			}
 			if nombre >= 100 {
-				return Err(ErreurSophie::NombreInvalide(texte.to_string()))
+				return Err(ErreurPendragon::NombreInvalide(texte.to_string()))
 			}
 			nombre *= 100;
 			dernier_chiffre_texte = chiffre_texte;
@@ -270,12 +270,12 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 				dernier_chiffre_texte = chiffre_texte;
 				continue
 			} else {
-				return Err(ErreurSophie::NombreInvalide(texte.to_string()))
+				return Err(ErreurPendragon::NombreInvalide(texte.to_string()))
 			}
 		}
 		if let Some(chiffre) = NOMS_UNITES.iter().position(|&s| s == chiffre_texte) {
 			if nombre%10 > 0 {
-				return Err(ErreurSophie::NombreInvalide(texte.to_string()))
+				return Err(ErreurPendragon::NombreInvalide(texte.to_string()))
 			}
 			nombre += chiffre;
 			dernier_chiffre_texte = chiffre_texte;
@@ -283,7 +283,7 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 		}
 		if let Some(chiffre) = NOMS_DIZAINES.iter().position(|&s| s == chiffre_texte) {
 			if nombre%100 > 0 && chiffre != 1 {
-				return Err(ErreurSophie::NombreInvalide(texte.to_string()))
+				return Err(ErreurPendragon::NombreInvalide(texte.to_string()))
 			}
 			nombre += chiffre*10;
 			dernier_chiffre_texte = chiffre_texte;
@@ -291,7 +291,7 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 		}
 		if let Some(chiffre) = NOMS_UNITES_DIX.iter().position(|&s| s == chiffre_texte) {
 			if nombre%10 > 0 {
-				return Err(ErreurSophie::NombreInvalide(texte.to_string()))
+				return Err(ErreurPendragon::NombreInvalide(texte.to_string()))
 			}
 			nombre += 10 + chiffre;
 			dernier_chiffre_texte = chiffre_texte;
@@ -300,7 +300,7 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurSophie> {
 		if chiffre_texte == "et" {
 			continue
 		}
-		return Err(ErreurSophie::NombreInvalide(texte.to_string()))
+		return Err(ErreurPendragon::NombreInvalide(texte.to_string()))
 	}
 
 	Ok(nombre)

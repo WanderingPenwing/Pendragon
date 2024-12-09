@@ -20,10 +20,10 @@ impl Expression {
 			contenu: vec![]
 		}
 	}
-	fn ajoute(&mut self, element: Element) -> Result<(), ErreurSophie> {
+	fn ajoute(&mut self, element: Element) -> Result<(), ErreurPendragon> {
 		let type_element = element.type_element();
 		if self.type_expression != type_element {
-			return Err(ErreurSophie::MauvaisType("inconnue".into(), type_element.nom(), self.type_expression.nom()))
+			return Err(ErreurPendragon::MauvaisType("inconnue".into(), type_element.nom(), self.type_expression.nom()))
 		}
 		self.contenu.push(element);
 		Ok(())
@@ -70,7 +70,7 @@ impl Element {
 	}
 }
 
-pub enum ErreurSophie {
+pub enum ErreurPendragon {
 	CommandeInconnue(String),
 	PhraseVide,
 	ManqueArgument,
@@ -85,7 +85,7 @@ pub enum ErreurSophie {
 	ManquePoint,
 }
 
-impl fmt::Display for ErreurSophie {
+impl fmt::Display for ErreurPendragon {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
 		match self {
 			Self::CommandeInconnue(commande) => write!(f, "La commande \"{}\" est inconnue.", commande),

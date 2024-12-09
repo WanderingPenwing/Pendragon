@@ -1,11 +1,11 @@
-use super::Sophie;
-use super::ErreurSophie;
+use super::Pendragon;
+use super::ErreurPendragon;
 use super::Element;
 use super::nombre;
 use super::booleen;
 
-impl Sophie {
-	pub fn texte(&self, arguments: &str) -> Result<String, ErreurSophie> {
+impl Pendragon {
+	pub fn texte(&self, arguments: &str) -> Result<String, ErreurPendragon> {
 		let liste_arguments: Vec<&str> = arguments.split(',').collect();
 
 		let mut texte = "".to_string();
@@ -16,7 +16,7 @@ impl Sophie {
 				if argument.ends_with('"') {
 					texte += &argument[1..argument.len()-1];
 				} else {
-					return Err(ErreurSophie::TexteInvalide("guillemet mal refermé".into()))
+					return Err(ErreurPendragon::TexteInvalide("guillemet mal refermé".into()))
 				}
 				continue;
 			}			
@@ -34,7 +34,7 @@ impl Sophie {
 			let variable = self.recupere_variable(argument)?;
 			
 			let Element::Texte(contenu) = variable else {
-				return Err(ErreurSophie::MauvaisType(argument.into(), variable.type_element().nom(), "texte".into()))
+				return Err(ErreurPendragon::MauvaisType(argument.into(), variable.type_element().nom(), "texte".into()))
 			};
 			
 			texte += &contenu;
