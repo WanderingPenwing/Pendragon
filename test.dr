@@ -1,7 +1,5 @@
+Définis A comme entier.
+Modifie A avec dix-huit.
 Définis B comme booléen.
-Modifie B avec vrai.
-Affiche "B : ", B, " / ", faux et vrai. 
-Définis E comme entier.
-Modifie E avec mille-cinq-cent-cinquante-cinq fois ouvre la parenthèse un plus six ferme la parenthèse plus quarante-deux.
-Affiche E.
-Affiche "E : ", E fois dix, " / ", mille-cinq-cent-cinquante-cinq fois deux.
+Modifie B avec non faux et ouvre la parenthèse trois-mille-un divisé par A est supérieur ou égal à sept ou faux ferme la parenthèse.
+Affiche B.

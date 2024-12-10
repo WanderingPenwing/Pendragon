@@ -67,6 +67,7 @@ impl Pendragon {
 						let mut comparaison = Comparaison::nouvelle();
 						self.ajoute_comparaison_membre(&mut comparaison, &pile_inconnu.join(" "))?;
 						comparaison.ajoute_type(type_comparaison)?;
+						possible_comparaison = Some(comparaison);
 						pile_inconnu = Vec::new();
 						continue;
 					} else {
@@ -85,11 +86,18 @@ impl Pendragon {
 				possible_comparaison = None;
 			}
 		}
+		if !pile_inconnu.is_empty() {
+			let Some(mut comparaison) = possible_comparaison else {
+				return Err(ErreurPendragon::BooleenInvalide(format!("{:?}", pile_inconnu)))
+			};
+			self.ajoute_comparaison_membre(&mut comparaison, &pile_inconnu.join(" "))?;
+			expression.push(Element::Comparaison(comparaison.clone()));
+		}
 		
 		while let Some(operateur) = pile_operateurs.pop() {
 			expression.push(Element::Operateur(operateur));
 		}
-	
+		
 		Ok(expression)
 	}
 	
@@ -147,6 +155,10 @@ pub fn calcule_booleen(expression: Vec<Element>, variables: &HashMap<String, Ele
 				return Err(ErreurPendragon::MauvaisType(nom.into(), variable.type_element().nom(), "booleen".into()))
 			}
 		}
+		if let Element::Comparaison(comparaison) = element {
+			pile.push(comparaison.calcule(variables)?);
+			continue
+		}
 		let Element::Operateur(ref operateur) = element else {
 			return Err(ErreurPendragon::MauvaisArgument(format!("{:?}, attendais un opérateur", element)))
 		};
@@ -173,7 +185,7 @@ pub fn calcule_booleen(expression: Vec<Element>, variables: &HashMap<String, Ele
 		}
 	}
 	if pile.len() > 1 {
-		return Err(ErreurPendragon::CalculBooleen("la pile n'est pas vide".into()))
+		return Err(ErreurPendragon::CalculBooleen("il reste plusieurs éléments dans la pile".into()))
 	}
 	Ok(pile[0])
 }

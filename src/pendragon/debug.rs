@@ -24,7 +24,7 @@ impl fmt::Display for ErreurPendragon {
 			Self::ManqueArgument => write!(f, "Il manque un argument."),
 			Self::NombreInvalide(nombre) => write!(f, "Le nombre \"{}\" est mal orthographié.", nombre),
 			Self::TexteInvalide(raison) => write!(f, "Le texte est invalide, {}.", raison),
-			Self::BooleenInvalide(booleen) => write!(f, "Le booleen \"{}\" est ivalide.", booleen),
+			Self::BooleenInvalide(booleen) => write!(f, "Le booleen \"{}\" est invalide.", booleen),
 			Self::ComparaisonInvalide(raison) => write!(f, "La comparaison est invalide, {}.", raison),
 			Self::MauvaisArgument(message) => write!(f, "La commande a reçu un mauvais argument, {}.", message),
 			Self::VariableInconnue(nom) => write!(f, "La variable \"{}\" est inconnue.", nom),
