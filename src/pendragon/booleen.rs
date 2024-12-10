@@ -5,9 +5,16 @@ impl Pendragon {
 		let texte = arguments
 					.replace("ouvre la parenthèse", "ouvre-la-parenthese")
 					.replace("ferme la parenthèse", "ferme-la-parenthese");
+					.replace("est égal à", "est-egal-a");
+					.replace("est différent de", "est-different-de");
+					.replace("est supérieur ou égal à", "est-superieur-ou-egal-a");
+					.replace("est inférieur ou égal à", "est-inferieur-ou-egal-a");
+					.replace("est supérieur à", "est-superieur-a");
+					.replace("est inférieur à", "est-inferieur-a");
 		let elements_texte: Vec<&str> = texte.split(" ").collect();
 		let mut expression: Vec<Element> = Vec::new();
 		let mut pile_operateurs: Vec<Operateur> = Vec::new();
+		let mut comparaison: Vec<Element> = Vec::new();
 	
 		for element in elements_texte {
 			match element {

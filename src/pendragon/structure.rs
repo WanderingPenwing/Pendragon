@@ -152,6 +152,7 @@ pub enum Element {
 	Booleen(bool),
 	Variable(String, TypeElement),
 	Operateur(Operateur),
+	Comparaison(Comparaison),
 }
 
 impl Element {	
@@ -159,7 +160,7 @@ impl Element {
 		match self {
 			Self::Entier(_) => TypeElement::Entier,
 			Self::Texte(_) => TypeElement::Texte,
-			Self::Booleen(_) => TypeElement::Booleen,
+			Self::Booleen(_) || Self::Comparaison(_) => TypeElement::Booleen,
 			Self::Variable(_, type_element) => type_element.clone(),
 			Self::Operateur(operateur) => operateur.type_element(),
 		}
@@ -189,3 +190,17 @@ impl Operateur {
 		}
 	}		
 }
+
+pub enum Comparaison {
+	Egal(Element, Element),
+	Different(Element, Element),
+	Superieur(Element, Element),
+	Inferieur(Element, Element),
+	SuperieurEgal(Element, Element),
+	InferieurEgal(Element, Element)
+}
+
+
+
+
+
