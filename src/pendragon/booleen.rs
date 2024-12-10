@@ -4,17 +4,19 @@ impl Pendragon {
 	pub fn elements_booleen(&self, arguments: &str) -> Result<Vec<Element>, ErreurPendragon> {
 		let texte = arguments
 					.replace("ouvre la parenthèse", "ouvre-la-parenthese")
-					.replace("ferme la parenthèse", "ferme-la-parenthese");
-					.replace("est égal à", "est-egal-a");
-					.replace("est différent de", "est-different-de");
-					.replace("est supérieur ou égal à", "est-superieur-ou-egal-a");
-					.replace("est inférieur ou égal à", "est-inferieur-ou-egal-a");
-					.replace("est supérieur à", "est-superieur-a");
+					.replace("ferme la parenthèse", "ferme-la-parenthese")
+					.replace("est égal à", "est-egal-a")
+					.replace("est différent de", "est-different-de")
+					.replace("est supérieur ou égal à", "est-superieur-ou-egal-a")
+					.replace("est inférieur ou égal à", "est-inferieur-ou-egal-a")
+					.replace("est supérieur à", "est-superieur-a")
 					.replace("est inférieur à", "est-inferieur-a");
 		let elements_texte: Vec<&str> = texte.split(" ").collect();
 		let mut expression: Vec<Element> = Vec::new();
 		let mut pile_operateurs: Vec<Operateur> = Vec::new();
-		let mut comparaison: Vec<Element> = Vec::new();
+		
+		let mut pile_inconnu: Vec<String> = Vec::new();
+		let mut possible_comparaison: Option<Comparaison> = None;
 	
 		for element in elements_texte {
 			match element {
@@ -51,13 +53,37 @@ impl Pendragon {
 					}
 				}
 				autre => {
-					if !format_de_variable(autre) {
-						return Err(ErreurPendragon::MauvaisArgument(format!("{}", autre)))
+					if format_de_variable(autre) {
+						if let Ok(_) = self.programme.variable_est_de_type(autre, TypeElement::Booleen) {
+							expression.push(Element::Variable(autre.into(), TypeElement::Booleen));
+						} else {
+							pile_inconnu.push(autre.into());
+							continue;
+						}
+					} else if let Ok(type_comparaison) = texte_comme_comparaison(autre) {
+						if let Some(comparaison) = possible_comparaison {
+							return Err(ErreurPendragon::BooleenInvalide(format!("besoin d'un operateur booleen entre {:?} et {:?}", comparaison, type_comparaison)))
+						}
+						let mut comparaison = Comparaison::nouvelle();
+						self.ajoute_comparaison_membre(&mut comparaison, &pile_inconnu.join(" "))?;
+						comparaison.ajoute_type(type_comparaison)?;
+						pile_inconnu = Vec::new();
+						continue;
+					} else {
+						pile_inconnu.push(autre.into());
+						continue;
 					}
-					self.programme.variable_est_de_type(autre, TypeElement::Booleen)?;
-					expression.push(Element::Variable(autre.into(), TypeElement::Booleen));
 				}
-			}		
+			}
+			if !pile_inconnu.is_empty() {
+				let Some(mut comparaison) = possible_comparaison else {
+					return Err(ErreurPendragon::BooleenInvalide(format!("{:?}", pile_inconnu)))
+				};
+				self.ajoute_comparaison_membre(&mut comparaison, &pile_inconnu.join(" "))?;
+				expression.push(Element::Comparaison(comparaison.clone()));
+				pile_inconnu = Vec::new();
+				possible_comparaison = None;
+			}
 		}
 		
 		while let Some(operateur) = pile_operateurs.pop() {
@@ -65,6 +91,35 @@ impl Pendragon {
 		}
 	
 		Ok(expression)
+	}
+	
+	pub fn ajoute_comparaison_membre(&self, comparaison: &mut Comparaison, texte: &str) -> Result<(), ErreurPendragon> {
+		let membre = if let Ok(elements_nombre) = self.elements_nombre(texte) {
+			elements_nombre
+		} else if let Ok(elements_booleen) = self.elements_booleen(texte) {
+			elements_booleen
+		} else if let Ok(elements_texte) = self.elements_texte(texte) {
+			elements_texte
+		} else {
+			return Err(ErreurPendragon::MauvaisArgument(texte.to_string()));
+		};
+		let Some(element) = membre.first() else {
+			return Err(ErreurPendragon::ComparaisonInvalide("il n'y a pas de d'élément dans le membre ajouté".into()))
+		};
+		if comparaison.type_comparaison.is_none() {
+			comparaison.membre_a = membre;
+			return Ok(());
+		}
+		let Some(element_de_comparaison) = comparaison.membre_a.first() else {
+			return Err(ErreurPendragon::ComparaisonInvalide("il n'y a pas de premier membre".into()))
+		};
+		if element_de_comparaison.type_element() != element.type_element() {
+			return Err(ErreurPendragon::MauvaisType(
+				format!("{:?}", element), element.type_element().nom(), 
+				element_de_comparaison.type_element().nom()))
+		}
+		comparaison.membre_b = membre;
+		Ok(())
 	}
 }
 
@@ -139,6 +194,18 @@ pub fn texte_comme_booleen(texte: &str) -> Result<Element, ErreurPendragon> {
 	}
 }
 
+pub fn texte_comme_comparaison(texte: &str) -> Result<TypeComparaison, ErreurPendragon> {
+	match texte {
+		"est-egal-a" => Ok(TypeComparaison::Egal),
+		"est-different-de" => Ok(TypeComparaison::Different),
+		"est-superieur-ou-egal-a" => Ok(TypeComparaison::SuperieurEgal),
+		"est-inferieur-ou-egal-a" => Ok(TypeComparaison::InferieurEgal),
+		"est-superieur-a" => Ok(TypeComparaison::Superieur),
+		"est-inferieur-a" => Ok(TypeComparaison::Inferieur),
+		_ => Err(ErreurPendragon::ComparaisonInvalide(format!("\"{}\" n'est pas un type de comparaison", texte))),
+	}
+}
+
 
 
 
@@ -170,16 +237,16 @@ mod test {
 		let pendragon = Pendragon::nouveau();
 		let mut configurations = Vec::new();
 		for b1 in [true, false] {
-	        for b2 in [true, false] {
-	            for b3 in [true, false] {
-	                for b4 in [true, false] {
-	                    for b5 in [true, false] {
-	                        configurations.push((b1, b2, b3, b4, b5));
-	                    }
-	                }
-	            }
-	        }
-	    }
+			for b2 in [true, false] {
+				for b3 in [true, false] {
+					for b4 in [true, false] {
+						for b5 in [true, false] {
+							configurations.push((b1, b2, b3, b4, b5));
+						}
+					}
+				}
+			}
+		}
 		for configuration in configurations {
 			let possible_expression = pendragon.elements_booleen(&format!("{} et non ouvre la parenthèse {} ou non {} ferme la parenthèse ou non {} et {}",
 				booleen_comme_texte(configuration.0),

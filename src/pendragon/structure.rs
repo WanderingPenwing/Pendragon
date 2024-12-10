@@ -160,7 +160,7 @@ impl Element {
 		match self {
 			Self::Entier(_) => TypeElement::Entier,
 			Self::Texte(_) => TypeElement::Texte,
-			Self::Booleen(_) || Self::Comparaison(_) => TypeElement::Booleen,
+			Self::Booleen(_) | Self::Comparaison(_) => TypeElement::Booleen,
 			Self::Variable(_, type_element) => type_element.clone(),
 			Self::Operateur(operateur) => operateur.type_element(),
 		}
@@ -191,16 +191,51 @@ impl Operateur {
 	}		
 }
 
-pub enum Comparaison {
-	Egal(Element, Element),
-	Different(Element, Element),
-	Superieur(Element, Element),
-	Inferieur(Element, Element),
-	SuperieurEgal(Element, Element),
-	InferieurEgal(Element, Element)
+#[derive(Clone, Debug, PartialEq)]
+pub struct Comparaison {
+	pub type_comparaison: Option<TypeComparaison>,
+	pub membre_a: Vec<Element>,
+	pub membre_b: Vec<Element>,
 }
 
+impl Comparaison {
+	pub fn nouvelle() -> Self {
+		Self {
+			type_comparaison: None,
+			membre_a: vec![],
+			membre_b: vec![]
+		}
+	}
+	
+	pub fn ajoute_type(&mut self, type_comparaison: TypeComparaison) -> Result<(), ErreurPendragon> {
+		let Some(element) = self.membre_a.first() else {
+			return Err(ErreurPendragon::ComparaisonInvalide("il n'y a pas de premier membre".into()))
+		};
+		if let TypeComparaison::Egal = type_comparaison {
+			self.type_comparaison = Some(type_comparaison);
+			return Ok(());
+		}
+		if let TypeComparaison::Different = type_comparaison {
+			self.type_comparaison = Some(type_comparaison);
+			return Ok(());
+		}
+		if let TypeElement::Entier = element.type_element() {
+			self.type_comparaison = Some(type_comparaison);
+			return Ok(());
+		}
+		return Err(ErreurPendragon::ComparaisonInvalide(format!("voulait comparer {} avec {:?}", element.type_element().nom(), type_comparaison)))
+	}
+}
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum TypeComparaison {
+	Egal,
+	Different,
+	SuperieurEgal,
+	InferieurEgal,
+	Superieur,
+	Inferieur,
+}
 
 
 
