@@ -1,7 +1,9 @@
-Définis A comme entier.
-Modifie A avec mille-cinq-cent-cinquante-cinq fois treize.
-Affiche A.
 Définis B comme booléen.
-Affiche "B ou : ", B ou vrai.
-Affiche "B et : ", B et vrai.
-Affiche dix fois dix fois dix.
+Définis C comme booléen.
+Définis D comme booléen.
+Modifie B avec vrai et ouvre la parenthèse non C ou D ferme la parenthèse ou faux.
+Affiche "B : ", B.
+Définis E comme entier.
+Modifie E avec mille-cinq-cent-cinquante-cinq fois ouvre la parenthèse un plus six ferme la parenthèse plus quarante-deux.
+Affiche mille-cinq-cent-cinquante-cinq fois ouvre la parenthèse un plus six ferme la parenthèse plus quarante-deux.
+Affiche "E : ", E fois dix.

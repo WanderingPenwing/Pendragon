@@ -1,6 +1,4 @@
-use super::ErreurPendragon;
-use super::Pendragon;
-use super::Element;
+use super::*;
 
 const NOMS_UNITES: [&str; 10] = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"];
 const NOMS_UNITES_DIX: [&str; 10] = ["dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
@@ -9,107 +7,138 @@ const NOMS_SEPARATEURS: [&str; 7] = ["", "mille", "million", "milliard", "billio
 const UNION: &str = "-";
 
 impl Pendragon {
-	pub fn operation(&self, arguments: &str) -> Result<usize, ErreurPendragon> {
-		//return self.operation_elementaire(arguments);
+	pub fn elements_nombre(&self, arguments: &str) -> Result<Vec<Element>, ErreurPendragon> {
 		let texte = arguments
 					.replace("ouvre la parenthèse", "ouvre-la-parenthese")
 					.replace("ferme la parenthèse", "ferme-la-parenthese")
 					.replace("divisé par", "divise-par");
-		let mut expression: Vec<String> = texte.split(" ").map(String::from).collect();
+		let elements_texte: Vec<&str> = texte.split(" ").collect();
+		let mut expression: Vec<Element> = Vec::new();
+		let mut pile_operateurs: Vec<Operateur> = Vec::new();
+	
+		for element in elements_texte {
+			match element {
+				"plus" => {
+					while let Some(operateur) = pile_operateurs.last() {
+						if *operateur == Operateur::Plus || *operateur == Operateur::Moins || *operateur == Operateur::Fois || *operateur == Operateur::Divise {
+							expression.push(Element::Operateur(pile_operateurs.pop().unwrap()));
+						} else {
+							break;
+						}
+					}
+					pile_operateurs.push(Operateur::Plus);
+				}
+				"moins" => {
+					while let Some(operateur) = pile_operateurs.last() {
+						if *operateur == Operateur::Plus || *operateur == Operateur::Moins || *operateur == Operateur::Fois || *operateur == Operateur::Divise {
+							expression.push(Element::Operateur(pile_operateurs.pop().unwrap()));
+						} else {
+							break;
+						}
+					}
+					pile_operateurs.push(Operateur::Moins);
+				}
+				"fois" => {
+					while let Some(operateur) = pile_operateurs.last() {
+						if *operateur == Operateur::Fois || *operateur == Operateur::Divise {
+							expression.push(Element::Operateur(pile_operateurs.pop().unwrap()));
+						} else {
+							break;
+						}
+					}
+					pile_operateurs.push(Operateur::Fois);
+				}
+				"divise-par" => {
+					while let Some(operateur) = pile_operateurs.last() {
+						if *operateur == Operateur::Fois || *operateur == Operateur::Divise {
+							expression.push(Element::Operateur(pile_operateurs.pop().unwrap()));
+						} else {
+							break;
+						}
+					}
+					pile_operateurs.push(Operateur::Divise);
+				}
+				"ouvre-la-parenthese" => pile_operateurs.push(Operateur::ParentheseEntier),
+				"ferme-la-parenthese" => {
+					while let Some(operateur) = pile_operateurs.pop() {
+						if operateur == Operateur::ParentheseEntier {
+							break;
+						}
+						expression.push(Element::Operateur(operateur));
+					}
+				}
+				autre => {
+					if format_de_variable(autre) {
+						self.programme.variable_est_de_type(autre, TypeElement::Entier)?;
+						expression.push(Element::Variable(autre.into(), TypeElement::Entier));
+					} else {
+						expression.push(texte_comme_nombre(autre)?);
+					}
+				}
+			}
+		}
 		
-		while expression.contains(&"ouvre-la-parenthese".to_string()) {
-			let mut ouverture: Option<usize> = None;
-			let mut fermeture: Option<usize> = None;
-			for index in 0..expression.len() {
-				if expression[index] == "ouvre-la-parenthese" {
-					ouverture = Some(index);
-				}
-				if expression[index] == "ferme-la-parenthese" && ouverture.is_some() {
-					fermeture = Some(index);
-					break;
-				}
-			}
-			let Some(index_ouverture) = ouverture else {
-				return Err(ErreurPendragon::DesequilibreParenthese);
-			};
-			let Some(index_fermeture) = fermeture else {
-				return Err(ErreurPendragon::DesequilibreParenthese);
-			};
-			let contenu: String = expression[(index_ouverture+1)..(index_fermeture)].join(" ");
-			let nombre = self.operation_elementaire(&contenu)?;
-			let nombre_texte = nombre_comme_texte(nombre);
-			expression[index_ouverture] = nombre_texte;
-			for _ in 0..(index_fermeture-index_ouverture) {
-				expression.remove(index_ouverture+1);
-			}
+		while let Some(operateur) = pile_operateurs.pop() {
+			expression.push(Element::Operateur(operateur));
 		}
-		if expression.contains(&"ferme-la-parenthese".to_string()) {
-			return Err(ErreurPendragon::DesequilibreParenthese);
-		}
-		self.operation_elementaire(&expression.join(" "))
+	
+		Ok(expression)
 	}
+}
 
-	pub fn operation_elementaire(&self, arguments: &str) -> Result<usize, ErreurPendragon> {
-		let texte = arguments.replace("divisé par", "divise-par");
-		let mut expression: Vec<String> = texte.split(" ").map(String::from).collect();
+pub fn affiche_nombre(expression: Vec<Element>, variables: &HashMap<String, Element>) -> Result<String, ErreurPendragon> {
+	let nombre = calcule_nombre(expression.clone(), variables)?;
+	Ok(nombre_comme_texte(nombre))
+}
 
-		let mut index = 0;
-		while index < expression.len() {
-			if expression[index] != "fois" && expression[index] != "divise-par" {
-				index += 1;
-				continue;
-			}
-			if index == 0 || index == expression.len() - 1 {
-				return Err(ErreurPendragon::ManqueArgument);
-			}
-			let a = self.texte_comme_nombre(&expression[index - 1])?;
-			let b = self.texte_comme_nombre(&expression[index + 1])?;
-			let produit = if expression[index] == "fois" {a*b} else {a/b};
-			let produit_texte: String = nombre_comme_texte(produit);
-			index -= 1;
-			expression[index] = produit_texte;
-			expression.remove(index + 1);
-			expression.remove(index + 1);
+pub fn calcule_nombre(expression: Vec<Element>, variables: &HashMap<String, Element>) -> Result<usize, ErreurPendragon> {
+	let mut pile: Vec<usize> = Vec::new();
+	
+	for element in expression {
+		if let Element::Entier(nombre) = element {
+			pile.push(nombre);
+			continue;
 		}
-
-		let mut index = 0;
-		while index < expression.len() {
-			if expression[index] != "plus" && expression[index] != "moins" {
-				index += 1;
-				continue;
-			}
-			if index == 0 || index == expression.len() - 1 {
-				return Err(ErreurPendragon::ManqueArgument);
-			}
-			let a = self.texte_comme_nombre(&expression[index - 1])?;
-			let b = self.texte_comme_nombre(&expression[index + 1])?;
-			let somme = if expression[index] == "plus" {a+b} else {a-b};
-			let somme_texte: String = nombre_comme_texte(somme);
-			index -= 1;
-			expression[index] = somme_texte;
-			expression.remove(index + 1);
-			expression.remove(index + 1);
-		}
-
-		if expression.len() > 1 {
-			return Err(ErreurPendragon::MauvaisArgument("expression mathématique".to_string()))
-		}
-		self.texte_comme_nombre(&expression[0])
-	}
-
-	pub fn texte_comme_nombre(&self, texte: &str) -> Result<usize, ErreurPendragon> {
-		if texte.chars().next().map_or(false, |c| c.is_uppercase()) {
-			if self.variables.contains_key(texte) {
-				let Element::Entier(nombre) = self.variables[texte] else {
-					return Err(ErreurPendragon::MauvaisType(texte.into(), self.variables[texte].type_element().nom(), "entier".into()))
-				};
-				return Ok(nombre);
+		if let Element::Variable(nom, _) = element {
+			let Some(variable) = variables.get(&nom) else {
+				return Err(ErreurPendragon::VariableInconnue(nom.into()))
+			};
+			if let Element::Entier(nombre) = variable {
+				pile.push(*nombre);
+				continue
 			} else {
-				return Err(ErreurPendragon::VariableInconnue(texte.to_string()))
+				return Err(ErreurPendragon::MauvaisType(nom.into(), variable.type_element().nom(), "entier".into()))
 			}
 		}
-		texte_comme_nombre(texte)
+		let Element::Operateur(ref operateur) = element else {
+			return Err(ErreurPendragon::MauvaisArgument(format!("{:?}, attendais un opérateur", element)))
+		};
+		let Some(nombre_a) = pile.pop() else {
+			return Err(ErreurPendragon::CalculEntier("la pile est vide".into()))
+		};
+		let Some(nombre_b) = pile.pop() else {
+			return Err(ErreurPendragon::CalculEntier("la pile est vide".into()))
+		};
+		match operateur {
+			Operateur::Plus => {
+				pile.push(nombre_b + nombre_b);
+			}
+			Operateur::Moins => {
+				pile.push(nombre_b - nombre_a);
+			}
+			Operateur::Fois => {
+				pile.push(nombre_b * nombre_a);
+			}
+			Operateur::Divise => {
+				pile.push(nombre_b / nombre_a);
+			}
+			_ => return Err(ErreurPendragon::MauvaisArgument(format!("{:?}, attendais un opérateur d'entiers", element)))
+		}
 	}
+	if pile.len() > 1 {
+		return Err(ErreurPendragon::CalculEntier("la pile n'est pas vide".into()))
+	}
+	Ok(pile[0])
 }
 
 pub fn nombre_comme_texte(nombre: usize) -> String {
@@ -198,9 +227,9 @@ fn petit_nombre_comme_texte(nombre: usize) -> String {
 	format!("{}{}{}{}{}", centaine_texte, dizaine_union, dizaine_texte, séparation, unité_texte)
 }
 
-pub fn texte_comme_nombre(texte: &str) -> Result<usize, ErreurPendragon> {
+pub fn texte_comme_nombre(texte: &str) -> Result<Element, ErreurPendragon> {
 	if texte == "zéro" {
-		return Ok(0)
+		return Ok(Element::Entier(0))
 	}
 	let pluriel = format!("s{}", UNION);
 	let mut petits_nombres_texte: Vec<&str> = vec![];
@@ -243,7 +272,7 @@ pub fn texte_comme_nombre(texte: &str) -> Result<usize, ErreurPendragon> {
 		nombre += petit_nombre * 1000usize.pow((petits_nombres_texte.len() - index - 1) as u32);
 	}
 	
-	Ok(nombre)
+	Ok(Element::Entier(nombre))
 }
 
 fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurPendragon> {
