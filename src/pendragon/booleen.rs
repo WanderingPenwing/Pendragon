@@ -131,3 +131,71 @@ pub fn texte_comme_booleen(texte: &str) -> Result<Element, ErreurPendragon> {
 		_ => Err(ErreurPendragon::BooleenInvalide(texte.into())),
 	}
 }
+
+
+
+
+// -----------------------------------------------------------------------
+
+
+#[cfg(test)]
+mod test {
+	use std::collections::HashMap;
+	use super::*;
+	
+	#[test]
+	fn teste_conversion_booleen_texte() {
+		for b in [true, false].iter() {
+			let texte = booleen_comme_texte(*b); // Convert number to text
+			match texte_comme_booleen(&texte) { // Convert text back to number
+				Ok(booleen) => {
+					assert_eq!(Element::Booleen(*b), booleen, "Booleen inexact : {}, texte : {}", b, texte);
+				}
+				Err(raison) => {
+					panic!("Conversion échouée pour : {}, avec l'erreur : {}", b, raison);
+				}
+			}
+		}
+	}
+	
+	#[test]
+	fn teste_calcul_booleen() {
+		let pendragon = Pendragon::nouveau();
+		let mut configurations = Vec::new();
+		for b1 in [true, false] {
+	        for b2 in [true, false] {
+	            for b3 in [true, false] {
+	                for b4 in [true, false] {
+	                    for b5 in [true, false] {
+	                        configurations.push((b1, b2, b3, b4, b5));
+	                    }
+	                }
+	            }
+	        }
+	    }
+		for configuration in configurations {
+			let possible_expression = pendragon.elements_booleen(&format!("{} et non ouvre la parenthèse {} ou non {} ferme la parenthèse ou non {} et {}",
+				booleen_comme_texte(configuration.0),
+				booleen_comme_texte(configuration.1),
+				booleen_comme_texte(configuration.2),
+				booleen_comme_texte(configuration.3),
+				booleen_comme_texte(configuration.4)));
+			match possible_expression {
+				Ok(expression) => {
+					match calcule_booleen(expression, &HashMap::new()) {
+						Ok(booleen) => {
+							let resultat = configuration.0 && !(configuration.1 || !configuration.2) || !configuration.3 && configuration.4;
+							assert_eq!(booleen, resultat, "Calcul d'expression (booleen) donne un mauvais résultat : {}", booleen);
+						}
+						Err(raison) => {
+							panic!("Calcul d'expression (booleen) échoué, avec l'erreur : {}", raison);
+						}
+					}
+				}
+				Err(raison) => {
+					panic!("Détermination d'expression (booleen) échouée : {}", raison);
+				}
+			}
+		}
+	}
+}

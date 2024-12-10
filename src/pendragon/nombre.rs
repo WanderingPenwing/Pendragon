@@ -121,7 +121,7 @@ pub fn calcule_nombre(expression: Vec<Element>, variables: &HashMap<String, Elem
 		};
 		match operateur {
 			Operateur::Plus => {
-				pile.push(nombre_b + nombre_b);
+				pile.push(nombre_b + nombre_a);
 			}
 			Operateur::Moins => {
 				pile.push(nombre_b - nombre_a);
@@ -333,4 +333,61 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurPendragon> {
 	}
 
 	Ok(nombre)
+}
+
+
+
+
+// -----------------------------------------------------------------------
+
+
+#[cfg(test)]
+mod test {
+	use std::collections::HashMap;
+	use super::*;
+	#[test]
+	fn teste_conversion_nombres_texte() {
+		for i in [0, 1, 42, 123, 999, 1031, 1_001_091, 72_036_854_775_807usize].iter() {
+			let texte = nombre_comme_texte(*i); // Convert number to text
+			match texte_comme_nombre(&texte) { // Convert text back to number
+				Ok(nombre) => {
+					assert_eq!(Element::Entier(*i), nombre, "Nombre inexact : {}, texte : {}", i, texte);
+				}
+				Err(raison) => {
+					panic!("Conversion échouée pour : {}, avec l'erreur : {}", i, raison);
+				}
+			}
+		}
+	}
+	
+	#[test]
+	fn teste_calcul_nombre() {
+		let pendragon = Pendragon::nouveau();
+		let a = 2345678;
+		let b = 987654;
+		let c = 34523456;
+		let d = 45678;
+		let e = 2;
+		let possible_expression = pendragon.elements_nombre(&format!("{} fois {} plus ouvre la parenthèse {} moins {} ferme la parenthèse divisé par {}",
+			nombre_comme_texte(a),
+			nombre_comme_texte(b),
+			nombre_comme_texte(c),
+			nombre_comme_texte(d),
+			nombre_comme_texte(e)));
+		match possible_expression {
+			Ok(expression) => {
+				match calcule_nombre(expression, &HashMap::new()) {
+					Ok(nombre) => {
+						assert_eq!(nombre, a*b+(c-d)/e, "Calcul d'expression (entier) donne un mauvais résultat : {}", nombre);
+					}
+					Err(raison) => {
+						panic!("Calcul d'expression (entier) échoué, avec l'erreur : {}", raison);
+					}
+				}
+			}
+			Err(raison) => {
+				panic!("Détermination d'expression (entier) échouée : {}", raison);
+			}
+		}
+	}
 }

@@ -8,8 +8,8 @@ use structure::*;
 pub mod debug;
 use debug::*;
 
-#[cfg(test)]
-mod tests;
+//#[cfg(test)]
+//mod tests;
 
 pub struct Pendragon {
 	pub programme: Programme,

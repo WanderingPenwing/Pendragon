@@ -1,37 +1,4 @@
-use super::*;
 
-#[test]
-fn teste_conversion_nombres_texte() {
-	for i in [0, 1, 42, 123, 999, 1031, 1_001_091, 72_036_854_775_807usize].iter() {
-		let texte = nombre::nombre_comme_texte(*i); // Convert number to text
-		match nombre::texte_comme_nombre(&texte) { // Convert text back to number
-			Ok(nombre) => {
-				assert_eq!(*i, nombre, "Nombre inexact : {}, texte : {}", i, texte);
-			}
-			Err(raison) => {
-				panic!("Conversion échouée pour : {}, avec l'erreur : {}", i, raison);
-			}
-		}
-	}
-}
-
-#[test]
-fn teste_somme() {
-	for (a, b) in [(0, 0), (5, 7), (1467,45678), (1001, 0), (72_036_854_775_807usize, 14_036_567_775_807usize)] {
-		let texte_a = nombre::nombre_comme_texte(a);
-		let texte_b = nombre::nombre_comme_texte(b);
-		let sophie = Pendragon::new();
-		let resultat = sophie.operation(&format!("{} plus {}", texte_a, texte_b));
-		match resultat { // Convert text back to number
-			Ok(nombre) => {
-				assert_eq!(a+b, nombre, "Résultat inexact pour {}+{} : {}", a, b, nombre);
-			}
-			Err(raison) => {
-				panic!("Conversion échouée pour : ({},{}), avec l'erreur : {}", a, b, raison);
-			}
-		}
-	}
-}
 
 //#[test]
 //fn teste_definition_variable() {
@@ -86,30 +53,6 @@ fn teste_somme() {
 //		}
 //	}
 //}
-
-#[test]
-fn teste_maths() {
-	let sophie = Pendragon::new();
-	let a = 2345678;
-	let b = 987654;
-	let c = 34523456;
-	let d = 45678;
-	let e = 2;
-	let resultat = sophie.operation(&format!("{} fois {} plus ouvre la parenthèse {} moins {} ferme la parenthèse divisé par {}",
-		nombre::nombre_comme_texte(a),
-		nombre::nombre_comme_texte(b),
-		nombre::nombre_comme_texte(c),
-		nombre::nombre_comme_texte(d),
-		nombre::nombre_comme_texte(e)));
-	match resultat {
-		Ok(nombre) => {
-			assert_eq!(nombre, a*b+(c-d)/e, "Echec de l'opération mathématique, résultat : {}", nombre);
-		}
-		Err(raison) => {
-			panic!("Execution échouée pour multiplication, avec l'erreur : {}", raison);
-		}
-	}
-}
 
 //#[test]
 //fn teste_texte() {

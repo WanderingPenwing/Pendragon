@@ -76,3 +76,41 @@ pub fn calcule_texte(expression: Vec<Element>, variables: &HashMap<String, Eleme
 	}
 	Ok(texte)
 }
+
+
+
+// -----------------------------------------------------------------------
+
+
+#[cfg(test)]
+mod test {
+	use std::collections::HashMap;
+	use super::*;
+	
+	#[test]
+	fn teste_calcul_texte() {
+		let pendragon = Pendragon::nouveau();
+		let a = 2345678;
+		let b = 987654;
+		
+		let possible_expression = pendragon.elements_texte(&format!("\"hello\", {} fois {}, \"there\", vrai ou faux",
+			nombre::nombre_comme_texte(a),
+			nombre::nombre_comme_texte(b)));
+		match possible_expression {
+			Ok(expression) => {
+				match calcule_texte(expression, &HashMap::new()) {
+					Ok(texte) => {
+						let vrai_texte = format!("hello{}therevrai", nombre::nombre_comme_texte(a*b));
+						assert_eq!(texte, vrai_texte, "Calcul d'expression (texte) donne un mauvais résultat : {}", texte);
+					}
+					Err(raison) => {
+						panic!("Calcul d'expression (texte) échoué, avec l'erreur : {}", raison);
+					}
+				}
+			}
+			Err(raison) => {
+				panic!("Détermination d'expression (texte) échouée : {}", raison);
+			}
+		}
+	}
+}
