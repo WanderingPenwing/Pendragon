@@ -10,7 +10,8 @@ impl Pendragon {
 					.replace("est supérieur ou égal à", "est-superieur-ou-egal-a")
 					.replace("est inférieur ou égal à", "est-inferieur-ou-egal-a")
 					.replace("est supérieur à", "est-superieur-a")
-					.replace("est inférieur à", "est-inferieur-a");
+					.replace("est inférieur à", "est-inferieur-a")
+					.replace("divisé par", "divise-par");
 		let elements_texte: Vec<&str> = texte.split(" ").collect();
 		let mut expression: Vec<Element> = Vec::new();
 		let mut pile_operateurs: Vec<Operateur> = Vec::new();
@@ -20,10 +21,20 @@ impl Pendragon {
 	
 		for element in elements_texte {
 			match element {
-				"vrai" => expression.push(Element::Booleen(true)),
-				"faux" => expression.push(Element::Booleen(false)),
-				"non" => pile_operateurs.push(Operateur::Non),
+				"vrai" => {
+					self.fin_comparaison("vrai", &mut pile_inconnu, &mut pile_operateurs, &mut expression, &mut possible_comparaison)?;
+					expression.push(Element::Booleen(true));
+				},
+				"faux" => {
+					self.fin_comparaison("faux", &mut pile_inconnu, &mut pile_operateurs, &mut expression, &mut possible_comparaison)?;
+					expression.push(Element::Booleen(false));
+				}
+				"non" => {
+					self.fin_comparaison("non", &mut pile_inconnu, &mut pile_operateurs, &mut expression, &mut possible_comparaison)?;
+					pile_operateurs.push(Operateur::Non);
+				}
 				"et" => {
+					self.fin_comparaison("et", &mut pile_inconnu, &mut pile_operateurs, &mut expression, &mut possible_comparaison)?;
 					while let Some(operateur) = pile_operateurs.last() {
 						if *operateur == Operateur::Non || *operateur == Operateur::Et {
 							expression.push(Element::Operateur(pile_operateurs.pop().unwrap()));
@@ -34,6 +45,7 @@ impl Pendragon {
 					pile_operateurs.push(Operateur::Et);
 				}
 				"ou" => {
+					self.fin_comparaison("ou", &mut pile_inconnu, &mut pile_operateurs, &mut expression, &mut possible_comparaison)?;
 					while let Some(operateur) = pile_operateurs.last() {
 						if *operateur == Operateur::Non || *operateur == Operateur::Et || *operateur == Operateur::Ou {
 							expression.push(Element::Operateur(pile_operateurs.pop().unwrap()));
@@ -43,8 +55,16 @@ impl Pendragon {
 					}
 					pile_operateurs.push(Operateur::Ou);
 				}
-				"ouvre-la-parenthese" => pile_operateurs.push(Operateur::ParentheseBooleen),
+				"ouvre-la-parenthese" => {
+					pile_inconnu.push("ouvre-la-parenthese".into());
+				}
 				"ferme-la-parenthese" => {
+					let nombre_parenthese = compare_parentheses(&pile_inconnu); 
+					if nombre_parenthese.0 > nombre_parenthese.1 {
+						pile_inconnu.push("ferme-la-parenthese".into());
+						continue
+					}
+					self.fin_comparaison("ferme-la-parenthese", &mut pile_inconnu, &mut pile_operateurs, &mut expression, &mut possible_comparaison)?;
 					while let Some(operateur) = pile_operateurs.pop() {
 						if operateur == Operateur::ParentheseBooleen {
 							break;
@@ -55,35 +75,29 @@ impl Pendragon {
 				autre => {
 					if format_de_variable(autre) {
 						if let Ok(_) = self.programme.variable_est_de_type(autre, TypeElement::Booleen) {
+							self.fin_comparaison(autre, &mut pile_inconnu, &mut pile_operateurs, &mut expression, &mut possible_comparaison)?;
 							expression.push(Element::Variable(autre.into(), TypeElement::Booleen));
 						} else {
 							pile_inconnu.push(autre.into());
-							continue;
 						}
 					} else if let Ok(type_comparaison) = texte_comme_comparaison(autre) {
 						if let Some(comparaison) = possible_comparaison {
 							return Err(ErreurPendragon::BooleenInvalide(format!("besoin d'un operateur booleen entre {:?} et {:?}", comparaison, type_comparaison)))
 						}
 						let mut comparaison = Comparaison::nouvelle();
+						let nombre_parenthese = compare_parentheses(&pile_inconnu); 
+						if pile_inconnu[0] == "ouvre-la-parenthese" && nombre_parenthese.0 > nombre_parenthese.1 {
+							pile_inconnu.remove(0);
+							pile_operateurs.push(Operateur::ParentheseBooleen);
+						}
 						self.ajoute_comparaison_membre(&mut comparaison, &pile_inconnu.join(" "))?;
 						comparaison.ajoute_type(type_comparaison)?;
 						possible_comparaison = Some(comparaison);
 						pile_inconnu = Vec::new();
-						continue;
 					} else {
 						pile_inconnu.push(autre.into());
-						continue;
 					}
 				}
-			}
-			if !pile_inconnu.is_empty() {
-				let Some(mut comparaison) = possible_comparaison else {
-					return Err(ErreurPendragon::BooleenInvalide(format!("{:?}", pile_inconnu)))
-				};
-				self.ajoute_comparaison_membre(&mut comparaison, &pile_inconnu.join(" "))?;
-				expression.push(Element::Comparaison(comparaison.clone()));
-				pile_inconnu = Vec::new();
-				possible_comparaison = None;
 			}
 		}
 		if !pile_inconnu.is_empty() {
@@ -99,6 +113,25 @@ impl Pendragon {
 		}
 		
 		Ok(expression)
+	}
+	
+	pub fn fin_comparaison(&self, _element: &str, pile_inconnu: &mut Vec<String>, pile_operateurs: &mut Vec<Operateur>, expression: &mut Vec<Element>, possible_comparaison: &mut Option<Comparaison>) -> Result<(), ErreurPendragon> {
+		if pile_inconnu.len() == 1 && pile_inconnu[0] == "ouvre-la-parenthese" {
+			pile_operateurs.push(Operateur::ParentheseBooleen);
+			*pile_inconnu = Vec::new();
+		}
+		if pile_inconnu.is_empty() {
+			return Ok(());
+		}
+		let Some(ancienne_comparaison) = possible_comparaison else {
+			return Err(ErreurPendragon::BooleenInvalide(format!("{:?}", pile_inconnu)))
+		};
+		let mut comparaison = ancienne_comparaison.clone();
+		self.ajoute_comparaison_membre(&mut comparaison, &pile_inconnu.join(" "))?;
+		expression.push(Element::Comparaison(comparaison.clone()));
+		*pile_inconnu = Vec::new();
+		*possible_comparaison = None;
+		Ok(())
 	}
 	
 	pub fn ajoute_comparaison_membre(&self, comparaison: &mut Comparaison, texte: &str) -> Result<(), ErreurPendragon> {
@@ -129,6 +162,13 @@ impl Pendragon {
 		comparaison.membre_b = membre;
 		Ok(())
 	}
+}
+
+fn compare_parentheses(strings: &Vec<String>) -> (usize, usize) {
+	let ouvre_count = strings.iter().filter(|s| *s == "ouvre-la-parenthese").count();
+	let ferme_count = strings.iter().filter(|s| *s == "ferme-la-parenthese").count();
+
+	(ouvre_count, ferme_count)
 }
 
 pub fn affiche_booleen(expression: Vec<Element>, variables: &HashMap<String, Element>) -> Result<String, ErreurPendragon> {
@@ -280,6 +320,86 @@ mod test {
 				}
 				Err(raison) => {
 					panic!("Détermination d'expression (booleen) échouée : {}", raison);
+				}
+			}
+		}
+	}
+	
+	#[test]
+	fn teste_comparaison() {
+		let pendragon = Pendragon::nouveau();
+		for (a, b) in [(1, 4), (2, 2), (3, 1), (0, 3)] {
+			let possible_expressions = vec![
+				pendragon.elements_booleen(&format!("non six plus {} est supérieur à deux fois {}", nombre::nombre_comme_texte(a), nombre::nombre_comme_texte(b))),
+				pendragon.elements_booleen(&format!("six plus {} est inférieur à deux fois {}", nombre::nombre_comme_texte(a), nombre::nombre_comme_texte(b))),
+				pendragon.elements_booleen(&format!("six plus {} est supérieur ou égal à deux fois {}", nombre::nombre_comme_texte(a), nombre::nombre_comme_texte(b))),
+				pendragon.elements_booleen(&format!("non six plus {} est inférieur ou égal à deux fois {}", nombre::nombre_comme_texte(a), nombre::nombre_comme_texte(b))),
+				pendragon.elements_booleen(&format!("non \"deux\" est égal à \"{}\"", nombre::nombre_comme_texte(a))),
+				pendragon.elements_booleen(&format!("\"trois\" est différent de \"{}\"", nombre::nombre_comme_texte(a))),
+			];
+			let bonne_reponses = vec![
+				!(6+a > 2*b),
+				(6+a < 2*b),
+				(6+a >= 2*b),
+				!(6+a <= 2*b),
+				!(a == 2),
+				(a != 3),
+			];
+			for index in 0..possible_expressions.len() {
+				match &possible_expressions[index] {
+					Ok(expression) => {
+						match calcule_booleen(expression.clone(), &HashMap::new()) {
+							Ok(booleen) => {
+								let reponse = bonne_reponses[index];
+								assert_eq!(booleen, reponse, "Calcul d'expression (booleen) n°{} ({},{}) donne un mauvais résultat : {}, attendais {}", index, a, b, booleen, reponse);
+							}
+							Err(raison) => {
+								panic!("Calcul d'expression (booleen) échoué, avec l'erreur : {}", raison);
+							}
+						}
+					}
+					Err(raison) => {
+						panic!("Détermination d'expression (booleen) échouée : {}", raison);
+					}
+				}
+			}
+		}
+	}
+	
+	#[test]
+	fn teste_combinaison() {
+		let pendragon = Pendragon::nouveau();
+		for a in 0..5 {
+			for b in 0..5 {
+				for c in 0..5 {
+					for d in 1..5 {
+						for e in 0..5 {
+							println!();
+							let possible_expression = pendragon.elements_booleen(&format!("non ouvre la parenthèse six plus {} ferme la parenthèse est supérieur à deux fois {} et ouvre la parenthèse {} divisé par deux est inférieur à ouvre la parenthèse {} moins un ferme la parenthèse ou non \"deux\" est égal à \"{}\" ferme la parenthèse", 
+									nombre::nombre_comme_texte(a),
+									nombre::nombre_comme_texte(b),
+									nombre::nombre_comme_texte(c),
+									nombre::nombre_comme_texte(d),
+									nombre::nombre_comme_texte(e),
+							));
+							let bonne_reponse = !((6+a) > 2*b) && (c/2 < (d-1) || !(e == 2));
+							match possible_expression{
+								Ok(expression) => {
+									match calcule_booleen(expression.clone(), &HashMap::new()) {
+										Ok(booleen) => {
+											assert_eq!(booleen, bonne_reponse, "Calcul d'expression (booleen) ({},{},{},{},{}) donne un mauvais résultat : {}, attendais {}", a, b, c, d, e, booleen, bonne_reponse);
+										}
+										Err(raison) => {
+											panic!("Calcul d'expression (booleen) échoué, avec l'erreur : {}", raison);
+										}
+									}
+								}
+								Err(raison) => {
+									panic!("Détermination d'expression (booleen) échouée : {}", raison);
+								}
+							}
+						}
+					}
 				}
 			}
 		}

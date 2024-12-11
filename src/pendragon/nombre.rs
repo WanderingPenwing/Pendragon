@@ -213,7 +213,7 @@ fn petit_nombre_comme_texte(nombre: usize) -> String {
 
 	let séparation = if unité == 1 && ![0, 1, 8, 9].contains(&dizaine) {UNION.to_string() + "et"} else {"".to_string()};
 
-	let unité_union = if nombre - unité > 0 && unité > 0 && (nombre%100 > 16 || nombre%100 < 10) {
+	let unité_union = if (nombre - unité > 0 && unité > 0 && (nombre%100 > 16 || nombre%100 < 10)) || (unité == 0 && dizaine == 7) {
 		UNION.to_string()
 	} else {
 		"".to_string()
@@ -347,7 +347,7 @@ mod test {
 	use super::*;
 	#[test]
 	fn teste_conversion_nombres_texte() {
-		for i in [0, 1, 42, 123, 999, 1031, 1_001_091, 72_036_854_775_807usize].iter() {
+		for i in [0, 1, 42, 70, 123, 999, 1031, 1_001_091, 72_036_854_775_807usize].iter() {
 			let texte = nombre_comme_texte(*i); // Convert number to text
 			match texte_comme_nombre(&texte) { // Convert text back to number
 				Ok(nombre) => {
