@@ -24,13 +24,12 @@ fn main() {
 				return
 			};
 			if debug_mode {
-				println!("{}\n-----------", pendragon.programme);
+				println!("{}\n", pendragon.programme);
 			}
 			if let Err(raison) = pendragon.programme.execute() {
 				eprintln!("Erreur Execution : {}", raison);
 				return
 			}
-			println!("\n# Success");
 		}
 		Err(raison) => {
 			eprintln!("Fichier illisible : {}", raison);

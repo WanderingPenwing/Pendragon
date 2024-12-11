@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::time::Instant;
 
 pub mod nombre;
 pub mod texte;
@@ -7,9 +8,6 @@ pub mod structure;
 use structure::*;
 pub mod debug;
 use debug::*;
-
-//#[cfg(test)]
-//mod tests;
 
 pub struct Pendragon {
 	pub programme: Programme,
@@ -23,7 +21,9 @@ impl Pendragon {
 	}
 	
 	pub fn compile(&mut self, contenu: String) -> Result<(), ErreurPendragon> {
-		let contenu_propre = contenu.replace("\n", "");
+		println!();
+		let debut = Instant::now();
+		let contenu_propre = contenu.replace("\n", " ");
 		let mut texte: Vec<&str> = contenu_propre.split('.').collect();
 		let reste = texte.pop();
 		if reste != Some("") {
@@ -31,6 +31,7 @@ impl Pendragon {
 			return Err(ErreurPendragon::ManquePoint)
 		}
 		for (index_phrase, phrase) in texte.iter().enumerate() {
+			let phrase = phrase.trim();
 			match self.compile_phrase(phrase) {
 				Ok(commande) => {self.programme.ajoute_commande(commande)},
 				Err(raison) => {
@@ -39,6 +40,7 @@ impl Pendragon {
 				}
 			}
 		}
+		println!("# Compilation Ok. ({:.2?})\n", debut.elapsed());
 		Ok(())
 	}
 	
