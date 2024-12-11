@@ -20,7 +20,7 @@ fn main() {
 	match fs::read_to_string(chemin_de_fichier) {
 		Ok(contenu) => {
 			let Ok(_) = pendragon.compile(contenu) else {
-				eprintln!("Compilation interrompue");
+				eprintln!("\n# Échec de la compilation");
 				return
 			};
 			if debug_mode {

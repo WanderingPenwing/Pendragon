@@ -50,6 +50,9 @@ impl Pendragon {
 		if parties.len() == 1 {
 			return Err(ErreurPendragon::ManqueArgument)
 		}
+		if parties[1].contains("Définis") || parties[1].contains("Modifie") || parties[1].contains("Affiche") || parties[1].contains("Demande") {
+			return Err(ErreurPendragon::ManquePoint)
+		}
 		match parties[0] {
 			"Définis" => self.definis(parties[1]),
 			"Modifie" => self.modifie(parties[1]),
