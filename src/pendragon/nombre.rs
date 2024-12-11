@@ -15,6 +15,7 @@ impl Pendragon {
 		let elements_texte: Vec<&str> = texte.split(" ").collect();
 		let mut expression: Vec<Element> = Vec::new();
 		let mut pile_operateurs: Vec<Operateur> = Vec::new();
+		let mut precede_par_operation: bool = true;
 	
 		for element in elements_texte {
 			match element {
@@ -58,24 +59,43 @@ impl Pendragon {
 					}
 					pile_operateurs.push(Operateur::Divise);
 				}
-				"ouvre-la-parenthese" => pile_operateurs.push(Operateur::ParentheseEntier),
+				"ouvre-la-parenthese" => {
+					if !precede_par_operation {
+						return Err(ErreurPendragon::CalculEntier("il manque un opérateur avant l'ouverture de parenthèse".into()))
+					}
+					pile_operateurs.push(Operateur::ParentheseEntier);
+					continue
+				}
 				"ferme-la-parenthese" => {
+					if precede_par_operation {
+						return Err(ErreurPendragon::CalculEntier("il manque un nombre avant la fermeture de parenthèse".into()))
+					}
 					while let Some(operateur) = pile_operateurs.pop() {
 						if operateur == Operateur::ParentheseEntier {
 							break;
 						}
 						expression.push(Element::Operateur(operateur));
 					}
+					continue
 				}
 				autre => {
+					if !precede_par_operation {
+						return Err(ErreurPendragon::CalculEntier(format!("il manque un opérateur avant le nombre '{}'", autre)))
+					}
+					precede_par_operation = false;
 					if format_de_variable(autre) {
 						self.programme.variable_est_de_type(autre, TypeElement::Entier)?;
 						expression.push(Element::Variable(autre.into(), TypeElement::Entier));
 					} else {
 						expression.push(texte_comme_nombre(autre)?);
 					}
+					continue;
 				}
 			}
+			if precede_par_operation {
+				return Err(ErreurPendragon::CalculEntier(format!("il manque un nombre avant l'opérateur '{}'", element)))
+			}
+			precede_par_operation = true;
 		}
 		
 		while let Some(operateur) = pile_operateurs.pop() {
@@ -124,6 +144,9 @@ pub fn calcule_nombre(expression: Vec<Element>, variables: &HashMap<String, Elem
 				pile.push(nombre_b + nombre_a);
 			}
 			Operateur::Moins => {
+				if nombre_b < nombre_a {
+					return Err(ErreurPendragon::CalculEntier(format!("a essayé de soustraire {} à {}", nombre_a, nombre_b)))
+				}
 				pile.push(nombre_b - nombre_a);
 			}
 			Operateur::Fois => {

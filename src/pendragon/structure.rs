@@ -1,6 +1,5 @@
 use std::io;
 use std::collections::HashMap;
-use std::time::Instant;
 
 use super::*;
 
@@ -54,8 +53,6 @@ impl Programme {
 	}
 	
 	pub fn execute(&self) -> Result<(), ErreurPendragon> {
-		let debut = Instant::now();
-		println!("# Execution...\n");
 		let mut variables_globales: HashMap<String, Element> = HashMap::new();
 		for commande in &self.commandes {
 			match commande {
@@ -79,7 +76,6 @@ impl Programme {
 				}
 			}			
 		}
-		println!("\n# Exécution Ok. ({:.2?})", debut.elapsed());
 		Ok(())
 	}
 }

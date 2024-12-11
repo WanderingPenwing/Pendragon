@@ -383,7 +383,7 @@ mod test {
 									nombre::nombre_comme_texte(e),
 							));
 							let bonne_reponse = !((6+a) > 2*b) && (c/2 < (d-1) || !(e == 2));
-							match possible_expression{
+							match possible_expression {
 								Ok(expression) => {
 									match calcule_booleen(expression.clone(), &HashMap::new()) {
 										Ok(booleen) => {

@@ -4,7 +4,7 @@ impl Pendragon {
 	pub fn elements_texte(&self, arguments: &str) -> Result<Vec<Element>, ErreurPendragon> {
 		let mut expression: Vec<Element> = Vec::new();
 		
-		for argument in arguments.split(',').map(|arg| arg.trim()) {
+		for argument in arguments.split("puis").map(|arg| arg.trim()) {
 			if expression.len() > 0 {
 				expression.push(Element::Operateur(Operateur::Virgule));
 			}
@@ -93,7 +93,7 @@ mod test {
 		let a = 2345678;
 		let b = 987654;
 		
-		let possible_expression = pendragon.elements_texte(&format!("\"hello\", {} fois {}, \"there\", vrai ou faux",
+		let possible_expression = pendragon.elements_texte(&format!("\"hello\" puis {} fois {} puis \"there\" puis vrai ou faux",
 			nombre::nombre_comme_texte(a),
 			nombre::nombre_comme_texte(b)));
 		match possible_expression {

@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::time::Instant;
 
 pub mod nombre;
 pub mod texte;
@@ -20,38 +19,42 @@ impl Pendragon {
 		}
 	}
 	
-	pub fn compile(&mut self, contenu: String) -> Result<(), ErreurPendragon> {
-		println!();
-		let debut = Instant::now();
-		let contenu_propre = contenu.replace("\n", " ");
-		let mut texte: Vec<&str> = contenu_propre.split('.').collect();
-		let reste = texte.pop();
-		if reste != Some("") {
-			eprintln!("Erreur Compilation, phrase {} : Il manque un point.", texte.len() + 1);
-			return Err(ErreurPendragon::ManquePoint)
-		}
-		for (index_phrase, phrase) in texte.iter().enumerate() {
-			let phrase = phrase.trim();
-			match self.compile_phrase(phrase) {
-				Ok(commande) => {self.programme.ajoute_commande(commande)},
-				Err(raison) => {
-					eprintln!("Erreur phrase {} : {}", index_phrase + 1, raison);
-					return Err(raison)
+	pub fn compile(&mut self, contenu: String) -> Result<(), ErreurCompilation> {
+		let texte: Vec<&str> = contenu.split('\n').collect();
+		for (index_ligne, ligne) in texte.iter().enumerate() {
+			let ligne = ligne.trim();
+			let phrases: Vec<&str> = ligne.split_inclusive(|c| c == ',' || c == '.').collect();
+			let Some(derniere_phrase) = phrases.last() else {
+				continue
+			};
+			if !derniere_phrase.ends_with('.') && !derniere_phrase.ends_with(',') {
+				return Err(ErreurCompilation::nouvelle(index_ligne, ErreurPendragon::ManquePonctuation))
+			}
+			for phrase in phrases {
+				if phrase.ends_with(".") {
+					if phrase.starts_with("Nota Bene :") {
+						continue
+					}
+					match self.compile_commande(&phrase[..phrase.len() - 1]) {
+						Ok(commande) => self.programme.ajoute_commande(commande),
+						Err(raison) => return Err(ErreurCompilation::nouvelle(index_ligne, raison)),
+					}
+					continue;
 				}
+				println!("todo : {}", phrase);
 			}
 		}
-		println!("# Compilation Ok. ({:.2?})\n", debut.elapsed());
 		Ok(())
 	}
 	
-	fn compile_phrase(&mut self, phrase: &str) -> Result<Commande, ErreurPendragon> {
+	fn compile_commande(&mut self, phrase: &str) -> Result<Commande, ErreurPendragon> {
 		let phrase = phrase.trim();
 		let parties: Vec<&str> = phrase.splitn(2, ' ').collect();
 		if parties.len() == 1 {
 			return Err(ErreurPendragon::ManqueArgument)
 		}
 		if parties[1].contains("Définis") || parties[1].contains("Modifie") || parties[1].contains("Affiche") || parties[1].contains("Demande") {
-			return Err(ErreurPendragon::ManquePoint)
+			return Err(ErreurPendragon::ManquePonctuation)
 		}
 		match parties[0] {
 			"Définis" => self.definis(parties[1]),

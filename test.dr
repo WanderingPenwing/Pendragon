@@ -1,8 +1,10 @@
-Affiche soixante-dix.
-Affiche soixante-et-onze.
-<<<<<<< HEAD
-Affiche vrai et ouvre la parenthèse six plus un est supérieur à ouvre la parenthèse deux fois deux ferme la parenthèse ferme la parenthèse.
-=======
-Affiche vrai et ouvre la parenthèse six plus un est supérieur à ouvre la parenthèse deux fois deux ferme la parenthèse ferme la parenthèse.
+Définis A comme entier.
+Définis B comme entier.
+Définis C comme entier.
+Nota Bene : A est la variable pour un polynôme.
 
->>>>>>> main
+Modifie A avec dix-sept.
+Demande C.
+Modifie B avec trois fois A fois A plus deux fois A plus C.
+
+Affiche "Résultat : " puis B.

@@ -1,6 +1,27 @@
 use std::fmt;
 use super::*;
 
+pub struct ErreurCompilation {
+	index_ligne: usize,
+	erreur: ErreurPendragon,
+}
+
+impl ErreurCompilation {
+	pub fn nouvelle(index_ligne: usize, erreur: ErreurPendragon) -> Self {
+		Self {
+			index_ligne,
+			erreur,
+		}
+	}
+}
+
+
+impl fmt::Display for ErreurCompilation {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
+		write!(f, "Erreur ligne {} : {}", self.index_ligne + 1, self.erreur)
+	}
+}
+
 pub enum ErreurPendragon {
 	CommandeInconnue(String),
 	ManqueArgument,
@@ -11,7 +32,7 @@ pub enum ErreurPendragon {
 	MauvaisArgument(String),
 	VariableInconnue(String),
 	MauvaisType(String, String, String),
-	ManquePoint,
+	ManquePonctuation,
 	Lecture(String),
 	CalculBooleen(String),
 	CalculEntier(String),
@@ -29,7 +50,7 @@ impl fmt::Display for ErreurPendragon {
 			Self::MauvaisArgument(message) => write!(f, "La commande a reçu un mauvais argument, {}.", message),
 			Self::VariableInconnue(nom) => write!(f, "La variable \"{}\" est inconnue.", nom),
 			Self::MauvaisType(nom, type_variable, type_attendu) => write!(f, "La {} est du mauvais type ({}), attendais {}.", nom, type_variable, type_attendu),
-			Self::ManquePoint => write!(f, "Il manque un point."),
+			Self::ManquePonctuation => write!(f, "Il manque la ponctuation de la phrase."),
 			Self::Lecture(raison) => write!(f, "Lecture d'entrées utilisateur impossible : {}.", raison),
 			Self::CalculBooleen(raison) => write!(f, "Calcul booleen échoué, {}.", raison),
 			Self::CalculEntier(raison) => write!(f, "Calcul entier échoué, {}.", raison),
