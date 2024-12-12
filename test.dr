@@ -9,8 +9,11 @@ Modifie B avec trois fois A fois ouvre la parenthèse trois fois A plus C ferme 
 Nota Bene : 3*A*(3*A+C).
 
 Affiche "Résultat : " puis B.
+
 Si A supérieur ou égal à trois,
 
 Définis Bool comme booléen.
 Modifie Bool avec vrai.
 Affiche vrai et faux.
+
+Affiche trois plus un.

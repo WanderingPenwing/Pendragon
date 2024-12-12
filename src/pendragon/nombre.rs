@@ -17,7 +17,13 @@ impl Pendragon {
 		let mut pile_operateurs: Vec<Operateur> = Vec::new();
 		let mut precede_par_operation: bool = true;
 	
-		for element in elements_texte {
+		for (index, element) in elements_texte.iter().enumerate() {
+			let element_precedent = if index > 0 {
+				elements_texte[index-1]
+			} else {
+				"le début"
+			};
+			let element: &str = *element;
 			match element {
 				"plus" => {
 					while let Some(operateur) = pile_operateurs.last() {
@@ -61,14 +67,14 @@ impl Pendragon {
 				}
 				"ouvre-la-parenthese" => {
 					if !precede_par_operation {
-						return Err(ErreurPendragon::CalculEntier("il manque un opérateur avant l'ouverture de parenthèse".into()))
+						return Err(ErreurPendragon::CalculEntier(format!("il manque un opérateur entre '{}' l'ouverture de parenthèse", element_precedent)))
 					}
 					pile_operateurs.push(Operateur::ParentheseEntier);
 					continue
 				}
 				"ferme-la-parenthese" => {
 					if precede_par_operation {
-						return Err(ErreurPendragon::CalculEntier("il manque un nombre avant la fermeture de parenthèse".into()))
+						return Err(ErreurPendragon::CalculEntier(format!("il manque un nombre entre '{}' et la fermeture de parenthèse", element_precedent)))
 					}
 					while let Some(operateur) = pile_operateurs.pop() {
 						if operateur == Operateur::ParentheseEntier {
@@ -80,7 +86,7 @@ impl Pendragon {
 				}
 				autre => {
 					if !precede_par_operation {
-						return Err(ErreurPendragon::CalculEntier(format!("il manque un opérateur avant le nombre '{}'", autre)))
+						return Err(ErreurPendragon::CalculEntier(format!("il manque un opérateur entre '{}' et '{}'", element_precedent, autre)))
 					}
 					precede_par_operation = false;
 					if format_de_variable(autre) {
@@ -93,7 +99,7 @@ impl Pendragon {
 				}
 			}
 			if precede_par_operation {
-				return Err(ErreurPendragon::CalculEntier(format!("il manque un nombre avant l'opérateur '{}'", element)))
+				return Err(ErreurPendragon::CalculEntier(format!("il manque un nombre entre '{}' et '{}'", element_precedent, element)))
 			}
 			precede_par_operation = true;
 		}

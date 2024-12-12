@@ -58,6 +58,7 @@ impl Pendragon {
 		if pile_inconnu.len() == 1 && format_de_variable(premier_element) {
 			expression.push(Element::Variable(premier_element.into(), self.programme.variable(premier_element)?));
 			*pile_inconnu = Vec::new();
+			expression.push(Element::Operateur(Operateur::Puis));
 			return Ok(());
 		}
 		let Err(raison) = self.elements_nombre(premier_element) else {
@@ -100,10 +101,12 @@ pub fn calcule_texte(expression: Vec<Element>, variables: &HashMap<String, Eleme
 		};
 		if let TypeElement::Booleen = element_pile.type_element() {
 			texte += &booleen::affiche_booleen(pile.clone(), variables)?;
+			pile = Vec::new();
 			continue;
 		}
 		if let TypeElement::Entier = element_pile.type_element() {
 			texte += &nombre::affiche_nombre(pile.clone(), variables)?;
+			pile = Vec::new();
 			continue;
 		}
 		match element_pile {
@@ -142,14 +145,14 @@ mod test {
 		let a = 2345678;
 		let b = 987654;
 		
-		let possible_expression = pendragon.elements_texte(&format!("\"hello\" puis {} fois {} puis \"there\" puis vrai ou faux",
+		let possible_expression = pendragon.elements_texte(&format!("\"hello\" puis {} fois {} puis \"there\" puis vrai ou faux puis trois puis deux",
 			nombre::nombre_comme_texte(a),
 			nombre::nombre_comme_texte(b)));
 		match possible_expression {
 			Ok(expression) => {
 				match calcule_texte(expression, &HashMap::new()) {
 					Ok(texte) => {
-						let vrai_texte = format!("hello{}therevrai", nombre::nombre_comme_texte(a*b));
+						let vrai_texte = format!("hello{}therevraitroisdeux", nombre::nombre_comme_texte(a*b));
 						assert_eq!(texte, vrai_texte, "Calcul d'expression (texte) donne un mauvais résultat : {}", texte);
 					}
 					Err(raison) => {

@@ -72,9 +72,9 @@ impl fmt::Display for Commande {
 impl fmt::Display for Element {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
 		match self {
-			Self::Entier(nombre) => write!(f, "{}", nombre),
+			Self::Entier(nombre) => write!(f, "{}", nombre::nombre_comme_texte(*nombre)),
 			Self::Texte(texte) => write!(f, "\"{}\"", texte),
-			Self::Booleen(booleen) => write!(f, "{}", booleen),
+			Self::Booleen(booleen) => write!(f, "{}", booleen::booleen_comme_texte(*booleen)),
 			Self::Variable(nom, type_variable) => write!(f, "{}:{}", nom, type_variable.nom()),
 			Self::Operateur(operateur) => write!(f, "{}", operateur),
 			Self::Comparaison(comparaison) => write!(f, "{}.", comparaison),
@@ -103,12 +103,12 @@ impl fmt::Display for Comparaison {
 impl fmt::Display for TypeComparaison {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
 		match self {
-			Self::Egal => write!(f, "=="),
-			Self::Different => write!(f, "!="),
-			Self::SuperieurEgal => write!(f, ">="),
-			Self::InferieurEgal => write!(f, "<="),
-			Self::Superieur => write!(f, ">"),
-			Self::Inferieur => write!(f, "<"),
+			Self::Egal => write!(f, "égal à"),
+			Self::Different => write!(f, "différent de"),
+			Self::SuperieurEgal => write!(f, "supérieur ou égal à"),
+			Self::InferieurEgal => write!(f, "inférieur ou égal à"),
+			Self::Superieur => write!(f, "supérieur à"),
+			Self::Inferieur => write!(f, "inférieur à"),
 		}
 	}
 }
