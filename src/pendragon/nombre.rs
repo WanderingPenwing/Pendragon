@@ -369,7 +369,7 @@ mod test {
 	use std::collections::HashMap;
 	use super::*;
 	#[test]
-	fn teste_conversion_nombres_texte() {
+	fn conversion_nombres_texte() {
 		for i in [0, 1, 42, 70, 123, 999, 1031, 1_001_091, 72_036_854_775_807usize].iter() {
 			let texte = nombre_comme_texte(*i); // Convert number to text
 			match texte_comme_nombre(&texte) { // Convert text back to number
@@ -384,7 +384,7 @@ mod test {
 	}
 	
 	#[test]
-	fn teste_calcul_nombre() {
+	fn calcul_nombre() {
 		let pendragon = Pendragon::nouveau();
 		let a = 2345678;
 		let b = 987654;
@@ -415,7 +415,7 @@ mod test {
 	}
 	
 	#[test]
-	fn teste_erreur_calcul_nombre() {
+	fn erreur_calcul_nombre() {
 		let pendragon = Pendragon::nouveau();
 		let textes_invalide = vec![
 			"un un fois un",

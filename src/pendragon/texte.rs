@@ -129,7 +129,7 @@ mod test {
 	use super::*;
 	
 	#[test]
-	fn teste_calcul_texte() {
+	fn calcul_texte() {
 		let pendragon = Pendragon::nouveau();
 		let a = 2345678;
 		let b = 987654;
@@ -152,6 +152,40 @@ mod test {
 			Err(raison) => {
 				panic!("Détermination d'expression (texte) échouée : {}", raison);
 			}
+		}
+	}
+	
+	#[test]
+	fn conversion_texte() {
+		let pendragon = Pendragon::nouveau();
+		let texte = "\"hello     aaaa puis AERTY et ou fois six\"";
+		match pendragon.elements_texte(texte) {
+			Ok(expression) => {
+				if expression.len() != 2 {
+					panic!("L'expression (texte) devrait contenir deux éléments (texte et puis), contient : {:?}", expression);
+				}
+				assert_eq!(expression[0], Element::Texte(texte[1..texte.len()-1].into()), "Calcul d'expression (texte) donne un mauvais résultat : {}", texte);
+			}
+			Err(raison) => {
+				panic!("Conversion échouée (texte) : {}", raison);
+			}
+		}
+	}
+	
+	#[test]
+	fn erreur_conversion_texte() {
+		let pendragon = Pendragon::nouveau();
+		let textes = vec![
+			"trois puis puis un",
+			"\" test",
+		];
+		for texte in textes {
+			let Err(raison) = pendragon.elements_texte(texte) else {
+				panic!("Ne devrait pas réussir à convertir le texte '{}'", texte);
+			};
+			let ErreurPendragon::TexteInvalide(_) = raison else {
+				panic!("Erreur imprévue pour convertir le texte '{}' : {}", texte, raison);
+			};
 		}
 	}
 }

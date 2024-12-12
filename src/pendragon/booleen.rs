@@ -302,7 +302,7 @@ mod test {
 	use super::*;
 	
 	#[test]
-	fn teste_conversion_booleen_texte() {
+	fn conversion_booleen_texte() {
 		for b in [true, false].iter() {
 			let texte = booleen_comme_texte(*b); // Convert number to text
 			match texte_comme_booleen(&texte) { // Convert text back to number
@@ -317,7 +317,7 @@ mod test {
 	}
 	
 	#[test]
-	fn teste_calcul_booleen() {
+	fn calcul_booleen() {
 		let pendragon = Pendragon::nouveau();
 		let mut configurations = Vec::new();
 		for b1 in [true, false] {
@@ -358,7 +358,7 @@ mod test {
 	}
 	
 	#[test]
-	fn teste_comparaison() {
+	fn comparaison_booleen() {
 		let pendragon = Pendragon::nouveau();
 		for (a, b) in [(1, 4), (2, 2), (3, 1), (0, 3)] {
 			let possible_expressions = vec![
@@ -399,7 +399,7 @@ mod test {
 	}
 	
 	#[test]
-	fn teste_combinaison() {
+	fn combinaison_booleen() {
 		let pendragon = Pendragon::nouveau();
 		for a in 0..5 {
 			for b in 0..5 {
@@ -438,7 +438,7 @@ mod test {
 	}
 	
 	#[test]
-	fn teste_erreur_calcul_booleen() {
+	fn erreur_calcul_booleen() {
 		let pendragon = Pendragon::nouveau();
 		let textes_invalide = vec![
 			"vrai et et faux",

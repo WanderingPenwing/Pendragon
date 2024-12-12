@@ -123,3 +123,39 @@ pub fn format_de_variable(nom: &str) -> bool {
 	}
 	true
 }
+
+#[cfg(test)]
+mod test {
+	use std::collections::HashMap;
+	use super::*;
+	
+	#[test]
+	fn commentaire_valide() {
+		panic!("todo");
+	}
+	
+	#[test]
+	fn commentaire_invalide() {
+		panic!("todo");
+	}
+	
+	#[test]
+	fn ponctuation_valide() {
+		panic!("todo");
+	}
+	
+	#[test]
+	fn ponctuation_invalide() {
+		panic!("todo");
+	}
+	
+	#[test]
+	fn commande_valide() {
+		panic!("todo");
+	}
+	
+	#[test]
+	fn commande_invalide() {
+		panic!("todo");
+	}
+}
