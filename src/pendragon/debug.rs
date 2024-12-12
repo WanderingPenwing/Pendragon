@@ -69,6 +69,67 @@ impl fmt::Display for Commande {
 	}
 }
 
+impl fmt::Display for Element {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
+		match self {
+			Self::Entier(nombre) => write!(f, "{}", nombre),
+			Self::Texte(texte) => write!(f, "\"{}\"", texte),
+			Self::Booleen(booleen) => write!(f, "{}", booleen),
+			Self::Variable(nom, type_variable) => write!(f, "{}:{}", nom, type_variable.nom()),
+			Self::Operateur(operateur) => write!(f, "{}", operateur),
+			Self::Comparaison(comparaison) => write!(f, "{}.", comparaison),
+		}
+	}
+}
+
+impl fmt::Display for Comparaison {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
+		let mut texte_membre_a: String = String::new(); 
+		for element in &self.membre_a {
+			texte_membre_a += &format!("{} ", element);
+		}
+		let mut texte_membre_b: String = String::new(); 
+		for element in &self.membre_b {
+			texte_membre_b += &format!(" {}", element);
+		}
+		write!(f, "({}{:?}{})", 
+			texte_membre_a,
+			self.type_comparaison,
+			texte_membre_b,
+		)
+	}
+}
+
+impl fmt::Display for TypeComparaison {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
+		match self {
+			Self::Egal => write!(f, "=="),
+			Self::Different => write!(f, "!="),
+			Self::SuperieurEgal => write!(f, ">="),
+			Self::InferieurEgal => write!(f, "<="),
+			Self::Superieur => write!(f, ">"),
+			Self::Inferieur => write!(f, "<"),
+		}
+	}
+}
+
+impl fmt::Display for Operateur {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
+		match self {
+			Self::Ou => write!(f, "ou"),
+			Self::Et => write!(f, "et"),
+			Self::Non => write!(f, "non"),
+			Self::ParentheseBooleen => write!(f, "["),
+			Self::Puis => write!(f, ";"),
+			Self::Plus => write!(f, "+"),
+			Self::Moins => write!(f, "-"),
+			Self::Fois => write!(f, "*"),
+			Self::Divise => write!(f, "/"),
+			Self::ParentheseEntier => write!(f, "("),
+		}
+	}
+}
+
 impl fmt::Display for Programme {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
 		let mut texte: String = format!("variables : {:?}", self.variables);

@@ -16,7 +16,7 @@ impl Pendragon {
 					let element_texte = pile_texte[1..pile_texte.len()].join(" ");
 					if let Some(dernier_element) = expression.last() {
 						if *dernier_element != Element::Operateur(Operateur::Puis) {
-							return Err(ErreurPendragon::TexteInvalide(format!("attends un 'puis' entre '{:?}' et '{}'", dernier_element, element)))
+							return Err(ErreurPendragon::TexteInvalide(format!("attends un 'puis' entre '{}' et '{}'", dernier_element, element)))
 						}
 					}
 					expression.push(Element::Texte(element_texte));
@@ -110,7 +110,7 @@ pub fn calcule_texte(expression: Vec<Element>, variables: &HashMap<String, Eleme
 				texte += &contenu;
 			}
 			autre => {
-				return Err(ErreurPendragon::MauvaisArgument(format!("{:?}", autre)))
+				return Err(ErreurPendragon::MauvaisArgument(format!("{}", autre)))
 			}
 		}
 		pile = Vec::new();

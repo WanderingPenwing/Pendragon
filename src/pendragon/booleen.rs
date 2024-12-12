@@ -105,7 +105,7 @@ impl Pendragon {
 						}
 					} else if let Ok(type_comparaison) = texte_comme_comparaison(autre) {
 						if let Some(comparaison) = possible_comparaison {
-							return Err(ErreurPendragon::BooleenInvalide(format!("besoin d'un operateur booleen entre {:?} et {:?}", comparaison, type_comparaison)))
+							return Err(ErreurPendragon::BooleenInvalide(format!("besoin d'un operateur booleen entre {} et {}", comparaison, type_comparaison)))
 						}
 						let mut comparaison = Comparaison::nouvelle();
 						let nombre_parenthese = compare_parentheses(&pile_inconnu); 
@@ -134,7 +134,7 @@ impl Pendragon {
 		}
 		if !pile_inconnu.is_empty() {
 			let Some(mut comparaison) = possible_comparaison else {
-				return Err(ErreurPendragon::BooleenInvalide(format!("{:?}", pile_inconnu)))
+				return Err(ErreurPendragon::BooleenInvalide(format!("[{}]", pile_inconnu.join(","))))
 			};
 			self.ajoute_comparaison_membre(&mut comparaison, &pile_inconnu.join(" "))?;
 			expression.push(Element::Comparaison(comparaison.clone()));
@@ -156,7 +156,7 @@ impl Pendragon {
 			return Ok(());
 		}
 		let Some(ancienne_comparaison) = possible_comparaison else {
-			return Err(ErreurPendragon::BooleenInvalide(format!("{:?}", pile_inconnu)))
+			return Err(ErreurPendragon::BooleenInvalide(format!("[{}]", pile_inconnu.join(","))))
 		};
 		let mut comparaison = ancienne_comparaison.clone();
 		self.ajoute_comparaison_membre(&mut comparaison, &pile_inconnu.join(" "))?;
@@ -188,7 +188,7 @@ impl Pendragon {
 		};
 		if element_de_comparaison.type_element() != element.type_element() {
 			return Err(ErreurPendragon::MauvaisType(
-				format!("{:?}", element), element.type_element().nom(), 
+				format!("{}", element), element.type_element().nom(), 
 				element_de_comparaison.type_element().nom()))
 		}
 		comparaison.membre_b = membre;
@@ -232,7 +232,7 @@ pub fn calcule_booleen(expression: Vec<Element>, variables: &HashMap<String, Ele
 			continue
 		}
 		let Element::Operateur(ref operateur) = element else {
-			return Err(ErreurPendragon::MauvaisArgument(format!("{:?}, attendais un opérateur", element)))
+			return Err(ErreurPendragon::MauvaisArgument(format!("{}, attendais un opérateur", element)))
 		};
 		let Some(booleen_a) = pile.pop() else {
 			return Err(ErreurPendragon::CalculBooleen("la pile est vide".into()))
@@ -253,7 +253,7 @@ pub fn calcule_booleen(expression: Vec<Element>, variables: &HashMap<String, Ele
 				};
 				pile.push(booleen_a || booleen_b);
 			}
-			_ => return Err(ErreurPendragon::MauvaisArgument(format!("{:?}, attendais un opérateur booléen", element)))
+			_ => return Err(ErreurPendragon::MauvaisArgument(format!("{}, attendais un opérateur booléen", element)))
 		}
 	}
 	if pile.len() > 1 {

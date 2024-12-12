@@ -131,7 +131,7 @@ pub fn calcule_nombre(expression: Vec<Element>, variables: &HashMap<String, Elem
 			}
 		}
 		let Element::Operateur(ref operateur) = element else {
-			return Err(ErreurPendragon::MauvaisArgument(format!("{:?}, attendais un opérateur", element)))
+			return Err(ErreurPendragon::MauvaisArgument(format!("{}, attendais un opérateur", element)))
 		};
 		let Some(nombre_a) = pile.pop() else {
 			return Err(ErreurPendragon::CalculEntier("la pile est vide".into()))
@@ -145,7 +145,7 @@ pub fn calcule_nombre(expression: Vec<Element>, variables: &HashMap<String, Elem
 			}
 			Operateur::Moins => {
 				if nombre_b < nombre_a {
-					return Err(ErreurPendragon::CalculEntier(format!("a essayé de soustraire {} à {}", nombre_a, nombre_b)))
+					return Err(ErreurPendragon::CalculEntier(format!("a essayé de soustraire '{}' à '{}'", nombre::nombre_comme_texte(nombre_a), nombre::nombre_comme_texte(nombre_b))))
 				}
 				pile.push(nombre_b - nombre_a);
 			}
@@ -155,7 +155,7 @@ pub fn calcule_nombre(expression: Vec<Element>, variables: &HashMap<String, Elem
 			Operateur::Divise => {
 				pile.push(nombre_b / nombre_a);
 			}
-			_ => return Err(ErreurPendragon::MauvaisArgument(format!("{:?}, attendais un opérateur d'entiers", element)))
+			_ => return Err(ErreurPendragon::MauvaisArgument(format!("'{}', attendais un opérateur d'entiers", element)))
 		}
 	}
 	if pile.len() > 1 {

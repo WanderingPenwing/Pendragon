@@ -174,10 +174,10 @@ impl Element {
 			return Ok(*self != element)
 		}
 		let Self::Entier(nombre_a) = self else {
-			return Err(ErreurPendragon::ComparaisonInvalide(format!("comparaison numérique avec {:?}", self)))
+			return Err(ErreurPendragon::ComparaisonInvalide(format!("comparaison numérique avec {}", self)))
 		};
 		let Self::Entier(nombre_b) = element else {
-			return Err(ErreurPendragon::ComparaisonInvalide(format!("comparaison numérique avec {:?}", element)))
+			return Err(ErreurPendragon::ComparaisonInvalide(format!("comparaison numérique avec {}", element)))
 		};
 		match comparaison {
 			TypeComparaison::SuperieurEgal => Ok(*nombre_a >= nombre_b),
@@ -245,7 +245,7 @@ impl Comparaison {
 			self.type_comparaison = Some(type_comparaison);
 			return Ok(());
 		}
-		return Err(ErreurPendragon::ComparaisonInvalide(format!("voulait comparer {} avec {:?}", element.type_element().nom(), type_comparaison)))
+		return Err(ErreurPendragon::ComparaisonInvalide(format!("voulait comparer {} avec {}", element.type_element().nom(), type_comparaison)))
 	}
 	
 	pub fn calcule(&self, variables: &HashMap<String, Element>) -> Result<bool, ErreurPendragon> {
