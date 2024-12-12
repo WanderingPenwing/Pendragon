@@ -4,7 +4,11 @@ Définis C comme entier.
 Nota Bene : A est la variable pour un polynôme.
 
 Modifie A avec dix-sept.
-Demande C.
-Modifie B avec trois fois A fois A plus deux fois A plus C.
+Modifie C avec six-cent-soixante-douze.
+Modifie B avec trois fois A fois ouvre la parenthèse trois fois A plus C ferme la parenthèse.
+Nota Bene : 3*A*(3*A+C).
 
 Affiche "Résultat : " puis B.
+Si A supérieur ou égal à trois,
+
+Affiche vrai et et faux.

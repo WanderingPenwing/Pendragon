@@ -413,4 +413,26 @@ mod test {
 			}
 		}
 	}
+	
+	#[test]
+	fn teste_erreur_calcul_nombre() {
+		let pendragon = Pendragon::nouveau();
+		let textes_invalide = vec![
+			"un un fois un",
+			"un plus fois un",
+			"un moins divisé par un",
+			"un fois un ouvre la parenthèse un plus un ferme la parenthèse",
+			"un fois ouvre la parenthèse plus un plus un ferme la parenthèse",
+			"un fois ouvre la parenthèse un plus un fois ferme la parenthèse",
+			"un fois ouvre la parenthèse un plus un ferme la parenthèse un",
+		];
+		for texte in textes_invalide {
+			let Err(raison) = pendragon.elements_nombre(texte) else {
+				panic!("Devrait détecter une erreur pour '{}'", texte);
+			};
+			let ErreurPendragon::CalculEntier(_) = raison else {
+				panic!("Devrait détecter une erreur de calcul entier pour '{}', a déclenché : {}", texte, raison);
+			};
+		}
+	}
 }

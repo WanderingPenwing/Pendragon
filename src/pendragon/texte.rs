@@ -2,34 +2,75 @@ use super::*;
 
 impl Pendragon {
 	pub fn elements_texte(&self, arguments: &str) -> Result<Vec<Element>, ErreurPendragon> {
+		let texte = arguments.replace("\"", " \" ");
+		let elements_texte = texte.split(" ");
+		
 		let mut expression: Vec<Element> = Vec::new();
 		
-		for argument in arguments.split("puis").map(|arg| arg.trim()) {
-			if expression.len() > 0 {
-				expression.push(Element::Operateur(Operateur::Virgule));
-			}
-			if argument.starts_with('"') {
-				if argument.ends_with('"') {
-					expression.push(Element::Texte(argument[1..argument.len() - 1].into()));
+		let mut pile_texte: Vec<String> = Vec::new();
+		let mut pile_inconnu: Vec<String> = Vec::new();
+		
+		for element in elements_texte {
+			if element == "\"" {
+				if !pile_texte.is_empty() {
+					let element_texte = pile_texte[1..pile_texte.len()].join(" ");
+					if let Some(dernier_element) = expression.last() {
+						if *dernier_element != Element::Operateur(Operateur::Puis) {
+							return Err(ErreurPendragon::TexteInvalide(format!("attends un 'puis' entre '{:?}' et '{}'", dernier_element, element)))
+						}
+					}
+					expression.push(Element::Texte(element_texte));
+					pile_texte = Vec::new();
 				} else {
-					return Err(ErreurPendragon::TexteInvalide("guillemet mal refermé".into()))
+					pile_texte.push(element.into());
 				}
 				continue;
 			}
-			if format_de_variable(argument) && !argument.contains(" ") {
-				expression.push(Element::Variable(argument.into(), self.programme.variable(argument)?));
+			if !pile_texte.is_empty() {
+				pile_texte.push(element.into());
 				continue;
 			}
-			if let Ok(elements_nombre) = self.elements_nombre(argument) {
-				expression.extend(elements_nombre);
-			} else if let Ok(elements_booleen) = self.elements_booleen(argument) {
-				expression.extend(elements_booleen);
-			} else {
-				return Err(ErreurPendragon::MauvaisArgument(argument.to_string()));
+			if element == "" {
+				continue;
+			}
+			if element != "puis" {
+				pile_inconnu.push(element.into());
+				continue;
+			}
+			
+			self.puis(&mut expression, &mut pile_inconnu)?;
+		}
+		self.puis(&mut expression, &mut pile_inconnu)?;
+		Ok(expression)
+	}
+	
+	pub fn puis(&self, expression: &mut Vec<Element>, pile_inconnu: &mut Vec<String>) -> Result<(), ErreurPendragon> {
+		if let Some(dernier_element) = expression.last() {
+			if let Element::Texte(_) = dernier_element.clone() {
+				if pile_inconnu.is_empty() {
+					expression.push(Element::Operateur(Operateur::Puis));
+					return Ok(());
+				}
 			}
 		}
-		expression.push(Element::Operateur(Operateur::Virgule));
-		Ok(expression)
+		let Some(premier_element) = pile_inconnu.first() else {
+			return Err(ErreurPendragon::TexteInvalide("il manque un élément avant le puis".into()))
+		};
+		if pile_inconnu.len() == 1 && format_de_variable(premier_element) {
+			expression.push(Element::Variable(premier_element.into(), self.programme.variable(premier_element)?));
+			*pile_inconnu = Vec::new();
+			return Ok(());
+		}
+		if let Ok(_) = self.elements_nombre(premier_element) {
+			expression.extend(self.elements_nombre(&pile_inconnu.join(" "))?);
+		} else if let Ok(_) = self.elements_booleen(premier_element) {
+			expression.extend(self.elements_booleen(&pile_inconnu.join(" "))?);
+		} else {
+			return Err(ErreurPendragon::MauvaisArgument(pile_inconnu.join(" ").to_string()));
+		}
+		*pile_inconnu = Vec::new();
+		expression.push(Element::Operateur(Operateur::Puis));
+		Ok(())
 	}
 }
 
@@ -42,7 +83,7 @@ pub fn calcule_texte(expression: Vec<Element>, variables: &HashMap<String, Eleme
 			pile.push(element);
 			continue;
 		};
-		let Operateur::Virgule = operateur else {
+		let Operateur::Puis = operateur else {
 			pile.push(element);
 			continue;
 		};

@@ -195,7 +195,7 @@ pub enum Operateur {
 	Et,
 	Non,
 	ParentheseBooleen,
-	Virgule,
+	Puis,
 	Plus,
 	Moins,
 	Fois,
@@ -207,7 +207,7 @@ impl Operateur {
 	pub fn type_element(&self) -> TypeElement {
 		match self {
 			Self::Ou | Self::Et | Self::Non | Self::ParentheseBooleen => TypeElement::Booleen,
-			Self::Virgule => TypeElement::Texte,
+			Self::Puis => TypeElement::Texte,
 			Self::Plus | Self::Moins | Self::Fois | Self::Divise | Self::ParentheseEntier => TypeElement::Entier,
 		}
 	}		
