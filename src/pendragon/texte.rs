@@ -37,7 +37,6 @@ impl Pendragon {
 				pile_inconnu.push(element.into());
 				continue;
 			}
-			
 			self.puis(&mut expression, &mut pile_inconnu)?;
 		}
 		self.puis(&mut expression, &mut pile_inconnu)?;
@@ -61,16 +60,25 @@ impl Pendragon {
 			*pile_inconnu = Vec::new();
 			return Ok(());
 		}
-		if let Ok(_) = self.elements_nombre(premier_element) {
+		let Err(raison) = self.elements_nombre(premier_element) else {
 			expression.extend(self.elements_nombre(&pile_inconnu.join(" "))?);
-		} else if let Ok(_) = self.elements_booleen(premier_element) {
-			expression.extend(self.elements_booleen(&pile_inconnu.join(" "))?);
-		} else {
-			return Err(ErreurPendragon::MauvaisArgument(pile_inconnu.join(" ").to_string()));
+			*pile_inconnu = Vec::new();
+			expression.push(Element::Operateur(Operateur::Puis));
+			return Ok(())
+		};
+		if let ErreurPendragon::CalculEntier(_) = raison {
+			return Err(raison)
 		}
-		*pile_inconnu = Vec::new();
-		expression.push(Element::Operateur(Operateur::Puis));
-		Ok(())
+		let Err(raison) = self.elements_booleen(premier_element) else {
+			expression.extend(self.elements_booleen(&pile_inconnu.join(" "))?);
+			*pile_inconnu = Vec::new();
+			expression.push(Element::Operateur(Operateur::Puis));
+			return Ok(());
+		};
+		let ErreurPendragon::CalculBooleen(_) = raison else {
+			return Err(ErreurPendragon::MauvaisArgument(pile_inconnu.join(" ").to_string()));
+		};
+		Err(raison)
 	}
 }
 

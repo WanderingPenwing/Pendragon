@@ -299,6 +299,10 @@ pub fn texte_comme_nombre(texte: &str) -> Result<Element, ErreurPendragon> {
 }
 
 fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurPendragon> {
+	let texte = texte.trim();
+	if texte.starts_with("et") || texte.ends_with("et") {
+		return Err(ErreurPendragon::NombreInvalide(texte.to_string()))
+	}
 	let elements: Vec<&str> = texte.split(UNION).collect();
 
 	let mut nombre = 0;
@@ -434,5 +438,16 @@ mod test {
 				panic!("Devrait détecter une erreur de calcul entier pour '{}', a déclenché : {}", texte, raison);
 			};
 		}
+	}
+	
+	#[test]
+	fn nombre_invalide_et() {
+		let pendragon = Pendragon::nouveau();
+		let Err(raison) = pendragon.elements_nombre("et") else {
+			panic!("Devrait détecter une erreur pour 'et'");
+		};
+		let ErreurPendragon::NombreInvalide(_) = raison else {
+			panic!("Devrait détecter une erreur de nombre invalide pour 'et', a déclenché : {}", raison);
+		};
 	}
 }
