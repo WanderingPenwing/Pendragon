@@ -5,19 +5,19 @@ use super::*;
 
 pub struct Programme {
 	pub variables: HashMap<String, TypeElement>,
-	pub commandes: Vec<Commande>,
+	pub contenu: Vec<Phrase>,
 }
 
 impl Programme {
 	pub fn nouveau() -> Self {
 		Self {
 			variables: HashMap::new(),
-			commandes: vec![],
+			contenu: vec![],
 		}
 	}
 	
 	pub fn ajoute_commande(&mut self, commande: Commande) {
-		self.commandes.push(commande);
+		self.contenu.push(Phrase::Commande(commande));
 	}
 	
 	pub fn ajoute_variable(&mut self, nom: String, type_variable: TypeElement) -> Result<(), ErreurPendragon> {
@@ -54,30 +54,25 @@ impl Programme {
 	
 	pub fn execute(&self) -> Result<(), ErreurPendragon> {
 		let mut variables_globales: HashMap<String, Element> = HashMap::new();
-		for commande in &self.commandes {
-			match commande {
-				Commande::Definis(nom, type_element) => {
-					variables_globales.insert(nom.to_string(), type_element.comme_element());
-				}
-				Commande::Demande(nom) => {
-					let valeur = variables_globales[nom].type_element().demande_valeur(&nom)?;
-					variables_globales.insert(nom.to_string(), valeur);
-				}
-				Commande::Modifie(nom, expression) => {
-					let valeur = match variables_globales[nom].type_element() {
-						TypeElement::Entier => Element::Entier(nombre::calcule_nombre(expression.clone(), &variables_globales)?),
-						TypeElement::Texte => Element::Texte(texte::calcule_texte(expression.clone(), &variables_globales)?),
-						TypeElement::Booleen => Element::Booleen(booleen::calcule_booleen(expression.clone(), &variables_globales)?),
-					};
-					variables_globales.insert(nom.to_string(), valeur);
-				}
-				Commande::Affiche(expression) => {
-					println!("{}", texte::calcule_texte(expression.to_vec(), &variables_globales)?);
-				}
-			}			
+		for phrase in &self.contenu {
+			let Phrase::Commande(commande) = phrase else {
+				println!("doit executer bloc");
+				continue;
+			};
+			commande.execute(&mut variables_globales)?;			
 		}
 		Ok(())
 	}
+}
+
+pub struct Bloc {
+	condition: Vec<Element>,
+	contenu: Vec<Phrase>,
+}
+
+pub enum Phrase {
+	Bloc(Bloc),
+	Commande(Commande),
 }
 
 pub enum Commande {
@@ -85,6 +80,32 @@ pub enum Commande {
 	Demande(String),
 	Modifie(String, Vec<Element>),
 	Affiche(Vec<Element>),
+}
+
+impl Commande {
+	fn execute(&self, variables: &mut HashMap<String, Element>) -> Result<(), ErreurPendragon> {
+		match self {
+			Commande::Definis(nom, type_element) => {
+				variables.insert(nom.to_string(), type_element.comme_element());
+			}
+			Commande::Demande(nom) => {
+				let valeur = variables[nom].type_element().demande_valeur(&nom)?;
+				variables.insert(nom.to_string(), valeur);
+			}
+			Commande::Modifie(nom, expression) => {
+				let valeur = match variables[nom].type_element() {
+					TypeElement::Entier => Element::Entier(nombre::calcule_nombre(expression.clone(), variables)?),
+					TypeElement::Texte => Element::Texte(texte::calcule_texte(expression.clone(), variables)?),
+					TypeElement::Booleen => Element::Booleen(booleen::calcule_booleen(expression.clone(), variables)?),
+				};
+				variables.insert(nom.to_string(), valeur);
+			}
+			Commande::Affiche(expression) => {
+				println!("{}", texte::calcule_texte(expression.to_vec(), variables)?);
+			}
+		}
+		Ok(())
+	}
 }
 
 #[derive(PartialEq, Debug, Clone)]

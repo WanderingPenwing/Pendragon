@@ -187,9 +187,18 @@ impl fmt::Display for Operateur {
 impl fmt::Display for Programme {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
 		let mut texte: String = format!("variables : {:?}", self.variables);
-		for (index, commande) in self.commandes.iter().enumerate() {
-			texte += &format!("\n#{:2}-{}", index+1, commande);
+		for (index, phrase) in self.contenu.iter().enumerate() {
+			texte += &format!("\n#{:2}-{}", index+1, phrase);
 		}
 		write!(f, "{}", texte)
+	}
+}
+
+impl fmt::Display for Phrase {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
+		match self {
+			Self::Commande(commande) => write!(f, "{}", commande),
+			Self::Bloc(_bloc) => write!(f, "bloc inconnu"),
+		}
 	}
 }

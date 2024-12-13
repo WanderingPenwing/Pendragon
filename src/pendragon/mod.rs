@@ -130,7 +130,6 @@ pub fn format_de_variable(nom: &str) -> bool {
 
 #[cfg(test)]
 mod test {
-	use std::collections::HashMap;
 	use super::*;
 	
 	#[test]
@@ -148,7 +147,7 @@ mod test {
 		];
 		for commentaire in commentaires {
 			match pendragon.compile(commentaire.into()) {
-				Ok(_) => assert_eq!(pendragon.programme.commandes.len(), 0, "Le commentaire '{}' ne devrait pas générer de commande", commentaire),
+				Ok(_) => assert_eq!(pendragon.programme.contenu.len(), 0, "Le commentaire '{}' ne devrait pas générer de commande", commentaire),
 				Err(erreurs) => {
 					let affichage_erreurs = erreurs.iter().map(|item| format!("{}", item.raison())).collect::<Vec<_>>().join("\n\n");
 					panic!("Erreur de compilation du commentaire '{}' : \n{}", commentaire, affichage_erreurs)
