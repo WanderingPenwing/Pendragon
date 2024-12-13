@@ -119,10 +119,10 @@ impl fmt::Display for ErreurPendragon {
 impl fmt::Display for Commande {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
 		match self {
-			Self::Definis(nom, type_element) => write!(f, "Definis {} comme {}.", nom, type_element.nom()),
-			Self::Demande(nom) => write!(f, "Demande {}.", nom),
-			Self::Modifie(nom, expression) => write!(f, "Modifie {} avec {:?}.", nom, expression),
-			Self::Affiche(expression) => write!(f, "Affiche {:?}.", expression),
+			Self::Definis(nom, type_element) => write!(f, "{}:{}", nom, type_element.nom()),
+			Self::Demande(nom) => write!(f, "{}?", nom),
+			Self::Modifie(nom, expression) => write!(f, "{}={:?}", nom, expression),
+			Self::Affiche(expression) => write!(f, "#{:?}", expression),
 		}
 	}
 }
@@ -190,9 +190,14 @@ impl fmt::Display for Operateur {
 
 impl fmt::Display for Programme {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
-		let mut texte: String = format!("variables : {:?}", self.variables);
-		for (index, phrase) in self.contenu.iter().enumerate() {
-			texte += &format!("\n#{:2}-{}", index+1, phrase);
+		let mut texte: String = format!("variables : {:?}\n", self.variables);
+		let mut nombre_retour: usize = 0;
+		for phrase in &self.contenu {
+			if texte.len()/30 > nombre_retour {
+				texte += "\n";
+				nombre_retour = texte.len()/30;
+			}
+			texte += &format!("{}, ", phrase);
 		}
 		write!(f, "{}", texte)
 	}
@@ -202,7 +207,22 @@ impl fmt::Display for Phrase {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
 		match self {
 			Self::Commande(commande) => write!(f, "{}", commande),
-			Self::Bloc(_bloc) => write!(f, "bloc inconnu"),
+			Self::Bloc(bloc) => write!(f, "{}", bloc),
 		}
+	}
+}
+
+impl fmt::Display for Bloc {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
+		let mut texte: String = format!("\n[{:?}] : [", self.condition);
+		let mut nombre_retour: usize = 0;
+		for phrase in &self.contenu {
+			if texte.len()/30 > nombre_retour {
+				texte += "\n";
+				nombre_retour = texte.len()/30;
+			}
+			texte += &format!("{}, ", phrase);
+		}
+		write!(f, "{}]", texte)
 	}
 }

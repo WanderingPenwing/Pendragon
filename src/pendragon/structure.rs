@@ -69,8 +69,8 @@ impl Programme {
 }
 
 pub struct Bloc {
-	condition: Vec<Element>,
-	contenu: Vec<Phrase>,
+	pub condition: Vec<Element>,
+	pub contenu: Vec<Phrase>,
 }
 
 impl Bloc {
