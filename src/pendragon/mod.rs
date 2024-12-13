@@ -149,7 +149,10 @@ mod test {
 		for commentaire in commentaires {
 			match pendragon.compile(commentaire.into()) {
 				Ok(_) => assert_eq!(pendragon.programme.commandes.len(), 0, "Le commentaire '{}' ne devrait pas générer de commande", commentaire),
-				Err(raison) => panic!("Erreur de compilation du commentaire '{}' : {}", commentaire, raison)
+				Err(erreurs) => {
+					let affichage_erreurs = erreurs.iter().map(|item| format!("{}", item.raison())).collect::<Vec<_>>().join("\n\n");
+					panic!("Erreur de compilation du commentaire '{}' : \n{}", commentaire, affichage_erreurs)
+				}
 			}
 		}
 	}
@@ -168,32 +171,95 @@ mod test {
 			"NNotaBene:ceci n'est pas un commentaire."
 		];
 		for commentaire in commentaires {
-			let Err(erreur) = pendragon.compile(commentaire.into()) else {
+			let Err(erreurs) = pendragon.compile(commentaire.into()) else {
 				panic!("Ne devrait pas pouvoir compiler un commentaire invalide '{}'", commentaire);
 			};
-			let ErreurPendragon::CommandeInconnue(_) = erreur.raison() else {
-				panic!("Erreur inattendue de compilation du commentaire '{}' : {}", commentaire, erreur.raison());
+			if erreurs.len() > 1 {
+				let affichage_erreurs = erreurs.iter().map(|item| format!("{}", item.raison())).collect::<Vec<_>>().join("\n\n");
+				panic!("Plus d'erreurs que prévu pour le commentaire '{}' : {:?}", commentaire, affichage_erreurs)
+			}
+			let ErreurPendragon::CommandeInconnue(_) = erreurs[0].raison() else {
+				panic!("Erreur inattendue de compilation du commentaire '{}' : {}", commentaire, erreurs[0].raison());
 			};
 		}
 	}
 	
 	#[test]
 	fn ponctuation_valide() {
-		panic!("todo");
+		let mut pendragon = Pendragon::nouveau();
+		let texte = "aah.\noooh.uuuh,\nna,\nbududu.bababa.\naaaaaaaaaaa,sssssss,";
+		let Err(erreurs) = pendragon.compile(texte.into()) else {
+			panic!("Il devrait y avoir des erreurs");
+		};
+		for erreur in erreurs {
+			if let ErreurPendragon::ManquePonctuation = erreur.raison() {
+				panic!("Erreur : manque ponctuation");
+			}
+		}
 	}
 	
 	#[test]
 	fn ponctuation_invalide() {
-		panic!("todo");
+		let mut pendragon = Pendragon::nouveau();
+		let textes = [
+			"Aaaaa",
+			"aaaa.\nooooo\n",
+			"aaaa Définis."
+		];
+		for texte in textes {
+			let Err(erreurs) = pendragon.compile(texte.into()) else {
+				panic!("Ne devrait pas pouvoir compiler un texte invalide '{}'", texte);
+			};
+			let mut manque_ponctuation = false;
+			for erreur in erreurs {
+				if let ErreurPendragon::ManquePonctuation = erreur.raison() {
+					manque_ponctuation = true;
+				}
+			}
+			if !manque_ponctuation {
+				panic!("Il devrait y avoir une erreur de ponctuation dans le texte '{}'", texte);
+			}
+		}
 	}
 	
 	#[test]
 	fn commande_valide() {
-		panic!("todo");
+		let mut pendragon = Pendragon::nouveau();
+		let texte = "Affiche.\nDemande.\nModifie.Définis.";
+		let Err(erreurs) = pendragon.compile(texte.into()) else {
+			panic!("Il devrait y avoir des erreurs");
+		};
+		for erreur in erreurs {
+			if let ErreurPendragon::CommandeInconnue(_) = erreur.raison() {
+				panic!("Erreur : commande invalide");
+			}
+		}
 	}
 	
 	#[test]
 	fn commande_invalide() {
-		panic!("todo");
+		let mut pendragon = Pendragon::nouveau();
+		let textes = [
+			"Definis a.",
+			"définis b.",
+			"modifie c.",
+			"affiche d.",
+			"aaaa e."
+		];
+		for texte in textes {
+			let Err(erreurs) = pendragon.compile(texte.into()) else {
+				panic!("Ne devrait pas pouvoir compiler un texte invalide '{}'", texte);
+			};
+			let mut commande_inconnue = false;
+			for erreur in &erreurs {
+				if let ErreurPendragon::CommandeInconnue(_) = erreur.raison() {
+					commande_inconnue = true;
+				}
+			}
+			if !commande_inconnue {
+				let affichage_erreurs = erreurs.iter().map(|item| format!("{}", item.raison())).collect::<Vec<_>>().join("\n\n");
+				panic!("La commande devrait être inconnue '{}', erreurs : \n{}", texte, affichage_erreurs);
+			}
+		}
 	}
 }
