@@ -19,8 +19,9 @@ impl Pendragon {
 		}
 	}
 	
-	pub fn compile(&mut self, contenu: String) -> Result<(), ErreurCompilation> {
+	pub fn compile(&mut self, contenu: String) -> Result<(), Vec<ErreurCompilation>> {
 		let texte: Vec<&str> = contenu.split('\n').collect();
+		let mut erreurs: Vec<ErreurCompilation> = vec![];
 		for (index_ligne, ligne) in texte.iter().enumerate() {
 			let ligne = ligne.trim();
 			let phrases: Vec<&str> = ligne.split_inclusive(|c| c == ',' || c == '.').collect();
@@ -28,7 +29,7 @@ impl Pendragon {
 				continue
 			};
 			if !derniere_phrase.ends_with('.') && !derniere_phrase.ends_with(',') {
-				return Err(ErreurCompilation::nouvelle(index_ligne, ligne.into(), ErreurPendragon::ManquePonctuation))
+				erreurs.push(ErreurCompilation::nouvelle(index_ligne, ligne.into(), ErreurPendragon::ManquePonctuation))
 			}
 			for phrase in phrases {
 				if phrase.ends_with(".") {
@@ -37,12 +38,15 @@ impl Pendragon {
 					}
 					match self.compile_commande(&phrase[..phrase.len() - 1]) {
 						Ok(commande) => self.programme.ajoute_commande(commande),
-						Err(raison) => return Err(ErreurCompilation::nouvelle(index_ligne, ligne.into(), raison)),
+						Err(raison) => erreurs.push(ErreurCompilation::nouvelle(index_ligne, ligne.into(), raison)),
 					}
 					continue;
 				}
 				println!("todo : {}", phrase);
 			}
+		}
+		if erreurs.len() > 0 {
+			return Err(erreurs)
 		}
 		Ok(())
 	}

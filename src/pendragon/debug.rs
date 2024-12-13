@@ -3,34 +3,34 @@ use std::time::Duration;
 use super::*;
 
 pub const TEXTE_ROUGE: &str = "\x1b[31m"; 
-//pub const TEXTE_VERT: &str = "\x1b[32m"; 
+pub const TEXTE_VERT: &str = "\x1b[32m"; 
 //pub const TEXTE_JAUNE: &str = "\x1b[33m"; 
 //pub const TEXTE_BLEU: &str = "\x1b[34m"; 
 pub const TEXTE_GRIS: &str = "\x1b[37m";
 pub const TEXTE_NORMAL: &str = "\x1b[0m";
 
 pub fn message_compilation(chemin_de_fichier: &str) {
-	println!("# Compilation de '{}'.", chemin_de_fichier);
+	println!("\n- Compilation de {}'{}'{}...", TEXTE_VERT, chemin_de_fichier, TEXTE_NORMAL);
 }
 
 pub fn message_compilation_echec() {
-	eprintln!("\n# Échec de la compilation.");
+	eprintln!("\n{}x Échec de la compilation.{}",TEXTE_ROUGE, TEXTE_NORMAL);
 }
 
 pub fn message_compilation_ok(temps: Duration) {
-	println!("# Compilation Ok. ({:.2?})\n", temps);
+	println!("{}✓ Compilation Ok.{} ({:.2?}){}", TEXTE_VERT, TEXTE_GRIS, temps, TEXTE_NORMAL);
 }
 
 pub fn message_execution(chemin_de_fichier: &str) {
-	println!("# Exécution de '{}'.\n", chemin_de_fichier);
+	println!("- Exécution de {}'{}'{}...\n", TEXTE_VERT, chemin_de_fichier, TEXTE_NORMAL);
 }
 
 pub fn message_execution_echec() {
-	eprintln!("\n# Échec de l'exécution.");
+	eprintln!("\n{}x Échec de l'exécution.{}",TEXTE_ROUGE, TEXTE_NORMAL);
 }
 
 pub fn message_execution_ok(temps: Duration) {
-	println!("\n# Exécution Ok. ({:.2?})", temps);
+	println!("\n{}✓ Exécution Ok.{} ({:.2?}){}", TEXTE_VERT, TEXTE_GRIS, temps, TEXTE_NORMAL);
 }
 
 pub struct ErreurCompilation {

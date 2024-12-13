@@ -28,7 +28,9 @@ fn main() {
 	debug::message_compilation(chemin_de_fichier);
 	let debut = Instant::now();
 	if let Err(raison) = pendragon.compile(lecture.unwrap()) {
-		eprintln!("\n{}", raison);
+		for erreur in raison {
+			eprintln!("\n{}", erreur);
+		}
 		debug::message_compilation_echec();
 		return
 	}
