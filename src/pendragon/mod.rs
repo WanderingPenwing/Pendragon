@@ -28,7 +28,7 @@ impl Pendragon {
 				continue
 			};
 			if !derniere_phrase.ends_with('.') && !derniere_phrase.ends_with(',') {
-				return Err(ErreurCompilation::nouvelle(index_ligne, ErreurPendragon::ManquePonctuation))
+				return Err(ErreurCompilation::nouvelle(index_ligne, ligne.into(), ErreurPendragon::ManquePonctuation))
 			}
 			for phrase in phrases {
 				if phrase.ends_with(".") {
@@ -37,7 +37,7 @@ impl Pendragon {
 					}
 					match self.compile_commande(&phrase[..phrase.len() - 1]) {
 						Ok(commande) => self.programme.ajoute_commande(commande),
-						Err(raison) => return Err(ErreurCompilation::nouvelle(index_ligne, raison)),
+						Err(raison) => return Err(ErreurCompilation::nouvelle(index_ligne, ligne.into(), raison)),
 					}
 					continue;
 				}

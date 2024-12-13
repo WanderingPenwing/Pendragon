@@ -21,31 +21,30 @@ fn main() {
 	let lecture = fs::read_to_string(chemin_de_fichier);
 	
 	if let Err(raison) = lecture {
-		eprintln!("Fichier illisible : {}", raison);
+		eprintln!("{}Fichier illisible :{} {}", debug::TEXTE_ROUGE, raison, debug::TEXTE_NORMAL);
 		return
 	}
 	
-	println!("# Compilation de '{}'.", chemin_de_fichier);
+	debug::message_compilation(chemin_de_fichier);
 	let debut = Instant::now();
 	if let Err(raison) = pendragon.compile(lecture.unwrap()) {
 		eprintln!("\n{}", raison);
-		eprintln!("\n# Échec de la compilation.");
+		debug::message_compilation_echec();
 		return
 	}
-	println!("# Compilation Ok. ({:.2?})\n", debut.elapsed());
+	debug::message_compilation_ok(debut.elapsed());
 	
 	if debug_mode {
 		println!("{}\n", pendragon.programme);
 	}
 	
 	
-	println!("# Exécution de '{}'.\n", chemin_de_fichier);
+	debug::message_execution(chemin_de_fichier);
 	let debut = Instant::now();
 	if let Err(raison) = pendragon.programme.execute() {
 		eprintln!("\nErreur : {}", raison);
-		eprintln!("\n# Échec de l'exécution.");
+		debug::message_execution_echec();
 		return
 	}
-	
-	println!("\n# Exécution Ok. ({:.2?})", debut.elapsed());
+	debug::message_execution_ok(debut.elapsed());
 }

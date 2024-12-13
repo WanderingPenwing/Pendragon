@@ -42,7 +42,6 @@ impl Pendragon {
 			expression.push(Element::Operateur(Operateur::Puis));
 		}
 		expression.extend(self.puis(&expression, &pile_inconnu)?);
-		pile_inconnu = Vec::new();
 		expression.push(Element::Operateur(Operateur::Puis));
 		Ok(expression)
 	}

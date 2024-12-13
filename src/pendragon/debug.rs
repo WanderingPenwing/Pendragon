@@ -1,18 +1,54 @@
 use std::fmt;
+use std::time::Duration;
 use super::*;
+
+pub const TEXTE_ROUGE: &str = "\x1b[31m"; 
+//pub const TEXTE_VERT: &str = "\x1b[32m"; 
+//pub const TEXTE_JAUNE: &str = "\x1b[33m"; 
+//pub const TEXTE_BLEU: &str = "\x1b[34m"; 
+pub const TEXTE_GRIS: &str = "\x1b[37m";
+pub const TEXTE_NORMAL: &str = "\x1b[0m";
+
+pub fn message_compilation(chemin_de_fichier: &str) {
+	println!("# Compilation de '{}'.", chemin_de_fichier);
+}
+
+pub fn message_compilation_echec() {
+	eprintln!("\n# Échec de la compilation.");
+}
+
+pub fn message_compilation_ok(temps: Duration) {
+	println!("# Compilation Ok. ({:.2?})\n", temps);
+}
+
+pub fn message_execution(chemin_de_fichier: &str) {
+	println!("# Exécution de '{}'.\n", chemin_de_fichier);
+}
+
+pub fn message_execution_echec() {
+	eprintln!("\n# Échec de l'exécution.");
+}
+
+pub fn message_execution_ok(temps: Duration) {
+	println!("\n# Exécution Ok. ({:.2?})", temps);
+}
 
 pub struct ErreurCompilation {
 	index_ligne: usize,
+	ligne: String,
 	erreur: ErreurPendragon,
 }
 
 impl ErreurCompilation {
-	pub fn nouvelle(index_ligne: usize, erreur: ErreurPendragon) -> Self {
+	pub fn nouvelle(index_ligne: usize, ligne: String, erreur: ErreurPendragon) -> Self {
 		Self {
 			index_ligne,
+			ligne,
 			erreur,
 		}
 	}
+	
+	#[cfg(test)]
 	pub fn raison(&self) -> ErreurPendragon {
 		self.erreur.clone()
 	}
@@ -21,7 +57,7 @@ impl ErreurCompilation {
 
 impl fmt::Display for ErreurCompilation {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
-		write!(f, "Erreur ligne {} : {}", self.index_ligne + 1, self.erreur)
+		write!(f, "{}Erreur :{} {}\n{}ligne {} : {}{}", TEXTE_ROUGE, TEXTE_NORMAL, self.erreur, TEXTE_GRIS, self.index_ligne + 1, self.ligne, TEXTE_NORMAL)
 	}
 }
 
