@@ -20,6 +20,10 @@ impl Programme {
 		self.contenu.push(Phrase::Commande(commande));
 	}
 	
+	pub fn ajoute_bloc(&mut self, bloc: Bloc) {
+		self.contenu.push(Phrase::Bloc(bloc));
+	}
+	
 	pub fn ajoute_variable(&mut self, nom: String, type_variable: TypeElement) -> Result<(), ErreurPendragon> {
 		let Err(raison) = self.variable(&nom) else {
 			return Err(ErreurPendragon::MauvaisArgument(format!("la variable \"{}\" existe déjà", nom)))
@@ -55,11 +59,10 @@ impl Programme {
 	pub fn execute(&self) -> Result<(), ErreurPendragon> {
 		let mut variables_globales: HashMap<String, Element> = HashMap::new();
 		for phrase in &self.contenu {
-			let Phrase::Commande(commande) = phrase else {
-				println!("doit executer bloc");
-				continue;
-			};
-			commande.execute(&mut variables_globales)?;			
+			match phrase {
+				Phrase::Commande(commande) => commande.execute(&mut variables_globales)?,
+				Phrase::Bloc(bloc) => bloc.execute(&mut variables_globales)?,
+			}			
 		}
 		Ok(())
 	}
@@ -68,6 +71,36 @@ impl Programme {
 pub struct Bloc {
 	condition: Vec<Element>,
 	contenu: Vec<Phrase>,
+}
+
+impl Bloc {
+	pub fn nouveau(condition: Vec<Element>) -> Self {
+		Self {
+			condition,
+			contenu: vec![],
+		}
+	}
+	
+	pub fn ajoute_commande(&mut self, commande: Commande) {
+		self.contenu.push(Phrase::Commande(commande));
+	}
+	
+	pub fn ajoute_bloc(&mut self, bloc: Bloc) {
+		self.contenu.push(Phrase::Bloc(bloc));
+	}
+	
+	pub fn execute(&self, variables: &mut HashMap<String, Element>) -> Result<(), ErreurPendragon> {
+		if !booleen::calcule_booleen(self.condition.clone(), variables)? {
+			return Ok(());
+		}
+		for phrase in &self.contenu {
+			match phrase {
+				Phrase::Commande(commande) => commande.execute(variables)?,
+				Phrase::Bloc(bloc) => bloc.execute(variables)?,
+			}			
+		}
+		Ok(())
+	}
 }
 
 pub enum Phrase {

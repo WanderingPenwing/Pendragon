@@ -3,17 +3,17 @@ Définis B comme entier.
 Définis C comme entier.
 Nota Bene : A est la variable pour un polynôme.
 
-Modifie A avec dix-sept plus trois.
+Demande A.
 Modifie C avec six-cent-soixante-douze.
 Modifie B avec trois fois A fois ouvre la parenthèse trois fois A plus C ferme la parenthèse.
 Nota Bene : 3*A*(3*A+C).
 
 Affiche "Résultat : " puis B.
 
-Si A supérieur ou égal à deux trois,
+Si A est inférieur ou égal à trois,
+	Affiche "A<=3".
+	Si B est inférieur ou égal à trois,
+		Affiche "B<=3".
+	Affiche "fin B".
 
-Définis Bool comme booléen.
-Modifie Bool avec vrai.
-Affiche vrai et faux.
-
-Affiche alinéa puis trois plus un puis retour à la ligne puis "test".
+Affiche "test".

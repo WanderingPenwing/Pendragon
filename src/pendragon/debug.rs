@@ -64,8 +64,10 @@ impl fmt::Display for ErreurCompilation {
 #[derive(PartialEq, Debug, Clone)]
 pub enum ErreurPendragon {
 	CommandeInconnue(String),
+	BlocInconnu(String),
 	ManqueArgument,
 	MauvaisArgument(String),
+	MauvaiseIndentation(String),
 	ManquePonctuation,
 	
 	NombreInvalide(String),
@@ -89,8 +91,10 @@ impl fmt::Display for ErreurPendragon {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
 		match self {
 			Self::CommandeInconnue(commande) => write!(f, "La commande \"{}\" est inconnue.", commande),
+			Self::BlocInconnu(bloc) => write!(f, "Le bloc \"{}\" est inconnu.", bloc),
 			Self::ManqueArgument => write!(f, "Il manque un argument."),
 			Self::MauvaisArgument(message) => write!(f, "La commande a reçu un mauvais argument, {}.", message),
+			Self::MauvaiseIndentation(message) => write!(f, "L'indentation est mauvaise, {}.", message),
 			Self::ManquePonctuation => write!(f, "Il manque la ponctuation de la phrase."),
 			
 			Self::NombreInvalide(nombre) => write!(f, "Le nombre \"{}\" est mal orthographié.", nombre),

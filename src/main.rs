@@ -37,7 +37,7 @@ fn main() {
 	debug::message_compilation_ok(debut.elapsed());
 	
 	if debug_mode {
-		println!("{}\n", pendragon.programme);
+		println!("\n{}\n", pendragon.programme);
 	}
 	
 	

@@ -170,17 +170,24 @@ impl Pendragon {
 	}
 	
 	pub fn ajoute_comparaison_membre(&self, comparaison: &mut Comparaison, texte: &str) -> Result<(), ErreurPendragon> {
-		let membre = if let Ok(elements_nombre) = self.elements_nombre(texte) {
-			elements_nombre
-		} else if let Ok(elements_booleen) = self.elements_booleen(texte) {
-			elements_booleen
-		} else if let Ok(elements_texte) = self.elements_texte(texte) {
-			elements_texte
-		} else {
-			return Err(ErreurPendragon::MauvaisArgument(texte.to_string()));
-		};
+		let mut membre: Vec<Element> = vec![];
+		match self.elements_nombre(texte) {
+			Ok(elements_nombre) => membre = elements_nombre,
+			Err(raison) => if let ErreurPendragon::OrdreCalculEntier(_,_,_) = raison {return Err(raison)},
+		}
+		if membre.is_empty() {
+			match self.elements_booleen(texte) {
+				Ok(elements_booleen) => membre = elements_booleen,
+				Err(raison) => if let ErreurPendragon::OrdreCalculBooleen(_,_,_) = raison {return Err(raison)},
+			}
+		}
+		if membre.is_empty() {
+			if let Ok(elements_texte) = self.elements_texte(texte) {
+				membre = elements_texte;
+			}
+		}
 		let Some(element) = membre.first() else {
-			return Err(ErreurPendragon::ComparaisonInvalide("il n'y a pas de d'élément dans le membre ajouté".into()))
+			return Err(ErreurPendragon::MauvaisArgument(texte.to_string()))
 		};
 		if comparaison.type_comparaison.is_none() {
 			comparaison.membre_a = membre;

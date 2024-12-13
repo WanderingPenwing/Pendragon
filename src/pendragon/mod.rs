@@ -22,7 +22,11 @@ impl Pendragon {
 	pub fn compile(&mut self, contenu: String) -> Result<(), Vec<ErreurCompilation>> {
 		let texte: Vec<&str> = contenu.split('\n').collect();
 		let mut erreurs: Vec<ErreurCompilation> = vec![];
+		let mut indentation_niveau: usize = 0;
+		let mut pile_bloc: Vec<Bloc> = vec![];
+		
 		for (index_ligne, ligne) in texte.iter().enumerate() {
+			let indentation_ligne = ligne.chars().take_while(|&c| c == '\t').count();
 			let ligne = ligne.trim();
 			let phrases: Vec<&str> = ligne.split_inclusive(|c| c == ',' || c == '.').collect();
 			let Some(derniere_phrase) = phrases.last() else {
@@ -31,18 +35,47 @@ impl Pendragon {
 			if !derniere_phrase.ends_with('.') && !derniere_phrase.ends_with(',') {
 				erreurs.push(ErreurCompilation::nouvelle(index_ligne, ligne.into(), ErreurPendragon::ManquePonctuation))
 			}
+			while indentation_ligne < indentation_niveau {
+				let Some(bloc_actuel) = pile_bloc.pop() else {
+					erreurs.push(ErreurCompilation::nouvelle(index_ligne, ligne.into(), ErreurPendragon::MauvaiseIndentation(format!("croyais être à {} niveau", indentation_niveau)),));
+					indentation_niveau = 0;
+					continue;
+				};
+				if let Some(bloc_precedent) = pile_bloc.last_mut() {
+					bloc_precedent.ajoute_bloc(bloc_actuel);
+				} else {
+					self.programme.ajoute_bloc(bloc_actuel);
+				}
+				indentation_niveau -= 1;
+			}
+			
 			for phrase in phrases {
 				if phrase.ends_with(".") {
 					if phrase.replace(" ", "").starts_with("NotaBene:") {
 						continue
 					}
 					match self.compile_commande(&phrase[..phrase.len() - 1]) {
-						Ok(commande) => self.programme.ajoute_commande(commande),
+						Ok(commande) => {
+							if let Some(bloc_actuel) = pile_bloc.last_mut() {
+								bloc_actuel.ajoute_commande(commande);
+							} else {
+								self.programme.ajoute_commande(commande);
+							}
+						}
 						Err(raison) => erreurs.push(ErreurCompilation::nouvelle(index_ligne, ligne.into(), raison)),
 					}
 					continue;
 				}
-				println!("todo : {}", phrase);
+				match self.compile_bloc(&phrase[..phrase.len() - 1]) {
+					Ok(bloc) => {
+						pile_bloc.push(bloc);
+					}
+					Err(raison) => {
+						erreurs.push(ErreurCompilation::nouvelle(index_ligne, ligne.into(), raison));
+						pile_bloc.push(Bloc::nouveau(vec![Element::Booleen(false)]));
+					}
+				}
+				indentation_niveau += 1;
 			}
 		}
 		if erreurs.len() > 0 {
@@ -57,7 +90,7 @@ impl Pendragon {
 		if parties.len() == 1 {
 			return Err(ErreurPendragon::ManqueArgument)
 		}
-		if parties[1].contains("Définis") || parties[1].contains("Modifie") || parties[1].contains("Affiche") || parties[1].contains("Demande") {
+		if contient_mot_cle(parties[1]) {
 			return Err(ErreurPendragon::ManquePonctuation)
 		}
 		match parties[0] {
@@ -66,6 +99,22 @@ impl Pendragon {
 			"Affiche" => self.affiche(parties[1]),
 			"Demande" => self.demande(parties[1]),
 			autre => Err(ErreurPendragon::CommandeInconnue(autre.into())),
+		}
+	}
+	
+	fn compile_bloc(&mut self, phrase: &str) -> Result<Bloc, ErreurPendragon> {
+		let phrase = phrase.trim();
+		let parties: Vec<&str> = phrase.splitn(2, ' ').collect();
+		if parties.len() == 1 {
+			return Err(ErreurPendragon::ManqueArgument)
+		}
+		if contient_mot_cle(parties[1]) {
+			return Err(ErreurPendragon::ManquePonctuation)
+		}
+		
+		match parties[0] {
+			"Si" => Ok(Bloc::nouveau(self.elements_booleen(parties[1])?)),
+			autre => Err(ErreurPendragon::BlocInconnu(autre.into())),
 		}
 	}
 
@@ -101,6 +150,14 @@ impl Pendragon {
 		
 		Ok(Commande::Demande(variable_nom.into()))
 	}
+}
+
+fn contient_mot_cle(texte: &str) -> bool {
+	texte.contains("Définis") ||
+	texte.contains("Modifie") ||
+	texte.contains("Affiche") ||
+	texte.contains("Demande") ||
+	texte.contains("Si")
 }
 
 fn nom_de_variable(arguments: &str, separateur: &str) -> Result<(String, String), ErreurPendragon> {
