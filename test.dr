@@ -1,9 +1,9 @@
-Définis A comme entier.
+Définis A comme entier. Définis F comme texte.
 Définis B comme entier.
 Définis C comme entier.
 Nota Bene : A est la variable pour un polynôme.
 
-Modifie A avec dix-sept.
+Modifie A avec dix-sept plus trois.
 Modifie C avec six-cent-soixante-douze.
 Modifie B avec trois fois A fois ouvre la parenthèse trois fois A plus C ferme la parenthèse.
 Nota Bene : 3*A*(3*A+C).
@@ -16,4 +16,4 @@ Définis Bool comme booléen.
 Modifie Bool avec vrai.
 Affiche vrai et faux.
 
-Affiche trois plus un.
+Affiche alinéa puis trois plus un puis retour à la ligne puis "test".

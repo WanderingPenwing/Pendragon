@@ -13,6 +13,9 @@ impl ErreurCompilation {
 			erreur,
 		}
 	}
+	pub fn raison(&self) -> ErreurPendragon {
+		self.erreur.clone()
+	}
 }
 
 
@@ -22,20 +25,28 @@ impl fmt::Display for ErreurCompilation {
 	}
 }
 
+#[derive(PartialEq, Debug, Clone)]
 pub enum ErreurPendragon {
 	CommandeInconnue(String),
 	ManqueArgument,
-	NombreInvalide(String),
-	BooleenInvalide(String),
-	TexteInvalide(String),
-	ComparaisonInvalide(String),
 	MauvaisArgument(String),
+	ManquePonctuation,
+	
+	NombreInvalide(String),
+	CalculEntier(String),
+	OrdreCalculEntier(String, String, String),
+	
+	TexteInvalide(String),
+	
+	BooleenInvalide(String),
+	ComparaisonInvalide(String),
+	CalculBooleen(String),
+	OrdreCalculBooleen(String, String, String),
+	
 	VariableInconnue(String),
 	MauvaisType(String, String, String),
-	ManquePonctuation,
+	
 	Lecture(String),
-	CalculBooleen(String),
-	CalculEntier(String),
 }
 
 impl fmt::Display for ErreurPendragon {
@@ -43,17 +54,24 @@ impl fmt::Display for ErreurPendragon {
 		match self {
 			Self::CommandeInconnue(commande) => write!(f, "La commande \"{}\" est inconnue.", commande),
 			Self::ManqueArgument => write!(f, "Il manque un argument."),
-			Self::NombreInvalide(nombre) => write!(f, "Le nombre \"{}\" est mal orthographié.", nombre),
-			Self::TexteInvalide(raison) => write!(f, "Le texte est invalide, {}.", raison),
-			Self::BooleenInvalide(booleen) => write!(f, "Le booleen \"{}\" est invalide.", booleen),
-			Self::ComparaisonInvalide(raison) => write!(f, "La comparaison est invalide, {}.", raison),
 			Self::MauvaisArgument(message) => write!(f, "La commande a reçu un mauvais argument, {}.", message),
+			Self::ManquePonctuation => write!(f, "Il manque la ponctuation de la phrase."),
+			
+			Self::NombreInvalide(nombre) => write!(f, "Le nombre \"{}\" est mal orthographié.", nombre),
+			Self::CalculEntier(raison) => write!(f, "Calcul entier échoué, {}.", raison),
+			Self::OrdreCalculEntier(manque, precedent, suivant) => write!(f, "Calcul entier échoué, il manque un {} entre '{}' et '{}'.", manque, precedent, suivant),
+			
+			Self::TexteInvalide(raison) => write!(f, "Le texte est invalide, {}.", raison),
+			
+			Self::BooleenInvalide(booleen) => write!(f, "Le booleen \"{}\" est invalide.", booleen),
+			Self::CalculBooleen(raison) => write!(f, "Calcul booleen échoué, {}.", raison),
+			Self::ComparaisonInvalide(raison) => write!(f, "La comparaison est invalide, {}.", raison),
+			Self::OrdreCalculBooleen(manque, precedent, suivant) => write!(f, "Calcul boolen échoué, il manque un {} entre '{}' et '{}'.", manque, precedent, suivant),
+			
 			Self::VariableInconnue(nom) => write!(f, "La variable \"{}\" est inconnue.", nom),
 			Self::MauvaisType(nom, type_variable, type_attendu) => write!(f, "La {} est du mauvais type ({}), attendais {}.", nom, type_variable, type_attendu),
-			Self::ManquePonctuation => write!(f, "Il manque la ponctuation de la phrase."),
+			
 			Self::Lecture(raison) => write!(f, "Lecture d'entrées utilisateur impossible : {}.", raison),
-			Self::CalculBooleen(raison) => write!(f, "Calcul booleen échoué, {}.", raison),
-			Self::CalculEntier(raison) => write!(f, "Calcul entier échoué, {}.", raison),
 		}
 	}
 }

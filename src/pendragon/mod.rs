@@ -32,7 +32,7 @@ impl Pendragon {
 			}
 			for phrase in phrases {
 				if phrase.ends_with(".") {
-					if phrase.starts_with("Nota Bene :") {
+					if phrase.replace(" ", "").starts_with("NotaBene:") {
 						continue
 					}
 					match self.compile_commande(&phrase[..phrase.len() - 1]) {
@@ -131,12 +131,46 @@ mod test {
 	
 	#[test]
 	fn commentaire_valide() {
-		panic!("todo");
+		let mut pendragon = Pendragon::nouveau();
+		let commentaires = [
+			"Nota Bene : ceci est un commentaire.",
+			"NotaBene : ceci est un commentaire.",
+			"Nota Bene: ceci est un commentaire.",
+			"NotaBene: ceci est un commentaire.",
+			"Nota Bene :ceci est un commentaire.",
+			"NotaBene :ceci est un commentaire.",
+			"Nota Bene:ceci est un commentaire.",
+			"NotaBene:ceci est un commentaire."
+		];
+		for commentaire in commentaires {
+			match pendragon.compile(commentaire.into()) {
+				Ok(_) => assert_eq!(pendragon.programme.commandes.len(), 0, "Le commentaire '{}' ne devrait pas générer de commande", commentaire),
+				Err(raison) => panic!("Erreur de compilation du commentaire '{}' : {}", commentaire, raison)
+			}
+		}
 	}
 	
 	#[test]
 	fn commentaire_invalide() {
-		panic!("todo");
+		let mut pendragon = Pendragon::nouveau();
+		let commentaires = [
+			"Nota Bene ceci n'est pas un commentaire.",
+			"Nota bene : ceci n'est pas un commentaire.",
+			"Nota ene: ceci n'est pas un commentaire.",
+			"notaBene: ceci n'est pas  un commentaire.",
+			"NotBene :ceci n'est pas un commentaire.",
+			"NotaBenececi n'est pas un commentaire.",
+			"notabene:ceci n'est pas un commentaire.",
+			"NNotaBene:ceci n'est pas un commentaire."
+		];
+		for commentaire in commentaires {
+			let Err(erreur) = pendragon.compile(commentaire.into()) else {
+				panic!("Ne devrait pas pouvoir compiler un commentaire invalide '{}'", commentaire);
+			};
+			let ErreurPendragon::CommandeInconnue(_) = erreur.raison() else {
+				panic!("Erreur inattendue de compilation du commentaire '{}' : {}", commentaire, erreur.raison());
+			};
+		}
 	}
 	
 	#[test]

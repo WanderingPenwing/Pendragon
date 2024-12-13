@@ -67,14 +67,14 @@ impl Pendragon {
 				}
 				"ouvre-la-parenthese" => {
 					if !precede_par_operation {
-						return Err(ErreurPendragon::CalculEntier(format!("il manque un opérateur entre '{}' l'ouverture de parenthèse", element_precedent)))
+						return Err(ErreurPendragon::OrdreCalculEntier("opérateur".into(), element_precedent.into(), "l'ouverture de parenthèse".into()))
 					}
 					pile_operateurs.push(Operateur::ParentheseEntier);
 					continue
 				}
 				"ferme-la-parenthese" => {
 					if precede_par_operation {
-						return Err(ErreurPendragon::CalculEntier(format!("il manque un nombre entre '{}' et la fermeture de parenthèse", element_precedent)))
+						return Err(ErreurPendragon::OrdreCalculEntier("nombre".into(), element_precedent.into(), "la fermeture de parenthèse".into()))
 					}
 					while let Some(operateur) = pile_operateurs.pop() {
 						if operateur == Operateur::ParentheseEntier {
@@ -86,7 +86,7 @@ impl Pendragon {
 				}
 				autre => {
 					if !precede_par_operation {
-						return Err(ErreurPendragon::CalculEntier(format!("il manque un opérateur entre '{}' et '{}'", element_precedent, autre)))
+						return Err(ErreurPendragon::OrdreCalculEntier("opérateur".into(), element_precedent.into(), autre.into()))
 					}
 					precede_par_operation = false;
 					if format_de_variable(autre) {
@@ -99,7 +99,7 @@ impl Pendragon {
 				}
 			}
 			if precede_par_operation {
-				return Err(ErreurPendragon::CalculEntier(format!("il manque un nombre entre '{}' et '{}'", element_precedent, element)))
+				return Err(ErreurPendragon::OrdreCalculEntier("nombre".into(), element_precedent.into(), element.into()))
 			}
 			precede_par_operation = true;
 		}
@@ -222,8 +222,6 @@ fn petit_nombre_comme_texte(nombre: usize) -> String {
 	let dizaine = (nombre % 100) / 10;
 	let unité = nombre % 10;
 	
-	let décalage_dizaine = if [1, 7, 9].contains(&dizaine) {1} else {0};
-	
 	let centaine_texte = if centaine > 1 {
 		format!("{}{}cent", NOMS_UNITES[centaine], UNION)
 	} else if centaine > 0 {
@@ -232,28 +230,23 @@ fn petit_nombre_comme_texte(nombre: usize) -> String {
 		"".to_string()
 	};
 
-	let dizaine_union = if centaine > 0 && dizaine > 0 {
-		UNION.to_string()
-	} else {
-		"".to_string()
-	};
-
+	let décalage_dizaine = if [1, 7, 9].contains(&dizaine) {1} else {0};
 	let dizaine_texte = NOMS_DIZAINES[dizaine - décalage_dizaine];
-
 	let séparation = if unité == 1 && ![0, 1, 8, 9].contains(&dizaine) {UNION.to_string() + "et"} else {"".to_string()};
-
-	let unité_union = if (nombre - unité > 0 && unité > 0 && (nombre%100 > 16 || nombre%100 < 10)) || (unité == 0 && dizaine == 7) {
-		UNION.to_string()
-	} else {
-		"".to_string()
-	};
-	let unité_texte = if [1, 7, 9].contains(&dizaine) {
-		unité_union + NOMS_UNITES_DIX[unité]
-	} else {
-		unité_union + NOMS_UNITES[unité]
-	};
+	let unité_texte = if [1, 7, 9].contains(&dizaine) {NOMS_UNITES_DIX[unité]} else {NOMS_UNITES[unité]};
 	
-	format!("{}{}{}{}{}", centaine_texte, dizaine_union, dizaine_texte, séparation, unité_texte)
+	let mut texte_nombre = format!("{}{}{}{}{}{}", centaine_texte, UNION, dizaine_texte, séparation, UNION, unité_texte);
+	
+	while texte_nombre.contains("--") {
+		texte_nombre = texte_nombre.replace("--","-");
+	}
+	if texte_nombre.starts_with("-") {
+		texte_nombre = texte_nombre[1..texte_nombre.len()].to_string();
+	}
+	if texte_nombre.ends_with("-") {
+		texte_nombre = texte_nombre[0..texte_nombre.len()-1].to_string();
+	}
+	texte_nombre
 }
 
 pub fn texte_comme_nombre(texte: &str) -> Result<Element, ErreurPendragon> {
@@ -378,10 +371,14 @@ fn texte_comme_petit_nombre(texte: &str) -> Result<usize, ErreurPendragon> {
 mod test {
 	use std::collections::HashMap;
 	use super::*;
+	
 	#[test]
 	fn conversion_nombres_texte() {
-		for i in [0, 1, 42, 70, 123, 999, 1031, 1_001_091, 72_036_854_775_807usize].iter() {
+		for i in [0, 1, 42, 70, 123, 999, 1031, 1_001_091, 72_036_854_775_807usize, 2345678*987654].iter() {
 			let texte = nombre_comme_texte(*i); // Convert number to text
+			if texte.contains("--") {
+				panic!("Il y a deux tirets pour {} : {}", i, texte);
+			}
 			match texte_comme_nombre(&texte) { // Convert text back to number
 				Ok(nombre) => {
 					assert_eq!(Element::Entier(*i), nombre, "Nombre inexact : {}, texte : {}", i, texte);
@@ -440,7 +437,7 @@ mod test {
 			let Err(raison) = pendragon.elements_nombre(texte) else {
 				panic!("Devrait détecter une erreur pour '{}'", texte);
 			};
-			let ErreurPendragon::CalculEntier(_) = raison else {
+			let ErreurPendragon::OrdreCalculEntier(_,_,_) = raison else {
 				panic!("Devrait détecter une erreur de calcul entier pour '{}', a déclenché : {}", texte, raison);
 			};
 		}

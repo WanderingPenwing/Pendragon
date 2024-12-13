@@ -32,7 +32,7 @@ impl Pendragon {
 					self.fin_comparaison("vrai", &mut pile_inconnu, &mut pile_operateurs, &mut expression, &mut possible_comparaison)?;
 					expression.push(Element::Booleen(true));
 					if !precede_par_operation {
-						return Err(ErreurPendragon::CalculBooleen(format!("il manque un opérateur entre '{}' et 'vrai'", element_precedent)))
+						return Err(ErreurPendragon::OrdreCalculBooleen("opérateur".into(), element_precedent.into(), "vrai".into()))
 					}
 					precede_par_operation = false;
 					continue;
@@ -41,7 +41,7 @@ impl Pendragon {
 					self.fin_comparaison("faux", &mut pile_inconnu, &mut pile_operateurs, &mut expression, &mut possible_comparaison)?;
 					expression.push(Element::Booleen(false));
 					if !precede_par_operation {
-						return Err(ErreurPendragon::CalculBooleen(format!("il manque un opérateur entre '{}' et 'faux'", element_precedent)))
+						return Err(ErreurPendragon::OrdreCalculBooleen("opérateur".into(), element_precedent.into(), "faux".into()))
 					}
 					precede_par_operation = false;
 					continue;
@@ -50,7 +50,7 @@ impl Pendragon {
 					self.fin_comparaison("non", &mut pile_inconnu, &mut pile_operateurs, &mut expression, &mut possible_comparaison)?;
 					pile_operateurs.push(Operateur::Non);
 					if !precede_par_operation {
-						return Err(ErreurPendragon::CalculBooleen(format!("il manque un opérateur entre '{}' et 'non'", element_precedent)))
+						return Err(ErreurPendragon::OrdreCalculBooleen("opérateur".into(), element_precedent.into(), "non".into()))
 					}
 					continue;
 				}
@@ -78,14 +78,14 @@ impl Pendragon {
 				}
 				"ouvre-la-parenthese" => {
 					if !precede_par_operation && pile_inconnu.len() > 0 {
-						return Err(ErreurPendragon::CalculBooleen(format!("il manque un opérateur entre '{}' et l'ouverture de la parenthèse", element_precedent)))
+						return Err(ErreurPendragon::OrdreCalculBooleen("opérateur".into(), element_precedent.into(), "l'ouverture de la parenthèse".into()))
 					}
 					pile_inconnu.push("ouvre-la-parenthese".into());
 					continue;
 				}
 				"ferme-la-parenthese" => {
 					if precede_par_operation {
-						return Err(ErreurPendragon::CalculBooleen(format!("il manque un booleen entre '{}' et la fermeture de la parenthèse", element_precedent)))
+						return Err(ErreurPendragon::OrdreCalculBooleen("booleen".into(), element_precedent.into(), "la fermeture de la parenthèse".into()))
 					}
 					let nombre_parenthese = compare_parentheses(&pile_inconnu);
 					if nombre_parenthese.0 > nombre_parenthese.1 {
@@ -111,7 +111,7 @@ impl Pendragon {
 						}
 					} else if let Ok(type_comparaison) = texte_comme_comparaison(autre) {
 						if let Some(comparaison) = possible_comparaison {
-							return Err(ErreurPendragon::BooleenInvalide(format!("il manque un operateur booleen entre '{}' et '{}'", comparaison, type_comparaison)))
+							return Err(ErreurPendragon::ComparaisonInvalide(format!("il manque un operateur booleen entre les comparaisons '{}' et '{}'", comparaison, type_comparaison)))
 						}
 						let mut comparaison = Comparaison::nouvelle();
 						let nombre_parenthese = compare_parentheses(&pile_inconnu); 
@@ -131,7 +131,7 @@ impl Pendragon {
 				}
 			}
 			if precede_par_operation {
-				return Err(ErreurPendragon::CalculBooleen(format!("il manque un booleen entre '{}' et '{}'", element_precedent, element)))
+				return Err(ErreurPendragon::OrdreCalculBooleen("booleen".into(), element_precedent.into(), element.into()))
 			}
 			precede_par_operation = true;
 		}
@@ -457,7 +457,7 @@ mod test {
 			let Err(raison) = pendragon.elements_booleen(texte) else {
 				panic!("Devrait détecter une erreur pour '{}'", texte);
 			};
-			let ErreurPendragon::CalculBooleen(_) = raison else {
+			let ErreurPendragon::OrdreCalculBooleen(_,_,_) = raison else {
 				panic!("Devrait détecter une erreur de calcul booléen pour '{}', a déclenché : {}", texte, raison);
 			};
 		}

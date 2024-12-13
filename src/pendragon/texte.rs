@@ -37,47 +37,46 @@ impl Pendragon {
 				pile_inconnu.push(element.into());
 				continue;
 			}
-			self.puis(&mut expression, &mut pile_inconnu)?;
+			expression.extend(self.puis(&expression, &pile_inconnu)?);
+			pile_inconnu = Vec::new();
+			expression.push(Element::Operateur(Operateur::Puis));
 		}
-		self.puis(&mut expression, &mut pile_inconnu)?;
+		expression.extend(self.puis(&expression, &pile_inconnu)?);
+		pile_inconnu = Vec::new();
+		expression.push(Element::Operateur(Operateur::Puis));
 		Ok(expression)
 	}
 	
-	pub fn puis(&self, expression: &mut Vec<Element>, pile_inconnu: &mut Vec<String>) -> Result<(), ErreurPendragon> {
-		if let Some(dernier_element) = expression.last() {
-			if let Element::Texte(_) = dernier_element.clone() {
-				if pile_inconnu.is_empty() {
-					expression.push(Element::Operateur(Operateur::Puis));
-					return Ok(());
+	pub fn puis(&self, expression: &Vec<Element>, pile_inconnu: &Vec<String>) -> Result<Vec<Element>, ErreurPendragon> {
+		let Some(premier_element) = pile_inconnu.first() else {
+			if let Some(dernier_element) = expression.last() {
+				if let Element::Texte(_) = dernier_element.clone() {
+					return Ok(vec![]);
 				}
 			}
-		}
-		let Some(premier_element) = pile_inconnu.first() else {
 			return Err(ErreurPendragon::TexteInvalide("il manque un élément avant le puis".into()))
 		};
+		let total_inconnu = pile_inconnu.join(" ");
+		if total_inconnu == "alinéa" {
+			return Ok(vec![Element::Texte("\t".into())])
+		}
+		if total_inconnu == "retour à la ligne" {
+			return Ok(vec![Element::Texte("\n".into())])
+		}
 		if pile_inconnu.len() == 1 && format_de_variable(premier_element) {
-			expression.push(Element::Variable(premier_element.into(), self.programme.variable(premier_element)?));
-			*pile_inconnu = Vec::new();
-			expression.push(Element::Operateur(Operateur::Puis));
-			return Ok(());
+			return Ok(vec![Element::Variable(premier_element.into(), self.programme.variable(premier_element)?)]);
 		}
 		let Err(raison) = self.elements_nombre(premier_element) else {
-			expression.extend(self.elements_nombre(&pile_inconnu.join(" "))?);
-			*pile_inconnu = Vec::new();
-			expression.push(Element::Operateur(Operateur::Puis));
-			return Ok(())
+			return self.elements_nombre(&total_inconnu)
 		};
 		if let ErreurPendragon::CalculEntier(_) = raison {
 			return Err(raison)
 		}
 		let Err(raison) = self.elements_booleen(premier_element) else {
-			expression.extend(self.elements_booleen(&pile_inconnu.join(" "))?);
-			*pile_inconnu = Vec::new();
-			expression.push(Element::Operateur(Operateur::Puis));
-			return Ok(());
+			return self.elements_booleen(&total_inconnu)
 		};
 		let ErreurPendragon::CalculBooleen(_) = raison else {
-			return Err(ErreurPendragon::MauvaisArgument(pile_inconnu.join(" ").to_string()));
+			return Err(ErreurPendragon::TexteInvalide(format!("'{}' ne peut pas être converti en texte", pile_inconnu.join(" "))));
 		};
 		Err(raison)
 	}
@@ -145,14 +144,14 @@ mod test {
 		let a = 2345678;
 		let b = 987654;
 		
-		let possible_expression = pendragon.elements_texte(&format!("\"hello\" puis {} fois {} puis \"there\" puis vrai ou faux puis trois puis deux",
+		let possible_expression = pendragon.elements_texte(&format!("\"hello\" puis {} fois {} puis \"there\" puis vrai ou faux puis trois puis deux puis alinéa puis retour à la ligne",
 			nombre::nombre_comme_texte(a),
 			nombre::nombre_comme_texte(b)));
 		match possible_expression {
 			Ok(expression) => {
 				match calcule_texte(expression, &HashMap::new()) {
 					Ok(texte) => {
-						let vrai_texte = format!("hello{}therevraitroisdeux", nombre::nombre_comme_texte(a*b));
+						let vrai_texte = format!("hello{}therevraitroisdeux\t\n", nombre::nombre_comme_texte(a*b));
 						assert_eq!(texte, vrai_texte, "Calcul d'expression (texte) donne un mauvais résultat : {}", texte);
 					}
 					Err(raison) => {
@@ -169,7 +168,7 @@ mod test {
 	#[test]
 	fn conversion_texte() {
 		let pendragon = Pendragon::nouveau();
-		let texte = "\"hello     aaaa puis AERTY et ou fois six\"";
+		let texte = "\"hello	 aaaa puis AERTY et ou fois six\"";
 		match pendragon.elements_texte(texte) {
 			Ok(expression) => {
 				if expression.len() != 2 {
@@ -189,6 +188,9 @@ mod test {
 		let textes = vec![
 			"trois puis puis un",
 			"\" test",
+			"puis",
+			"un puis",
+			"puis un",
 		];
 		for texte in textes {
 			let Err(raison) = pendragon.elements_texte(texte) else {
