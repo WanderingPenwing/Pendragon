@@ -1,16 +1,17 @@
-Définis A comme entier. Définis F comme texte.
-Définis B comme entier.
-Définis C comme entier.
-Nota Bene : A est la variable pour un polynôme.
+Définis A comme entier. Définis B comme entier.
+Modifie B avec un.
 
-Demande A.
-Modifie C avec six-cent-soixante-douze.
-Modifie B avec trois fois A fois ouvre la parenthèse trois fois A plus C ferme la parenthèse.
-Nota Bene : 3*A*(3*A+C).
+Définis N comme entier.
+Modifie N avec trente.
 
-Affiche "Résultat : " puis B.
+Tant que N est supérieur à zéro,
+	Modifie N avec N moins un.
+	
+	Affiche A.
+	Affiche B.
+	Modifie A avec A plus B.
+	Modifie B avec A plus B.
 
-Tant que A est inférieur ou égal à sept,
-	Modifie A avec A plus un.
-	Affiche "A : " puis A.
 Affiche "Fin".
+
+Nota Bene : Ceci est un programme qui affiche deux fois N nombres de la suite de Fibonacci. 
