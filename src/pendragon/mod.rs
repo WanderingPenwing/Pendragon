@@ -102,7 +102,7 @@ impl Pendragon {
 	}
 	
 	fn compile_bloc(&mut self, phrase: &str) -> Result<Bloc, ErreurPendragon> {
-		let phrase = phrase.trim();
+		let phrase = phrase.trim().replace("Tant que", "Tant-que");
 		let parties: Vec<&str> = phrase.splitn(2, ' ').collect();
 		if parties.len() == 1 {
 			return Err(ErreurPendragon::ManqueArgument)
@@ -112,6 +112,7 @@ impl Pendragon {
 		}
 		
 		match parties[0] {
+			"Tant-que" => Ok(Bloc::nouveau(self.elements_booleen(parties[1])?, true)),
 			"Si" => Ok(Bloc::nouveau(self.elements_booleen(parties[1])?, false)),
 			autre => Err(ErreurPendragon::BlocInconnu(autre.into())),
 		}

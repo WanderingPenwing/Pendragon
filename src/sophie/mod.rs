@@ -37,14 +37,14 @@ impl Bloc {
 					}			
 				}
 			}
-		} else if self.contenu_sinon.len() > 0 {
-			for phrase in &self.contenu_sinon {
-				match phrase {
-					Phrase::Commande(commande) => commande.execute(variables)?,
-					Phrase::Bloc(bloc) => bloc.execute(variables)?,
-				}			
-			}
-		}
+		} //else if self.contenu_sinon.len() > 0 {
+//			for phrase in &self.contenu_sinon {
+//				match phrase {
+//					Phrase::Commande(commande) => commande.execute(variables)?,
+//					Phrase::Bloc(bloc) => bloc.execute(variables)?,
+//				}			
+//			}
+//		}
 		Ok(())
 	}
 }

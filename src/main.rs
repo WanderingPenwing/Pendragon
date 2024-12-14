@@ -16,7 +16,8 @@ fn main() {
 		return
 	}
 	
-	let debug_mode = arguments.contains(&"--debug".to_string());
+	let mode_debug = arguments.contains(&"-d".to_string());
+	let mode_interprete = arguments.contains(&"-i".to_string());
 
 	let chemin_de_fichier = &arguments[1];
 	let mut pendragon = Pendragon::nouveau();
@@ -39,11 +40,12 @@ fn main() {
 	}
 	display::message_compilation_ok(debut.elapsed());
 	
-	if debug_mode {
+	if mode_debug {
 		println!("\n{}\n", pendragon.programme);
 	}
-	
-	
+	if !mode_interprete {
+		return
+	}
 	display::message_execution(chemin_de_fichier);
 	let debut = Instant::now();
 	if let Err(raison) = pendragon.programme.execute() {

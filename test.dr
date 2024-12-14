@@ -10,10 +10,7 @@ Nota Bene : 3*A*(3*A+C).
 
 Affiche "Résultat : " puis B.
 
-Si A est inférieur ou égal à trois,
-	Affiche "A<=3".
-	Si B est inférieur ou égal à trois,
-		Affiche "B<=3".
-	Affiche "fin B".
-
-Affiche "test".
+Tant que A est inférieur ou égal à sept,
+	Modifie A avec A plus un.
+	Affiche "A : " puis A.
+Affiche "Fin".

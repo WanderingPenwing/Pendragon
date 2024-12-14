@@ -6,7 +6,7 @@ use crate::sophie;
 pub const TEXTE_ROUGE: &str = "\x1b[31m"; 
 pub const TEXTE_VERT: &str = "\x1b[32m"; 
 //pub const TEXTE_JAUNE: &str = "\x1b[33m"; 
-//pub const TEXTE_BLEU: &str = "\x1b[34m"; 
+pub const TEXTE_BLEU: &str = "\x1b[34m"; 
 pub const TEXTE_GRIS: &str = "\x1b[37m";
 pub const TEXTE_NORMAL: &str = "\x1b[0m";
 
@@ -120,10 +120,10 @@ impl fmt::Display for ErreurPendragon {
 impl fmt::Display for Commande {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
 		match self {
-			Self::Definis(nom, type_element) => write!(f, "{}:{}", nom, type_element.nom()),
-			Self::Demande(nom) => write!(f, "{}?", nom),
-			Self::Modifie(nom, expression) => write!(f, "{}={:?}", nom, expression),
-			Self::Affiche(expression) => write!(f, "#{:?}", expression),
+			Self::Definis(nom, type_element) => write!(f, "{}{}{}:{}", TEXTE_VERT, nom, TEXTE_NORMAL, type_element.nom()),
+			Self::Demande(nom) => write!(f, "{}{}{}?", TEXTE_VERT, nom, TEXTE_NORMAL),
+			Self::Modifie(nom, expression) => write!(f,"{}{}{}={}[{}{}{}]{}", TEXTE_VERT, nom, TEXTE_NORMAL, TEXTE_ROUGE, TEXTE_NORMAL, liste_element(&expression), TEXTE_ROUGE, TEXTE_NORMAL),
+			Self::Affiche(expression) => write!(f, "#{}[{}{}{}]{}", TEXTE_ROUGE, TEXTE_NORMAL, liste_element(&expression), TEXTE_ROUGE, TEXTE_NORMAL),
 		}
 	}
 }
@@ -134,9 +134,9 @@ impl fmt::Display for Element {
 			Self::Entier(nombre) => write!(f, "{}", sophie::nombre::nombre_comme_texte(*nombre)),
 			Self::Texte(texte) => write!(f, "\"{}\"", texte),
 			Self::Booleen(booleen) => write!(f, "{}", sophie::booleen::booleen_comme_texte(*booleen)),
-			Self::Variable(nom, type_variable) => write!(f, "{}:{}", nom, type_variable.nom()),
+			Self::Variable(nom, type_variable) => write!(f, "{}{}{}:{}", TEXTE_VERT, nom, TEXTE_NORMAL, type_variable.nom()),
 			Self::Operateur(operateur) => write!(f, "{}", operateur),
-			Self::Comparaison(comparaison) => write!(f, "{}.", comparaison),
+			Self::Comparaison(comparaison) => write!(f, "{}", comparaison),
 		}
 	}
 }
@@ -151,9 +151,14 @@ impl fmt::Display for Comparaison {
 		for element in &self.membre_b {
 			texte_membre_b += &format!(" {}", element);
 		}
-		write!(f, "({}{:?}{})", 
+		let comparaison = if let Some(type_comparaison) = &self.type_comparaison {
+			format!("{}", type_comparaison)
+		} else {
+			"?".to_string()
+		};
+		write!(f, "({}{}{})", 
 			texte_membre_a,
-			self.type_comparaison,
+			comparaison,
 			texte_membre_b,
 		)
 	}
@@ -162,12 +167,12 @@ impl fmt::Display for Comparaison {
 impl fmt::Display for TypeComparaison {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
 		match self {
-			Self::Egal => write!(f, "égal à"),
-			Self::Different => write!(f, "différent de"),
-			Self::SuperieurEgal => write!(f, "supérieur ou égal à"),
-			Self::InferieurEgal => write!(f, "inférieur ou égal à"),
-			Self::Superieur => write!(f, "supérieur à"),
-			Self::Inferieur => write!(f, "inférieur à"),
+			Self::Egal => write!(f, "=="),
+			Self::Different => write!(f, "!="),
+			Self::SuperieurEgal => write!(f, ">="),
+			Self::InferieurEgal => write!(f, "<="),
+			Self::Superieur => write!(f, ">"),
+			Self::Inferieur => write!(f, "<"),
 		}
 	}
 }
@@ -179,10 +184,10 @@ impl fmt::Display for Operateur {
 			Self::Et => write!(f, "et"),
 			Self::Non => write!(f, "non"),
 			Self::ParentheseBooleen => write!(f, "["),
-			Self::Puis => write!(f, ";"),
+			Self::Puis => write!(f, "~"),
 			Self::Plus => write!(f, "+"),
 			Self::Moins => write!(f, "-"),
-			Self::Fois => write!(f, "*"),
+			Self::Fois => write!(f, "x"),
 			Self::Divise => write!(f, "/"),
 			Self::ParentheseEntier => write!(f, "("),
 		}
@@ -191,14 +196,9 @@ impl fmt::Display for Operateur {
 
 impl fmt::Display for Programme {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
-		let mut texte: String = format!("variables : {:?}\n", self.variables);
-		let mut nombre_retour: usize = 0;
+		let mut texte: String = format!("{}variables : {:?}{}\n\n", TEXTE_GRIS, self.variables, TEXTE_NORMAL);
 		for phrase in &self.contenu {
-			if texte.len()/30 > nombre_retour {
-				texte += "\n";
-				nombre_retour = texte.len()/30;
-			}
-			texte += &format!("{}, ", phrase);
+			texte += &format!("{}\n", phrase);
 		}
 		write!(f, "{}", texte)
 	}
@@ -215,15 +215,25 @@ impl fmt::Display for Phrase {
 
 impl fmt::Display for Bloc {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
-		let mut texte: String = format!("\n[{:?}] : [", self.condition);
-		let mut nombre_retour: usize = 0;
-		for phrase in &self.contenu {
-			if texte.len()/30 > nombre_retour {
-				texte += "\n";
-				nombre_retour = texte.len()/30;
+		let mut texte: String = format!("|{}| : {}[{}", liste_element(&self.condition), TEXTE_BLEU, TEXTE_NORMAL);
+		for (index, phrase) in self.contenu.iter().enumerate() {
+			texte += &format!("{}", phrase);
+			if index < self.contenu.len() - 1 {
+				texte += &format!("{},{} ", TEXTE_GRIS, TEXTE_NORMAL);
 			}
-			texte += &format!("{}, ", phrase);
 		}
-		write!(f, "{}]", texte)
+		write!(f, "{}{}]{}", texte, TEXTE_BLEU, TEXTE_NORMAL)
 	}
+}
+
+
+fn liste_element(expression: &Vec<Element>) -> String {
+	let mut texte = String::new();
+	for (index, element) in expression.iter().enumerate() {
+		texte += &format!("{}", element);
+		if index < expression.len() - 1 {
+			texte += &format!("{},{} ", TEXTE_GRIS, TEXTE_NORMAL);
+		}
+	}
+	texte
 }

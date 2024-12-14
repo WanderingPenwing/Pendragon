@@ -60,7 +60,6 @@ pub struct Bloc {
 	pub condition: Vec<Element>,
 	pub repete: bool,
 	pub contenu: Vec<Phrase>,
-	pub contenu_sinon: Vec<Phrase>,
 }
 
 impl Bloc {
@@ -69,7 +68,6 @@ impl Bloc {
 			condition,
 			repete,
 			contenu: vec![],
-			contenu_sinon: vec![],
 		}
 	}
 	
@@ -77,16 +75,8 @@ impl Bloc {
 		self.contenu.push(Phrase::Commande(commande));
 	}
 	
-	pub fn ajoute_commande_sinon(&mut self, commande: Commande) {
-		self.contenu_sinon.push(Phrase::Commande(commande));
-	}
-	
 	pub fn ajoute_bloc(&mut self, bloc: Bloc) {
 		self.contenu.push(Phrase::Bloc(bloc));
-	}
-	
-	pub fn ajoute_bloc_sinon(&mut self, bloc: Bloc) {
-		self.contenu_sinon.push(Phrase::Bloc(bloc));
 	}
 }
 
