@@ -1,12 +1,11 @@
-use std::collections::HashMap;
+use crate::display::ErreurPendragon;
+use crate::display::ErreurCompilation;
 
 pub mod nombre;
 pub mod texte;
 pub mod booleen;
 pub mod structure;
 use structure::*;
-pub mod debug;
-use debug::*;
 
 pub struct Pendragon {
 	pub programme: Programme,
@@ -72,7 +71,7 @@ impl Pendragon {
 					}
 					Err(raison) => {
 						erreurs.push(ErreurCompilation::nouvelle(index_ligne, ligne.into(), raison));
-						pile_bloc.push(Bloc::nouveau(vec![Element::Booleen(false)]));
+						pile_bloc.push(Bloc::nouveau(vec![Element::Booleen(false)], false));
 					}
 				}
 				indentation_niveau += 1;
@@ -113,7 +112,7 @@ impl Pendragon {
 		}
 		
 		match parties[0] {
-			"Si" => Ok(Bloc::nouveau(self.elements_booleen(parties[1])?)),
+			"Si" => Ok(Bloc::nouveau(self.elements_booleen(parties[1])?, false)),
 			autre => Err(ErreurPendragon::BlocInconnu(autre.into())),
 		}
 	}

@@ -4,6 +4,9 @@ use std::time::Instant;
 
 mod pendragon;
 use pendragon::*;
+mod sophie;
+mod debug;
+use debug::display;
 
 fn main() {	
 	let arguments: Vec<String> = env::args().collect();
@@ -21,32 +24,32 @@ fn main() {
 	let lecture = fs::read_to_string(chemin_de_fichier);
 	
 	if let Err(raison) = lecture {
-		eprintln!("{}Fichier illisible :{} {}", debug::TEXTE_ROUGE, raison, debug::TEXTE_NORMAL);
+		eprintln!("{}Fichier illisible :{} {}", display::TEXTE_ROUGE, raison, display::TEXTE_NORMAL);
 		return
 	}
 	
-	debug::message_compilation(chemin_de_fichier);
+	display::message_compilation(chemin_de_fichier);
 	let debut = Instant::now();
 	if let Err(raison) = pendragon.compile(lecture.unwrap()) {
 		for erreur in raison {
 			eprintln!("\n{}", erreur);
 		}
-		debug::message_compilation_echec();
+		display::message_compilation_echec();
 		return
 	}
-	debug::message_compilation_ok(debut.elapsed());
+	display::message_compilation_ok(debut.elapsed());
 	
 	if debug_mode {
 		println!("\n{}\n", pendragon.programme);
 	}
 	
 	
-	debug::message_execution(chemin_de_fichier);
+	display::message_execution(chemin_de_fichier);
 	let debut = Instant::now();
 	if let Err(raison) = pendragon.programme.execute() {
 		eprintln!("\nErreur : {}", raison);
-		debug::message_execution_echec();
+		display::message_execution_echec();
 		return
 	}
-	debug::message_execution_ok(debut.elapsed());
+	display::message_execution_ok(debut.elapsed());
 }

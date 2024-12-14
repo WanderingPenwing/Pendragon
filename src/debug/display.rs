@@ -1,6 +1,7 @@
 use std::fmt;
 use std::time::Duration;
-use super::*;
+use crate::pendragon::structure::*;
+use crate::sophie;
 
 pub const TEXTE_ROUGE: &str = "\x1b[31m"; 
 pub const TEXTE_VERT: &str = "\x1b[32m"; 
@@ -130,9 +131,9 @@ impl fmt::Display for Commande {
 impl fmt::Display for Element {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {//'
 		match self {
-			Self::Entier(nombre) => write!(f, "{}", nombre::nombre_comme_texte(*nombre)),
+			Self::Entier(nombre) => write!(f, "{}", sophie::nombre::nombre_comme_texte(*nombre)),
 			Self::Texte(texte) => write!(f, "\"{}\"", texte),
-			Self::Booleen(booleen) => write!(f, "{}", booleen::booleen_comme_texte(*booleen)),
+			Self::Booleen(booleen) => write!(f, "{}", sophie::booleen::booleen_comme_texte(*booleen)),
 			Self::Variable(nom, type_variable) => write!(f, "{}:{}", nom, type_variable.nom()),
 			Self::Operateur(operateur) => write!(f, "{}", operateur),
 			Self::Comparaison(comparaison) => write!(f, "{}.", comparaison),
