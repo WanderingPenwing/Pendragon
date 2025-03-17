@@ -18,7 +18,7 @@ impl Pendragon {
         }
     }
 
-    pub fn compile(&mut self, contenu: String) -> Result<(), Vec<ErreurCompilation>> {
+    pub fn analyse(&mut self, contenu: String) -> Result<(), Vec<ErreurCompilation>> {
         let texte: Vec<&str> = contenu.split('\n').collect();
         let mut erreurs: Vec<ErreurCompilation> = vec![];
         let mut indentation_niveau: usize = 0;
@@ -27,7 +27,7 @@ impl Pendragon {
         for (index_ligne, ligne) in texte.iter().enumerate() {
             let indentation_ligne = ligne.chars().take_while(|&c| c == '\t').count();
             let ligne = ligne.trim();
-            let phrases: Vec<&str> = ligne.split_inclusive(|c| c == ',' || c == '.').collect();
+            let phrases: Vec<&str> = ligne.split_inclusive([',', '.']).collect();
             let Some(derniere_phrase) = phrases.last() else {
                 continue;
             };
@@ -64,7 +64,7 @@ impl Pendragon {
                     if phrase.replace(" ", "").starts_with("NotaBene:") {
                         continue;
                     }
-                    match self.compile_commande(contenu) {
+                    match self.analyse_commande(contenu) {
                         Ok(commande) => {
                             if let Some(bloc_actuel) = pile_bloc.last_mut() {
                                 bloc_actuel.ajoute_commande(commande);
@@ -81,7 +81,7 @@ impl Pendragon {
                     continue;
                 }
                 if let Some(contenu) = phrase.strip_suffix(",") {
-                    match self.compile_bloc(contenu) {
+                    match self.analyse_bloc(contenu) {
                         Ok(bloc) => {
                             pile_bloc.push(bloc);
                         }
@@ -110,7 +110,7 @@ impl Pendragon {
         Ok(())
     }
 
-    fn compile_commande(&mut self, phrase: &str) -> Result<Commande, ErreurPendragon> {
+    fn analyse_commande(&mut self, phrase: &str) -> Result<Commande, ErreurPendragon> {
         let phrase = phrase.trim();
         let parties: Vec<&str> = phrase.splitn(2, ' ').collect();
         if parties.len() == 1 {
@@ -128,7 +128,7 @@ impl Pendragon {
         }
     }
 
-    fn compile_bloc(&mut self, phrase: &str) -> Result<Bloc, ErreurPendragon> {
+    fn analyse_bloc(&mut self, phrase: &str) -> Result<Bloc, ErreurPendragon> {
         let phrase = phrase.trim().replace("Tant que", "Tant-que");
         let parties: Vec<&str> = phrase.splitn(2, ' ').collect();
         if parties.len() == 1 {
@@ -231,7 +231,7 @@ mod test {
             "NotaBene:ceci est un commentaire.",
         ];
         for commentaire in commentaires {
-            match pendragon.compile(commentaire.into()) {
+            match pendragon.analyse(commentaire.into()) {
                 Ok(_) => assert_eq!(
                     pendragon.programme.contenu.len(),
                     0,
@@ -267,9 +267,9 @@ mod test {
             "NNotaBene:ceci n'est pas un commentaire.",
         ];
         for commentaire in commentaires {
-            let Err(erreurs) = pendragon.compile(commentaire.into()) else {
+            let Err(erreurs) = pendragon.analyse(commentaire.into()) else {
                 panic!(
-                    "Ne devrait pas pouvoir compiler un commentaire invalide '{}'",
+                    "Ne devrait pas pouvoir analyser un commentaire invalide '{}'",
                     commentaire
                 );
             };
@@ -298,7 +298,7 @@ mod test {
     fn ponctuation_valide() {
         let mut pendragon = Pendragon::nouveau();
         let texte = "aah.\noooh.uuuh,\nna,\nbududu.bababa.\naaaaaaaaaaa,sssssss,";
-        let Err(erreurs) = pendragon.compile(texte.into()) else {
+        let Err(erreurs) = pendragon.analyse(texte.into()) else {
             panic!("Il devrait y avoir des erreurs");
         };
         for erreur in erreurs {
@@ -313,9 +313,9 @@ mod test {
         let mut pendragon = Pendragon::nouveau();
         let textes = ["Aaaaa", "aaaa.\nooooo\n", "aaaa Définis."];
         for texte in textes {
-            let Err(erreurs) = pendragon.compile(texte.into()) else {
+            let Err(erreurs) = pendragon.analyse(texte.into()) else {
                 panic!(
-                    "Ne devrait pas pouvoir compiler un texte invalide '{}'",
+                    "Ne devrait pas pouvoir analyser un texte invalide '{}'",
                     texte
                 );
             };
@@ -338,7 +338,7 @@ mod test {
     fn commande_valide() {
         let mut pendragon = Pendragon::nouveau();
         let texte = "Affiche.\nDemande.\nModifie.Définis.";
-        let Err(erreurs) = pendragon.compile(texte.into()) else {
+        let Err(erreurs) = pendragon.analyse(texte.into()) else {
             panic!("Il devrait y avoir des erreurs");
         };
         for erreur in erreurs {
@@ -359,9 +359,9 @@ mod test {
             "aaaa e.",
         ];
         for texte in textes {
-            let Err(erreurs) = pendragon.compile(texte.into()) else {
+            let Err(erreurs) = pendragon.analyse(texte.into()) else {
                 panic!(
-                    "Ne devrait pas pouvoir compiler un texte invalide '{}'",
+                    "Ne devrait pas pouvoir analyser un texte invalide '{}'",
                     texte
                 );
             };

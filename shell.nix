@@ -14,5 +14,7 @@ mkShell {
     xorg.libXi
     xorg.libXtst
     libevdev
+    llvm_18
+    clang
   ];
 }

@@ -2,7 +2,7 @@ Définis A comme entier. Définis B comme entier.
 Modifie B avec un.
 
 Définis N comme entier.
-Modifie N avec trente.
+Modifie N avec dix-sept.
 
 Tant que N est supérieur à zéro,
 	Modifie N avec N moins un.

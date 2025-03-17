@@ -10,44 +10,41 @@ pub const TEXTE_BLEU: &str = "\x1b[34m";
 pub const TEXTE_GRIS: &str = "\x1b[37m";
 pub const TEXTE_NORMAL: &str = "\x1b[0m";
 
-pub fn message_compilation(chemin_de_fichier: &str) {
+pub fn message_debut(action: &str, chemin_de_fichier: &str) {
     println!(
-        "\n- Compilation de {}'{}'{}...",
+        "\n- {} de {}'{}'{}...", action,
         TEXTE_VERT, chemin_de_fichier, TEXTE_NORMAL
     );
 }
 
-pub fn message_compilation_echec() {
+pub fn message_echec(action: &str) {
     eprintln!(
-        "\n{}x Échec de la compilation.{}",
-        TEXTE_ROUGE, TEXTE_NORMAL
+        "\n{}x Échec de {}.{}",
+        TEXTE_ROUGE, action, TEXTE_NORMAL
     );
 }
 
-pub fn message_compilation_ok(temps: Duration) {
+pub fn message_ok(action: &str, temps: Duration) {
     println!(
-        "{}✓ Compilation Ok.{} ({:.2?}){}",
-        TEXTE_VERT, TEXTE_GRIS, temps, TEXTE_NORMAL
+        "{}✓ {} Ok.{} ({:.2?}){}",
+        TEXTE_VERT, action, TEXTE_GRIS, temps, TEXTE_NORMAL
     );
 }
 
-pub fn message_execution(chemin_de_fichier: &str) {
-    println!(
-        "- Exécution de {}'{}'{}...\n",
-        TEXTE_VERT, chemin_de_fichier, TEXTE_NORMAL
-    );
+pub enum ErreurMorgan {
+	ErreurSysteme(String),
+}
+impl fmt::Display for ErreurMorgan {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        //'
+        match self {
+            Self::ErreurSysteme(raison) => {
+                write!(f, "{}Erreur système :{}{}",  TEXTE_ROUGE, TEXTE_NORMAL, raison)
+            }
+        }
+    }
 }
 
-pub fn message_execution_echec() {
-    eprintln!("\n{}x Échec de l'exécution.{}", TEXTE_ROUGE, TEXTE_NORMAL);
-}
-
-pub fn message_execution_ok(temps: Duration) {
-    println!(
-        "\n{}✓ Exécution Ok.{} ({:.2?}){}",
-        TEXTE_VERT, TEXTE_GRIS, temps, TEXTE_NORMAL
-    );
-}
 
 pub struct ErreurCompilation {
     index_ligne: usize,
