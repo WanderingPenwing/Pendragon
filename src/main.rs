@@ -103,6 +103,6 @@ fn main() {
    		display::message_echec("l'exécution");
         return;
     }
-    println!("\n");
+    println!(" ");
 	display::message_ok("Execution", debut.elapsed());
 }

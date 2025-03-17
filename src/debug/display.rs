@@ -33,6 +33,7 @@ pub fn message_ok(action: &str, temps: Duration) {
 
 pub enum ErreurMorgan {
 	ErreurSysteme(String),
+	MauvaisArgument(String),
 }
 impl fmt::Display for ErreurMorgan {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -40,6 +41,9 @@ impl fmt::Display for ErreurMorgan {
         match self {
             Self::ErreurSysteme(raison) => {
                 write!(f, "{}Erreur système :{}{}",  TEXTE_ROUGE, TEXTE_NORMAL, raison)
+            },
+            Self::MauvaisArgument(argument) => {
+            	write!(f, "{}Erreur :{} La commande a reçu un mauvais argument, {}",  TEXTE_ROUGE, TEXTE_NORMAL, argument)
             }
         }
     }

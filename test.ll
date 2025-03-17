@@ -304,3 +304,11 @@ fin:
 ;	call void @nouvelle_ligne()
 ;	ret i32 0
 ;}
+
+define i32 @main() {
+call void @affiche_nombre(i64 36004)
+call void @affiche_nombre(i64 4)
+call void @nouvelle_ligne()
+
+ret i32 0
+}
