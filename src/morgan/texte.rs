@@ -20,7 +20,7 @@ pub fn calcule_texte(
             continue;
         };
         if let TypeElement::Booleen = element_pile.type_element() {
-            //texte += &booleen::affiche_booleen(pile.clone(), variables)?;
+            instruction.add(booleen::affiche_booleen(pile.clone())?);
             pile = Vec::new();
             continue;
         }

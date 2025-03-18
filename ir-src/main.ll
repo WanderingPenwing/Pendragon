@@ -36,6 +36,9 @@
 @trillion = private constant [9 x i8] c"trillion\00"
 @infini = private constant [7 x i8] c"infini\00"
 
+@vrai = private constant [5 x i8] c"vrai\00"
+@faux = private constant [5 x i8] c"faux\00"
+
 @newline = private unnamed_addr constant [2 x i8] c"\0A\00"
 @tiret = private unnamed_addr constant [2 x i8] c"-\00"
 @et = private unnamed_addr constant [4 x i8] c"-et\00"
@@ -88,6 +91,11 @@
     i8* getelementptr inbounds ([9 x i8], [9 x i8]* @billiard, i32 0, i32 0),
     i8* getelementptr inbounds ([9 x i8], [9 x i8]* @trillion, i32 0, i32 0),
     i8* getelementptr inbounds ([7 x i8], [7 x i8]* @infini, i32 0, i32 0)
+]
+
+@booleen = global [2 x i8*] [
+	i8* getelementptr inbounds ([5 x i8], [5 x i8]* @faux, i32 0, i32 0),
+    i8* getelementptr inbounds ([5 x i8], [5 x i8]* @vrai, i32 0, i32 0)
 ]
 
 declare i32 @printf(i8*, ...)
@@ -295,6 +303,14 @@ recursion:
 	call void @affiche_nombre(i64 %reste)
 	br label %fin
 fin:
+	ret void
+}
+
+define void @affiche_booleen(i1 %x) {
+	%bool = zext i1 %x to i32
+	%bool_ptr = getelementptr [2 x i8*], [2 x i8*]* @booleen, i32 0, i32 %bool
+	%bool_str = load i8*, i8** %bool_ptr
+	call i32 @printf(i8* %bool_str)
 	ret void
 }
 

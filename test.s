@@ -352,6 +352,26 @@ affiche_nombre:                         # @affiche_nombre
 	.size	affiche_nombre, .Lfunc_end9-affiche_nombre
 	.cfi_endproc
                                         # -- End function
+	.globl	affiche_booleen                 # -- Begin function affiche_booleen
+	.p2align	4, 0x90
+	.type	affiche_booleen,@function
+affiche_booleen:                        # @affiche_booleen
+	.cfi_startproc
+# %bb.0:
+	pushq	%rax
+	.cfi_def_cfa_offset 16
+                                        # kill: def $edi killed $edi def $rdi
+	andl	$1, %edi
+	movq	booleen@GOTPCREL(%rip), %rax
+	movq	(%rax,%rdi,8), %rdi
+	callq	printf@PLT
+	popq	%rax
+	.cfi_def_cfa_offset 8
+	retq
+.Lfunc_end10:
+	.size	affiche_booleen, .Lfunc_end10-affiche_booleen
+	.cfi_endproc
+                                        # -- End function
 	.globl	main                            # -- Begin function main
 	.p2align	4, 0x90
 	.type	main,@function
@@ -365,12 +385,18 @@ main:                                   # @main
 	movl	$4, %edi
 	callq	affiche_nombre@PLT
 	callq	nouvelle_ligne@PLT
+	movl	$1, %edi
+	callq	affiche_booleen@PLT
+	callq	nouvelle_ligne@PLT
+	xorl	%edi, %edi
+	callq	affiche_booleen@PLT
+	callq	nouvelle_ligne@PLT
 	xorl	%eax, %eax
 	popq	%rcx
 	.cfi_def_cfa_offset 8
 	retq
-.Lfunc_end10:
-	.size	main, .Lfunc_end10-main
+.Lfunc_end11:
+	.size	main, .Lfunc_end11-main
 	.cfi_endproc
                                         # -- End function
 	.type	.Lzero,@object                  # @zero
@@ -549,6 +575,16 @@ main:                                   # @main
 	.asciz	"infini"
 	.size	.Linfini, 7
 
+	.type	.Lvrai,@object                  # @vrai
+.Lvrai:
+	.asciz	"vrai"
+	.size	.Lvrai, 5
+
+	.type	.Lfaux,@object                  # @faux
+.Lfaux:
+	.asciz	"faux"
+	.size	.Lfaux, 5
+
 	.type	.Lnewline,@object               # @newline
 	.section	.rodata.str1.1,"aMS",@progbits,1
 .Lnewline:
@@ -631,5 +667,13 @@ separateurs:
 	.quad	.Ltrillion
 	.quad	.Linfini
 	.size	separateurs, 64
+
+	.type	booleen,@object                 # @booleen
+	.globl	booleen
+	.p2align	3, 0x0
+booleen:
+	.quad	.Lfaux
+	.quad	.Lvrai
+	.size	booleen, 16
 
 	.section	".note.GNU-stack","",@progbits
