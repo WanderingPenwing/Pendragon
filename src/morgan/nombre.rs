@@ -5,7 +5,7 @@ pub fn calcule_nombre(
 	var: HashMap<String, usize>,
 ) -> Result<Instruction, ErreurMorgan> {
 	let mut instruction = Instruction::new(var);
-	let current_index = instruction.var.entry(EXPRESSION_NOMBRE.to_string()).and_modify(|e| *e += 1).or_insert(0);
+	let current_index = instruction.var.entry(EXPRESSION_NOMBRE.to_string()).and_modify(|e| *e += 1).or_insert(0).clone();
 	let mut expression_index: usize = 0;
 	
 	for element in expression {
@@ -13,6 +13,16 @@ pub fn calcule_nombre(
 			expression_index += 1;
 			instruction.body += &format!("%{}-{}-{} = add i64 {}, 0\n", EXPRESSION_NOMBRE, current_index, expression_index, nombre);
 			continue;
+		}
+		if let Element::Variable(nom, _) = element {
+			expression_index += 1;
+			let Some(&current_var_index) = instruction.var.get(&nom) else {
+				return Err(ErreurMorgan::ManqueVariable(nom.to_string()));
+			};
+			instruction.body += &format!("%{}-{}-{} = add i64 %{}-{}, 0\n", 
+				EXPRESSION_NOMBRE, current_index, expression_index,
+				nom, current_var_index);
+			continue
 		}
 		let Element::Operateur(ref operateur) = element else {
 			return Err(ErreurMorgan::MauvaisArgument(format!(

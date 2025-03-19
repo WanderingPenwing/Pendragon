@@ -4,3 +4,11 @@ Affiche faux ou non faux.
 
 Définis A comme entier.
 Modifie A avec un.
+Affiche A fois sept.
+Modifie A avec A plus deux.
+Affiche A plus un.
+
+Définis B comme booléen.
+Affiche B.
+Modifie B avec vrai ou faux.
+Affiche vrai et B.

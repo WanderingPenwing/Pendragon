@@ -45,8 +45,16 @@ pub fn calcule_texte(
 			continue;
 		}
 		match element_pile {
-			Element::Texte(_contenu) => {},
-			Element::Variable(_nom, _type_element) => {}
+			Element::Texte(_contenu) => return Err(ErreurMorgan::MauvaisArgument("texte pas géré".to_string())),
+//			Element::Variable(nom, type_element) => {
+//				let current_variable_index = instruction.var[nom];
+//				let call = match type_element {
+//					TypeElement::Entier => "call void @affiche_nombre(i64",
+//					TypeElement::Booleen => "call void @affiche_booleen(i1",
+//					TypeElement::Texte => return Err(ErreurMorgan::MauvaisArgument("var texte pas implémenté".to_string())),
+//				};
+//				instruction.body += &format!("{} %{}-{})\n", call, nom, current_variable_index);
+//			}
 			autre => return Err(ErreurMorgan::MauvaisArgument(format!("{}", autre))),
 		}
 		pile = Vec::new();

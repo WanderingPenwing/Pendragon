@@ -348,6 +348,39 @@ call void @nouvelle_ligne()
 %expression_nombre-2-1 = add i64 1, 0
 %expression_nombre-2-fin = add i64 %expression_nombre-2-1, 0
 %A-1 = add i64 %expression_nombre-2-fin, 0
+%expression_nombre-3-1 = add i64 %A-1, 0
+%expression_nombre-3-2 = add i64 7, 0
+%expression_nombre-3-3 = mul i64 %expression_nombre-3-1, %expression_nombre-3-2
+%expression_nombre-3-fin = add i64 %expression_nombre-3-3, 0
+call void @affiche_nombre(i64 %expression_nombre-3-fin)
+call void @nouvelle_ligne()
+%expression_nombre-4-1 = add i64 %A-1, 0
+%expression_nombre-4-2 = add i64 2, 0
+%expression_nombre-4-3 = add i64 %expression_nombre-4-1, %expression_nombre-4-2
+%expression_nombre-4-fin = add i64 %expression_nombre-4-3, 0
+%A-2 = add i64 %expression_nombre-4-fin, 0
+%expression_nombre-5-1 = add i64 %A-2, 0
+%expression_nombre-5-2 = add i64 1, 0
+%expression_nombre-5-3 = add i64 %expression_nombre-5-1, %expression_nombre-5-2
+%expression_nombre-5-fin = add i64 %expression_nombre-5-3, 0
+call void @affiche_nombre(i64 %expression_nombre-5-fin)
+call void @nouvelle_ligne()
+%B-0 = add i1 0, 0
+%expression_booleen-2-1 = add i1 %B-0, 0
+%expression_booleen-2-fin = add i1 %expression_booleen-2-1, 0
+call void @affiche_booleen(i1 %expression_booleen-2-fin)
+call void @nouvelle_ligne()
+%expression_booleen-3-1 = add i1 1, 0
+%expression_booleen-3-2 = add i1 0, 0
+%expression_booleen-3-3 = or i1 %expression_booleen-3-2, %expression_booleen-3-1
+%expression_booleen-3-fin = add i1 %expression_booleen-3-3, 0
+%B-1 = add i1 %expression_booleen-3-fin, 0
+%expression_booleen-4-1 = add i1 1, 0
+%expression_booleen-4-2 = add i1 %B-1, 0
+%expression_booleen-4-3 = and i1 %expression_booleen-4-2, %expression_booleen-4-1
+%expression_booleen-4-fin = add i1 %expression_booleen-4-3, 0
+call void @affiche_booleen(i1 %expression_booleen-4-fin)
+call void @nouvelle_ligne()
 
 ret i32 0
 }

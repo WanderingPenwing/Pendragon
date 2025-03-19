@@ -391,6 +391,18 @@ main:                                   # @main
 	movl	$1, %edi
 	callq	affiche_booleen@PLT
 	callq	nouvelle_ligne@PLT
+	movl	$7, %edi
+	callq	affiche_nombre@PLT
+	callq	nouvelle_ligne@PLT
+	movl	$4, %edi
+	callq	affiche_nombre@PLT
+	callq	nouvelle_ligne@PLT
+	xorl	%edi, %edi
+	callq	affiche_booleen@PLT
+	callq	nouvelle_ligne@PLT
+	movl	$1, %edi
+	callq	affiche_booleen@PLT
+	callq	nouvelle_ligne@PLT
 	xorl	%eax, %eax
 	popq	%rcx
 	.cfi_def_cfa_offset 8

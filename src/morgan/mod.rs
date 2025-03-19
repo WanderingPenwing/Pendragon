@@ -122,24 +122,27 @@ impl Commande {
 			Commande::Modifie(nom, expression) => {
 				let mut expression_type: &str = EXPRESSION_NOMBRE;
 				let mut instruction = Instruction::default();
-				match var_types[nom] {
+				let ir_type: &str = match var_types[nom] {
 					TypeElement::Entier => {
 						instruction.add(nombre::calcule_nombre(expression.clone(), var.clone())?);
+						"i64"
 					}
 					TypeElement::Texte => {
 						return Err(ErreurMorgan::MauvaisArgument("Variable texte pas implémentées".to_string()));
+						//"i8"
 						//expression_type = EXPRESSION_TEXTE
 					}
 					TypeElement::Booleen => {
 						instruction.add(booleen::calcule_booleen(expression.clone(), var.clone())?);
 						expression_type = EXPRESSION_BOOLEEN;
+						"i1"
 					}
-				}
+				};
 				let current_expression_index = instruction.var[expression_type];
 				let current_variable_index = instruction.var.entry(nom.to_string()).and_modify(|e| *e += 1).or_insert(0);
 				
-				instruction.body += &format!("%{}-{} = add i64 %{}-{}-fin, 0\n", 
-					nom, current_variable_index, 
+				instruction.body += &format!("%{}-{} = add {} %{}-{}-fin, 0\n", 
+					nom, current_variable_index, ir_type,
 					expression_type, current_expression_index);
 				Ok(instruction)
 			}
