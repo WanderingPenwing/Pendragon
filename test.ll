@@ -322,12 +322,16 @@ define void @affiche_booleen(i1 %x) {
 ;}
 
 define i32 @main() {
-call void @affiche_nombre(i64 36004)
-call void @affiche_nombre(i64 4)
+%expression_nombre-1-fin = add i64 36004, 0
+call void @affiche_nombre(i64 %expression_nombre-1-fin)
+%expression_nombre-2-fin = add i64 4, 0
+call void @affiche_nombre(i64 %expression_nombre-2-fin)
 call void @nouvelle_ligne()
-call void @affiche_booleen(i1 1)
+%expression_booleen-1-fin = add i1 1, 0
+call void @affiche_booleen(i1 %expression_booleen-1-fin)
 call void @nouvelle_ligne()
-call void @affiche_booleen(i1 0)
+%expression_booleen-2-fin = add i1 0, 0
+call void @affiche_booleen(i1 %expression_booleen-2-fin)
 call void @nouvelle_ligne()
 
 ret i32 0
