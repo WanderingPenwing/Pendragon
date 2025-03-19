@@ -18,6 +18,7 @@ pub const EXPRESSION_BOOLEEN: &str = "expression_booleen";
 pub struct Instruction {
 	body: String,
 	var: HashMap<String, usize>,
+	var_types: HashMap<String, TypeElement>,
 	declaration : String,
 }
 
@@ -30,11 +31,16 @@ impl Instruction {
 	            .and_modify(|e| *e = (*e).max(value))
 	            .or_insert(value);
 	    }
+		for (key, value) in instruction.var_types.iter() {
+			self.var_types.entry(key.clone())
+	            .or_insert(value.clone());
+		}
 	}
 	pub fn new(var: HashMap<String, usize>) -> Self {
 		Self {
 			body: String::new(),
 			var,
+			var_types: HashMap::new(),
 			declaration: String::new(),
 		}
 	}
@@ -48,7 +54,7 @@ impl Programme {
 		for phrase in &self.contenu {
 			match phrase {
 				Phrase::Commande(commande) => {
-					main_instruction.add(commande.traduit(main_instruction.var.clone())?);
+					main_instruction.add(commande.traduit(main_instruction.var.clone(), main_instruction.var_types.clone())?);
 				}
 				Phrase::Bloc(_) => {},
 			}
@@ -97,16 +103,45 @@ impl Programme {
 
 
 impl Commande {
-	fn traduit(&self, var: HashMap<String, usize>) -> Result<Instruction, ErreurMorgan> {
+	fn traduit(&self, var: HashMap<String, usize>, var_types: HashMap<String, TypeElement>) -> Result<Instruction, ErreurMorgan> {
 		match self {
-			Commande::Definis(_nom, _type_element) => {
-				Ok(Instruction::default())
+			Commande::Definis(nom, type_element) => {
+				let mut instruction = Instruction::new([(nom.to_string(),0)].into_iter().collect());
+				instruction.var_types.insert(nom.to_string(), type_element.clone());
+				let ir_type: &str = match type_element {
+					TypeElement::Entier => "i64",
+					TypeElement::Booleen => "i1",
+					TypeElement::Texte => "i8",
+				};
+				instruction.body += &format!("%{}-0 = add {} 0, 0\n", nom,ir_type);
+				Ok(instruction)
 			}
 			Commande::Demande(_nom) => {
 				Ok(Instruction::default())
 			}
-			Commande::Modifie(_nom, _expression) => {
-				Ok(Instruction::default())
+			Commande::Modifie(nom, expression) => {
+				let mut expression_type: &str = EXPRESSION_NOMBRE;
+				let mut instruction = Instruction::default();
+				match var_types[nom] {
+					TypeElement::Entier => {
+						instruction.add(nombre::calcule_nombre(expression.clone(), var.clone())?);
+					}
+					TypeElement::Texte => {
+						return Err(ErreurMorgan::MauvaisArgument("Variable texte pas implémentées".to_string()));
+						//expression_type = EXPRESSION_TEXTE
+					}
+					TypeElement::Booleen => {
+						instruction.add(booleen::calcule_booleen(expression.clone(), var.clone())?);
+						expression_type = EXPRESSION_BOOLEEN;
+					}
+				}
+				let current_expression_index = instruction.var[expression_type];
+				let current_variable_index = instruction.var.entry(nom.to_string()).and_modify(|e| *e += 1).or_insert(0);
+				
+				instruction.body += &format!("%{}-{} = add i64 %{}-{}-fin, 0\n", 
+					nom, current_variable_index, 
+					expression_type, current_expression_index);
+				Ok(instruction)
 			}
 			Commande::Affiche(expression) => {
 				Ok(texte::calcule_texte(expression.to_vec(), var)?)

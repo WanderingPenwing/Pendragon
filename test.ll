@@ -344,6 +344,10 @@ call void @nouvelle_ligne()
 %expression_booleen-1-fin = add i1 %expression_booleen-1-4, 0
 call void @affiche_booleen(i1 %expression_booleen-1-fin)
 call void @nouvelle_ligne()
+%A-0 = add i64 0, 0
+%expression_nombre-2-1 = add i64 1, 0
+%expression_nombre-2-fin = add i64 %expression_nombre-2-1, 0
+%A-1 = add i64 %expression_nombre-2-fin, 0
 
 ret i32 0
 }
