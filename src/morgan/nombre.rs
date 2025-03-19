@@ -4,23 +4,40 @@ pub fn calcule_nombre(
 	expression: Vec<Element>,
 	var: HashMap<String, usize>,
 ) -> Result<Instruction, ErreurMorgan> {
-	if expression.len() != 1 {
-		return Err(ErreurMorgan::MauvaisArgument("expression numérique complexe".to_string()));
-	}
-	let Some(past_index) = var.get(EXPRESSION_NOMBRE) else {
-		return Err(ErreurMorgan::ManqueVariable(EXPRESSION_NOMBRE.to_string()));
-	};
-	let current_index = past_index + 1;
+	let mut instruction = Instruction::new(var);
+	let current_index = instruction.var.entry(EXPRESSION_NOMBRE.to_string()).and_modify(|e| *e += 1).or_insert(0);
 	let mut expression_index: usize = 0;
 	
-	match expression[0] {
-		Element::Entier(nombre) => {
-			Ok(Instruction {
-				body: format!("%{}-{}-fin = add i64 {}, 0\n", EXPRESSION_NOMBRE, current_index, nombre),
-				var: [(EXPRESSION_NOMBRE.to_string(), current_index)].into_iter().collect(),
-				declaration: String::new(),
-			})
-		},
-		_ => Err(ErreurMorgan::MauvaisArgument("expression numérique complexe".to_string()))
+	for element in expression {
+		if let Element::Entier(nombre) = element {
+			expression_index += 1;
+			instruction.body += &format!("%{}-{}-{} = add i64 {}, 0\n", EXPRESSION_NOMBRE, current_index, expression_index, nombre);
+			continue;
+		}
+		let Element::Operateur(ref operateur) = element else {
+			return Err(ErreurMorgan::MauvaisArgument(format!(
+				"{}, attendais un opérateur",
+				element
+			)));
+		};
+		let operation: &str = match operateur {
+			Operateur::Plus => "add",
+			Operateur::Moins => "sub",
+			Operateur::Fois => "mul",
+			Operateur::Divise => "sdiv",
+			_ => "",
+		};
+		expression_index += 1;
+		instruction.body += &format!("%{}-{}-{} = {} i64 %{}-{}-{}, %{}-{}-{}\n", 
+			EXPRESSION_NOMBRE, current_index, expression_index, operation,
+			EXPRESSION_NOMBRE, current_index, expression_index-2,
+			EXPRESSION_NOMBRE, current_index, expression_index-1);
 	}
+	if expression_index > 0 {
+		instruction.body += &format!("%{}-{}-fin = add i64 %{}-{}-{}, 0\n", 
+			EXPRESSION_NOMBRE, current_index, 
+			EXPRESSION_NOMBRE, current_index, expression_index);
+	}
+	
+	Ok(instruction)
 }

@@ -8,8 +8,8 @@ pub fn calcule_texte(
 
 	let mut instruction = Instruction::new(var);
 	
-//	let Some(past_index) = instruction.var.get("exp_text") else {
-//		return Err(ErreurMorgan::ManqueVariable("exp_text".to_string()));
+//	let Some(past_index) = instruction.var.get(EXPRESSION_TEXTE) else {
+//		return Err(ErreurMorgan::ManqueVariable(EXPRESSION_TEXTE.to_string()));
 //	}
 //	let current_index = past_index + 1;
 //	let mut expression_index: usize = 0;

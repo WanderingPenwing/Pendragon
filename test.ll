@@ -322,16 +322,27 @@ define void @affiche_booleen(i1 %x) {
 ;}
 
 define i32 @main() {
-%expression_nombre-1-fin = add i64 36004, 0
+%expression_nombre-0-1 = add i64 36004, 0
+%expression_nombre-0-fin = add i64 %expression_nombre-0-1, 0
+call void @affiche_nombre(i64 %expression_nombre-0-fin)
+%expression_nombre-1-1 = add i64 4, 0
+%expression_nombre-1-2 = add i64 17, 0
+%expression_nombre-1-3 = mul i64 %expression_nombre-1-1, %expression_nombre-1-2
+%expression_nombre-1-4 = add i64 7, 0
+%expression_nombre-1-5 = sub i64 %expression_nombre-1-3, %expression_nombre-1-4
+%expression_nombre-1-fin = add i64 %expression_nombre-1-5, 0
 call void @affiche_nombre(i64 %expression_nombre-1-fin)
-%expression_nombre-2-fin = add i64 4, 0
-call void @affiche_nombre(i64 %expression_nombre-2-fin)
 call void @nouvelle_ligne()
-%expression_booleen-1-fin = add i1 1, 0
+%expression_booleen-0-1 = add i1 1, 0
+%expression_booleen-0-fin = add i1 %expression_booleen-0-1, 0
+call void @affiche_booleen(i1 %expression_booleen-0-fin)
+call void @nouvelle_ligne()
+%expression_booleen-1-1 = add i1 0, 0
+%expression_booleen-1-2 = add i1 0, 0
+%expression_booleen-1-3 = xor i1 %expression_booleen-1-2, true
+%expression_booleen-1-4 = or i1 %expression_booleen-1-3, %expression_booleen-1-2
+%expression_booleen-1-fin = add i1 %expression_booleen-1-4, 0
 call void @affiche_booleen(i1 %expression_booleen-1-fin)
-call void @nouvelle_ligne()
-%expression_booleen-2-fin = add i1 0, 0
-call void @affiche_booleen(i1 %expression_booleen-2-fin)
 call void @nouvelle_ligne()
 
 ret i32 0

@@ -14,24 +14,11 @@ pub const EXPRESSION_TEXTE: &str = "expression_texte";
 pub const EXPRESSION_NOMBRE: &str = "expression_nombre";
 pub const EXPRESSION_BOOLEEN: &str = "expression_booleen";
 
+#[derive(Default)]
 pub struct Instruction {
 	body: String,
 	var: HashMap<String, usize>,
 	declaration : String,
-}
-
-impl Default for Instruction {
-	fn default() -> Self {
-		Self {
-			body: String::new(),
-			var : [
-        		(EXPRESSION_TEXTE.to_string(), 0),
-        		(EXPRESSION_NOMBRE.to_string(), 0),
-        		(EXPRESSION_BOOLEEN.to_string(), 0),
-    		].into_iter().collect(),
-			declaration: String::new(),
-		}
-	}
 }
 
 impl Instruction {

@@ -382,13 +382,13 @@ main:                                   # @main
 	.cfi_def_cfa_offset 16
 	movl	$36004, %edi                    # imm = 0x8CA4
 	callq	affiche_nombre@PLT
-	movl	$4, %edi
+	movl	$61, %edi
 	callq	affiche_nombre@PLT
 	callq	nouvelle_ligne@PLT
 	movl	$1, %edi
 	callq	affiche_booleen@PLT
 	callq	nouvelle_ligne@PLT
-	xorl	%edi, %edi
+	movl	$1, %edi
 	callq	affiche_booleen@PLT
 	callq	nouvelle_ligne@PLT
 	xorl	%eax, %eax
