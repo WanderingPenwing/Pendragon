@@ -21,13 +21,14 @@ fn main() {
 
 	let mode_debug = arguments.contains(&"-d".to_string());
 	let mode_debug_verbeux = arguments.contains(&"-v".to_string());
-	let mode_interprete = arguments.contains(&"-i".to_string());
+	let  mode_interprete = arguments.contains(&"-i".to_string());
 
 	let chemin_de_fichier = &arguments[1];
 	let chemin = Path::new(chemin_de_fichier);
 
 	if chemin.extension() != Some(std::ffi::OsStr::new("dr")) {
 		eprintln!("devrait être un .dr");
+		return;
 	}
 	let Some(nom_fichier_os) = chemin.file_stem() else {
         eprintln!("le fichier n'a pas de nom");
