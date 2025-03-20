@@ -3,13 +3,12 @@
     "configurations": [
         {
             "name": "Run selected file",
-            "type": "cppdbg",
+            "type": "node",
             "request": "launch",
             "program": "/usr/local/cargo/bin/pendragon",
             "args": ["${file}"],
             "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal",
-            "stopAtEntry": false
+            "console": "integratedTerminal"
         }
     ]
 }
