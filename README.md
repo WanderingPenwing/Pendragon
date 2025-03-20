@@ -2,6 +2,8 @@
 
 Un language de programmation avec la syntaxe d'un texte français.
 
+Avec de la [Documentation](https://doc.penwing.org) !
+
 ## Pour l'instant
 - La partie pendragon/ transforme le fichier '.dr' en AST (arbre de syntaxe)
 - La parte sophie/ interprète l'AST

@@ -4,7 +4,7 @@
     "features": {
         "ghcr.io/devcontainers/features/rust:1": {}
     },
-    "postCreateCommand": "cargo install --path .",
+    "postCreateCommand": "cargo install --path . && rm -rf shell.nix pendragon.project src target ir-src test-code Cargo.toml Cargo.lock .git .devcontainer",
     "customizations": {
         "vscode": {
             "settings": {
