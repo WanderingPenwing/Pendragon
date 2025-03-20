@@ -45,6 +45,8 @@
 @s = private unnamed_addr constant [2 x i8] c"s\00"
 @espace = private unnamed_addr constant [2 x i8] c" \00"
 
+@str = private constant [3 x i8] c"%s\00"
+
 ; Create an array of i8* pointers, where each points to one of the strings
 @petits_nombres = global [20 x i8*] [
     i8* getelementptr inbounds ([6 x i8], [6 x i8]* @zero, i32 0, i32 0),
@@ -111,20 +113,20 @@ centaine:
 	%juste_cent = icmp eq i32 %x, 1
 	br i1 %juste_cent, label %cent, label %nombre
 nombre:
-	%nombre_ptr = getelementptr [10 x i8*], [10 x i8*]* @petits_nombres, i32 0, i32 %x
+	%nombre_ptr = getelementptr [20 x i8*], [20 x i8*]* @petits_nombres, i32 0, i32 %x
 	%nombre_str = load i8*, i8** %nombre_ptr
-	call i32 @printf(i8* %nombre_str)
+	call i32 @printf(i8* @str, i8* %nombre_str)
 	call void @affiche_tiret()
 	br label %cent
 cent:
 	%cent_ptr = getelementptr [7 x i8*], [7 x i8*]* @dizaine, i32 0, i32 0
 	%cent_str = load i8*, i8** %cent_ptr
-	call i32 @printf(i8* %cent_str)
+	call i32 @printf(i8* @str, i8* %cent_str)
 	br label %fin
 infini:
 	%infini_ptr = getelementptr [7 x i8*], [7 x i8*]* @separateurs, i32 0, i32 6
 	%infini_str = load i8*, i8** %infini_ptr
-	call i32 @printf(i8* %infini_str)
+	call i32 @printf(i8* @str, i8* %infini_str)
 	br label %fin
 fin:
 	ret void
@@ -136,15 +138,15 @@ entry:
 	br i1 %pas_trop_gros, label %unite, label %infini
 
 unite:
-	%nombre_ptr = getelementptr [10 x i8*], [10 x i8*]* @petits_nombres, i32 0, i32 %x
+	%nombre_ptr = getelementptr [20 x i8*], [20 x i8*]* @petits_nombres, i32 0, i32 %x
 	%nombre_str = load i8*, i8** %nombre_ptr
-	call i32 @printf(i8* %nombre_str)
+	call i32 @printf(i8* @str, i8* %nombre_str)
 	br label %fin
 
 infini:
 	%infini_ptr = getelementptr [7 x i8*], [7 x i8*]* @separateurs, i32 0, i32 6
 	%infini_str = load i8*, i8** %infini_ptr
-	call i32 @printf(i8* %infini_str)
+	call i32 @printf(i8* @str, i8* %infini_str)
 	br label %fin
 
 fin:
@@ -163,7 +165,7 @@ dizaine:
 	%chiffre_unite = srem i32 %x, 10
 	%dizaine_ptr = getelementptr [10 x i8*], [10 x i8*]* @dizaine, i32 0, i32 %chiffre_dizaine
 	%dizaine_str = load i8*, i8** %dizaine_ptr
-	call i32 @printf(i8* %dizaine_str)
+	call i32 @printf(i8* @str, i8* %dizaine_str)
 	%a_unite = icmp eq i32 %chiffre_unite, 0
 	br i1 %a_unite, label %fin, label %pitet-et
 pitet-et:
@@ -173,7 +175,7 @@ pitet-et:
 	br i1 %manque-et, label %affiche-et, label %pitet-special
 affiche-et:
 	%et_str = bitcast [4 x i8]* @et to i8*
-	call i32 @printf(i8* %et_str)
+	call i32 @printf(i8* @str, i8* %et_str)
 	br label %pitet-special
 pitet-special:
 	call void @affiche_tiret()
@@ -218,19 +220,19 @@ fin:
 
 define void @affiche_tiret() {
 	%tiret_str = bitcast [2 x i8]* @tiret to i8*
-	call i32 @printf(i8* %tiret_str)
+	call i32 @printf(i8* @str, i8* %tiret_str)
 	ret void
 }
 
 define void @nouvelle_ligne() {
 	%newline_str = bitcast [2 x i8]* @newline to i8*
-	call i32 @printf(i8* %newline_str)
+	call i32 @printf(i8* @str, i8* %newline_str)
 	ret void
 }
 
 define void @affiche_espace() {
 	%espace_str = bitcast [2 x i8]* @espace to i8*
-	call i32 @printf(i8* %espace_str)
+	call i32 @printf(i8* @str, i8* %espace_str)
 	ret void
 }
 
@@ -265,9 +267,9 @@ entry:
 	%est_zero = icmp eq i64 %x, 0
 	br i1 %est_zero, label %affiche_zero, label %nombre
 affiche_zero:
-	%zero_ptr = getelementptr [10 x i8*], [10 x i8*]* @petits_nombres, i32 0, i32 0
+	%zero_ptr = getelementptr [20 x i8*], [20 x i8*]* @petits_nombres, i32 0, i32 0
 	%zero_str = load i8*, i8** %zero_ptr
-	call i32 @printf(i8* %zero_str)
+	call i32 @printf(i8* @str, i8* %zero_str)
 	br label %fin
 nombre:
 	%puissance = call i32 @log_mille(i64 %x)
@@ -286,14 +288,14 @@ separateur:
 	call void @affiche_tiret()
 	%separateur_ptr = getelementptr [8 x i8*], [8 x i8*]* @separateurs, i32 0, i32 %puissance
 	%separateur_str = load i8*, i8** %separateur_ptr
-	call i32 @printf(i8* %separateur_str)
+	call i32 @printf(i8* @str, i8* %separateur_str)
 	%un = icmp slt i32 %petite-valeur, 2
 	%mille = icmp slt i32 %puissance, 2
 	%pas-s = add i1 %un, %mille
 	br i1 %pas-s, label %pitet-recursion, label %affiche-s
 affiche-s:
 	%s_str = bitcast [2 x i8]* @s to i8*
-	call i32 @printf(i8* %s_str)
+	call i32 @printf(i8* @str, i8* %s_str)
 	br label %pitet-recursion
 pitet-recursion:
 	%reste_zero = icmp eq i64 %reste, 0
@@ -310,13 +312,13 @@ define void @affiche_booleen(i1 %x) {
 	%bool = zext i1 %x to i32
 	%bool_ptr = getelementptr [2 x i8*], [2 x i8*]* @booleen, i32 0, i32 %bool
 	%bool_str = load i8*, i8** %bool_ptr
-	call i32 @printf(i8* %bool_str)
+	call i32 @printf(i8* @str, i8* %bool_str)
 	ret void
 }
 
 ; Definition of main function
-; define i32 @main() { ; i32()*
-; 	call void @affiche_nombre(i64 25781)
+;define i32 @main() { ; i32()*
+;	call void @affiche_nombre(i64 25781)
 ;	call void @nouvelle_ligne()
 ;	ret i32 0
 ;}

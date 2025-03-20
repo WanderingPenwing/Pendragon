@@ -81,7 +81,7 @@ impl Programme {
 				if !status.success() {
 					return Err(ErreurMorgan::ErreurSysteme("llc n'a pas pu compiler le fichier .ll".to_string()));
 				}
-				let status = Command::new("clang")
+				let status = Command::new("clang") // clang -fPIE
 					.arg("-fPIE") // Ensure position-independent code
 					.arg("-pie")  // Generate PIE executable
 					.arg(format!("{}.s", name)) // Input assembly file
