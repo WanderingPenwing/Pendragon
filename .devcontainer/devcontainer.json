@@ -1,0 +1,19 @@
+{
+    "name": "Pendragon",
+    "image": "mcr.microsoft.com/devcontainers/rust:latest",
+    "features": {
+        "ghcr.io/devcontainers/features/rust:1": {}
+    },
+    "postCreateCommand": "cargo install --path .",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash"
+            },
+            "extensions": [
+                "rust-lang.rust-analyzer",
+                "serayuzgur.crates"
+            ]
+        }
+    }
+}
