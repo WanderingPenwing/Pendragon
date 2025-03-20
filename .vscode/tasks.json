@@ -1,0 +1,18 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Pendragon",
+            "type": "shell",
+            "command": "/usr/local/cargo/bin/pendragon",
+            "args": [
+                "${file}"  // This passes the current open .dr file as an argument
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}
