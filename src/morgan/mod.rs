@@ -27,13 +27,13 @@ impl Instruction {
 		self.body += &instruction.body;
 		self.declaration += &instruction.declaration;
 		for (key, &value) in instruction.var.iter() {
-	        self.var.entry(key.clone())
-	            .and_modify(|e| *e = (*e).max(value))
-	            .or_insert(value);
-	    }
+			self.var.entry(key.clone())
+				.and_modify(|e| *e = (*e).max(value))
+				.or_insert(value);
+		}
 		for (key, value) in instruction.var_types.iter() {
 			self.var_types.entry(key.clone())
-	            .or_insert(value.clone());
+				.or_insert(value.clone());
 		}
 	}
 	pub fn new(var: HashMap<String, usize>) -> Self {
@@ -60,7 +60,7 @@ impl Programme {
 			}
 		}
 		
-		let main_start: &str = "\ndefine i32 @main() {\n";
+		let main_start: &str = "\ndefine i32 @main() {\n%fmt_ptr = getelementptr [3 x i8], [3 x i8]* @format_str, i32 0, i32 0\n%nouvelle_ligne = getelementptr [3 x i8], [3 x i8]* @newline, i32 0, i32 0\n";
 		let main_end: &str = "\nret i32 0\n}";
 		let programme: String = format!("{}{}{}{}{}", MAIN_IR, main_instruction.declaration, main_start, main_instruction.body, main_end);
 		
@@ -70,7 +70,7 @@ impl Programme {
 					return Err(ErreurMorgan::ErreurSysteme(format!("l'écriture du fichier .ll a échoué : {}", raison)));
 				}
 
-				let status = Command::new("llc")
+				let status = Command::new("llc") // llc -filetype=asm -relocation-model=pic example.ll -o example.s
 					.arg("-filetype=asm")
 					.arg("-relocation-model=pic") // Generate position-independent code
 					.arg(format!("{}.ll", name)) // Input LLVM IR file
@@ -81,7 +81,7 @@ impl Programme {
 				if !status.success() {
 					return Err(ErreurMorgan::ErreurSysteme("llc n'a pas pu compiler le fichier .ll".to_string()));
 				}
-				let status = Command::new("clang") // clang -fPIE
+				let status = Command::new("clang") // clang -fPIE -pie example.s -o example
 					.arg("-fPIE") // Ensure position-independent code
 					.arg("-pie")  // Generate PIE executable
 					.arg(format!("{}.s", name)) // Input assembly file
@@ -147,7 +147,14 @@ impl Commande {
 				Ok(instruction)
 			}
 			Commande::Affiche(expression) => {
-				Ok(texte::calcule_texte(expression.to_vec(), var)?)
+				let mut instruction = texte::calcule_texte(expression.to_vec(), var)?;
+				let Some(current_texte_index) = instruction.var.get(EXPRESSION_TEXTE) else {
+					return Err(ErreurMorgan::ManqueVariable(EXPRESSION_TEXTE.to_string()));
+				};
+				instruction.body += &format!("call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %{}-{}-fin)\ncall i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)\n", 
+					EXPRESSION_TEXTE, current_texte_index
+				);
+				Ok(instruction)
 			}
 		}
 	}
