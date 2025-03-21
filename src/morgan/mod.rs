@@ -90,8 +90,8 @@ impl Programme {
 					.status()
 					.expect("Failed to execute clang");
 				if !status.success() {
-   					return Err(ErreurMorgan::ErreurSysteme("clang n'a pas pu lier le fichier .s".to_string()));
-   				}
+   				return Err(ErreurMorgan::ErreurSysteme("clang n'a pas pu lier le fichier .s".to_string()));
+				}
 				Ok(())
 			}
 			Err(raison) => {

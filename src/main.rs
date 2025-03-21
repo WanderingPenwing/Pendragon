@@ -21,7 +21,8 @@ fn main() {
 
 	let mode_debug = arguments.contains(&"-d".to_string());
 	let mode_debug_verbeux = arguments.contains(&"-v".to_string());
-	let  mode_interprete = arguments.contains(&"-i".to_string());
+	let mode_interprete = arguments.contains(&"-i".to_string());
+	let mode_garde = arguments.contains(&"-g".to_string());
 
 	let chemin_de_fichier = &arguments[1];
 	let chemin = Path::new(chemin_de_fichier);
@@ -31,14 +32,14 @@ fn main() {
 		return;
 	}
 	let Some(nom_fichier_os) = chemin.file_stem() else {
-        eprintln!("le fichier n'a pas de nom");
-        return;
-    };
+		eprintln!("le fichier n'a pas de nom");
+		return;
+	};
 	let Some(nom_fichier) = nom_fichier_os.to_str() else {
-        eprintln!("le nom du fichier n'a pas pu être converti en chaîne de caractères");
-        return;
-    };
-    
+		eprintln!("le nom du fichier n'a pas pu être converti en chaîne de caractères");
+		return;
+	};
+	
 	let mut pendragon = Pendragon::nouveau();
 
 	let lecture = fs::read_to_string(chemin_de_fichier);
@@ -92,18 +93,22 @@ fn main() {
 		display::message_echec("la compilation");
 		return;
 	}
+	if !mode_garde {
+		let _ll_result = fs::remove_file(&format!("{}.ll", nom_fichier));
+		let _s_result = fs::remove_file(&format!("{}.s", nom_fichier));
+	}
 	display::message_ok("Compilation", debut.elapsed());
 	display::message_debut("Exécution", nom_fichier);
 	println!(" ");
 	let debut = Instant::now();
 	let status = Command::new(format!("./{}", nom_fichier))
-        .status()
-        .expect("Failed to execute file");
-    if !status.success() {
+		.status()
+		.expect("Failed to execute file");
+	if !status.success() {
    		eprintln!("Erreur : Le fichier n'a pas pu être exécuté");
    		display::message_echec("l'exécution");
-        return;
-    }
-    println!(" ");
+		return;
+	}
+	println!(" ");
 	display::message_ok("Execution", debut.elapsed());
 }
