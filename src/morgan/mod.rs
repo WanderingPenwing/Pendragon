@@ -13,6 +13,7 @@ pub const MAIN_IR: &str = include_str!("../../ir-src/main.ll");
 pub const EXPRESSION_TEXTE: &str = "expression_texte";
 pub const EXPRESSION_NOMBRE: &str = "expression_nombre";
 pub const EXPRESSION_BOOLEEN: &str = "expression_booleen";
+pub const TEXTE_GLOBAL: &str = "texte_global";
 
 #[derive(Default)]
 pub struct Instruction {
@@ -108,42 +109,47 @@ impl Commande {
 			Commande::Definis(nom, type_element) => {
 				let mut instruction = Instruction::new([(nom.to_string(),0)].into_iter().collect());
 				instruction.var_types.insert(nom.to_string(), type_element.clone());
-				let ir_type: &str = match type_element {
-					TypeElement::Entier => "i64",
-					TypeElement::Booleen => "i1",
-					TypeElement::Texte => "i8",
+				let default_value: &str = match type_element {
+					TypeElement::Entier => "add i64 0, 0",
+					TypeElement::Booleen => "add i1 0, 0",
+					TypeElement::Texte => "getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0",
 				};
-				instruction.body += &format!("%{}-0 = add {} 0, 0\n", nom,ir_type);
+				instruction.body += &format!("%{}-0 = {}\n", nom, default_value);
 				Ok(instruction)
 			}
 			Commande::Demande(_nom) => {
 				Ok(Instruction::default())
 			}
 			Commande::Modifie(nom, expression) => {
-				let mut expression_type: &str = EXPRESSION_NOMBRE;
-				let mut instruction = Instruction::default();
-				let ir_type: &str = match var_types[nom] {
+				let mut instruction = Instruction::default();				
+				match var_types[nom] {
 					TypeElement::Entier => {
 						instruction.add(nombre::calcule_nombre(expression.clone(), var.clone())?);
-						"i64"
+						let current_expression_index = instruction.var[EXPRESSION_NOMBRE];
+						let current_variable_index = instruction.var.entry(nom.to_string()).and_modify(|e| *e += 1).or_insert(0);
+						instruction.body += &format!("%{}-{} = add i64 %{}-{}-fin, 0\n", 
+							nom, current_variable_index, EXPRESSION_NOMBRE, current_expression_index
+						);
 					}
 					TypeElement::Texte => {
-						return Err(ErreurMorgan::MauvaisArgument("Variable texte pas implémentées".to_string()));
-						//"i8"
-						//expression_type = EXPRESSION_TEXTE
+						instruction.add(texte::calcule_texte(expression.clone(), var.clone())?);
+						let current_expression_index = instruction.var[EXPRESSION_TEXTE];
+						let current_variable_index = instruction.var.entry(nom.to_string()).and_modify(|e| *e += 1).or_insert(0);
+						instruction.body += &format!("%{}-{} = getelementptr i8, i8* %{}-{}-fin, i32 0\n", 
+							nom, current_variable_index, EXPRESSION_TEXTE, current_expression_index
+						);
 					}
 					TypeElement::Booleen => {
 						instruction.add(booleen::calcule_booleen(expression.clone(), var.clone())?);
-						expression_type = EXPRESSION_BOOLEEN;
-						"i1"
+						let current_expression_index = instruction.var[EXPRESSION_BOOLEEN];
+						let current_variable_index = instruction.var.entry(nom.to_string()).and_modify(|e| *e += 1).or_insert(0);
+						instruction.body += &format!("%{}-{} = add i1 %{}-{}-fin, 0\n", 
+							nom, current_variable_index, EXPRESSION_BOOLEEN, current_expression_index
+						);
 					}
 				};
-				let current_expression_index = instruction.var[expression_type];
-				let current_variable_index = instruction.var.entry(nom.to_string()).and_modify(|e| *e += 1).or_insert(0);
 				
-				instruction.body += &format!("%{}-{} = add {} %{}-{}-fin, 0\n", 
-					nom, current_variable_index, ir_type,
-					expression_type, current_expression_index);
+				
 				Ok(instruction)
 			}
 			Commande::Affiche(expression) => {

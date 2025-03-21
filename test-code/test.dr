@@ -12,3 +12,9 @@ Définis B comme booléen.
 Affiche B.
 Modifie B avec vrai ou faux.
 Affiche vrai et B.
+
+Définis T comme texte.
+
+Modifie T avec T puis B puis " je suis trop content " puis sept fois six.
+Affiche T.
+Affiche "Général kenobi".

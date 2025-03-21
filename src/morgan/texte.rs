@@ -62,16 +62,31 @@ pub fn calcule_texte(
 			continue;
 		}
 		match element_pile {
-			Element::Texte(_contenu) => return Err(ErreurMorgan::MauvaisArgument("texte pas géré".to_string())),
-//			Element::Variable(nom, type_element) => {
-//				let current_variable_index = instruction.var[nom];
-//				let call = match type_element {
-//					TypeElement::Entier => "call void @affiche_nombre(i64",
-//					TypeElement::Booleen => "call void @affiche_booleen(i1",
-//					TypeElement::Texte => return Err(ErreurMorgan::MauvaisArgument("var texte pas implémenté".to_string())),
-//				};
-//				instruction.body += &format!("{} %{}-{})\n", call, nom, current_variable_index);
-//			}
+			Element::Texte(contenu) => {
+				let current_texte_index = instruction.var.entry(TEXTE_GLOBAL.to_string()).and_modify(|e| *e += 1).or_insert(0).clone();
+				instruction.declaration += &format!("@{}-{} = private unnamed_addr constant [{} x i8] c\"{}\\00\"\n", TEXTE_GLOBAL, current_texte_index, contenu.len()+1, contenu);
+				instruction.body += &format!("%{}-{}-str = getelementptr [{} x i8], [{} x i8]* @{}-{}, i32 0, i32 0\n", 
+					TEXTE_GLOBAL, current_texte_index,contenu.len()+1,contenu.len()+1,TEXTE_GLOBAL, current_texte_index
+				);
+				expression_index += 1;
+				instruction.body += &format!("%{}-{}-{} = call i8* @concat_strings(i8* %{}-{}-{}, i8* %{}-{}-str)\n", 
+					EXPRESSION_TEXTE, current_index, expression_index, 
+					EXPRESSION_TEXTE, current_index, expression_index-1, 
+					TEXTE_GLOBAL, current_texte_index
+				);
+			},
+			Element::Variable(nom, type_element) => {
+				if *type_element != TypeElement::Texte {
+					return Err(ErreurMorgan::MauvaisArgument(format!("{}, pas géré par le calcul texte", element_pile)));
+				}
+				let current_variable_index = instruction.var[nom];
+				expression_index += 1;
+				instruction.body += &format!("%{}-{}-{} = call i8* @concat_strings(i8* %{}-{}-{}, i8* %{}-{})\n", 
+					EXPRESSION_TEXTE, current_index, expression_index, 
+					EXPRESSION_TEXTE, current_index, expression_index-1, 
+					nom, current_variable_index
+				);
+			}
 			autre => return Err(ErreurMorgan::MauvaisArgument(format!("{}", autre))),
 		}
 		pile = Vec::new();
