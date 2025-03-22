@@ -35,19 +35,24 @@ pub enum ErreurMorgan {
 	ErreurSysteme(String),
 	MauvaisArgument(String),
 	ManqueVariable(String),
+	ComparaisonInvalide(String),
 }
 impl fmt::Display for ErreurMorgan {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		//'
 		match self {
 			Self::ErreurSysteme(raison) => {
-				write!(f, "{}Erreur système :{}{}",  TEXTE_ROUGE, TEXTE_NORMAL, raison)
+				write!(f, "Problème avec le système : {}.", raison)
 			},
 			Self::MauvaisArgument(argument) => {
-				write!(f, "{}Erreur :{} La commande a reçu un mauvais argument, {}",  TEXTE_ROUGE, TEXTE_NORMAL, argument)
+				write!(f, "La commande a reçu un mauvais argument, {}.", argument)
 			}
 			Self::ManqueVariable(argument) => {
-				write!(f, "{}Erreur :{} La variable '{}' est inconnue de morgan",  TEXTE_ROUGE, TEXTE_NORMAL, argument)
+				write!(f, "La variable '{}' est inconnue de morgan.", argument)
+			}
+			
+			Self::ComparaisonInvalide(raison) => {
+				write!(f, "La comparaison est invalide, {}.", raison)
 			}
 		}
 	}

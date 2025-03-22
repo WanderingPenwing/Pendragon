@@ -14,6 +14,7 @@ pub const EXPRESSION_TEXTE: &str = "expression_texte";
 pub const EXPRESSION_NOMBRE: &str = "expression_nombre";
 pub const EXPRESSION_BOOLEEN: &str = "expression_booleen";
 pub const TEXTE_GLOBAL: &str = "texte_global";
+pub const COMPARAISON: &str = "comparaison";
 
 #[derive(Default)]
 pub struct Instruction {

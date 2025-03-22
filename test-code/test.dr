@@ -22,3 +22,7 @@ Affiche "Général kenobi".
 Affiche mille-cinq-cent-cinquante-cinq.
 
 Affiche un moins deux.
+
+Modifie B avec A est supérieur ou égal à deux.
+
+Affiche "(" puis A puis ">=2)=" puis B.

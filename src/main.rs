@@ -78,7 +78,7 @@ fn main() {
 		println!(" ");
 		let debut = Instant::now();
 		if let Err(raison) = pendragon.programme.execute() {
-			eprintln!("\nErreur : {}", raison);
+			eprintln!("\n{}Erreur d'interpération :{} {}", display::TEXTE_ROUGE, display::TEXTE_NORMAL, raison);
 			display::message_echec("l'interprétation");
 			return;
 		}
@@ -89,7 +89,7 @@ fn main() {
 	display::message_debut("Compilation", chemin_de_fichier);
 	let debut = Instant::now();
 	if let Err(raison) = pendragon.programme.compile(nom_fichier) {
-		eprintln!("\nErreur : {}", raison);
+		eprintln!("\n{}Erreur de compilation :{} {}", display::TEXTE_ROUGE, display::TEXTE_NORMAL, raison);
 		display::message_echec("la compilation");
 		return;
 	}
@@ -105,7 +105,6 @@ fn main() {
 		.status()
 		.expect("Failed to execute file");
 	if !status.success() {
-   		eprintln!("Erreur : Le fichier n'a pas pu être exécuté");
    		display::message_echec("l'exécution");
 		return;
 	}
