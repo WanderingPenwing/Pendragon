@@ -340,3 +340,146 @@ declare i64 @strlen(i8*)
 declare i8* @malloc(i64)
 declare void @memcpy(i8*, i8*, i64)
 
+@texte_global-0 = private unnamed_addr constant [23 x i8] c" je suis trop content \00"
+@texte_global-1 = private unnamed_addr constant [17 x i8] c"Général kenobi\00"
+
+define i32 @main() {
+%fmt_ptr = getelementptr [3 x i8], [3 x i8]* @format_str, i32 0, i32 0
+%nouvelle_ligne = getelementptr [3 x i8], [3 x i8]* @newline, i32 0, i32 0
+%expression_texte-0-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+%expression_nombre-0-1 = add i64 36004, 0
+%expression_nombre-0-fin = add i64 %expression_nombre-0-1, 0
+%expression_texte-0-1 = call i8* @texte_nombre(i64 %expression_nombre-0-fin)
+%expression_texte-0-2 = call i8* @concat_strings(i8* %expression_texte-0-0, i8* %expression_texte-0-1)
+%expression_nombre-1-1 = add i64 4, 0
+%expression_nombre-1-2 = add i64 17, 0
+%expression_nombre-1-3 = mul i64 %expression_nombre-1-1, %expression_nombre-1-2
+%expression_nombre-1-4 = add i64 7, 0
+%expression_nombre-1-5 = sub i64 %expression_nombre-1-3, %expression_nombre-1-4
+%expression_nombre-1-fin = add i64 %expression_nombre-1-5, 0
+%expression_texte-0-3 = call i8* @texte_nombre(i64 %expression_nombre-1-fin)
+%expression_texte-0-4 = call i8* @concat_strings(i8* %expression_texte-0-2, i8* %expression_texte-0-3)
+%expression_texte-0-fin = getelementptr i8, i8* %expression_texte-0-4, i32 0
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-0-fin)
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
+%expression_texte-1-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+%expression_booleen-0-1 = add i1 1, 0
+%expression_booleen-0-fin = add i1 %expression_booleen-0-1, 0
+%expression_texte-1-1 = call i8* @texte_booleen(i1 %expression_booleen-0-fin)
+%expression_texte-1-2 = call i8* @concat_strings(i8* %expression_texte-1-0, i8* %expression_texte-1-1)
+%expression_texte-1-fin = getelementptr i8, i8* %expression_texte-1-2, i32 0
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-1-fin)
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
+%expression_texte-2-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+%expression_booleen-1-1 = add i1 0, 0
+%expression_booleen-1-2 = add i1 0, 0
+%expression_booleen-1-3 = xor i1 %expression_booleen-1-2, true
+%expression_booleen-1-4 = or i1 %expression_booleen-1-3, %expression_booleen-1-2
+%expression_booleen-1-fin = add i1 %expression_booleen-1-4, 0
+%expression_texte-2-1 = call i8* @texte_booleen(i1 %expression_booleen-1-fin)
+%expression_texte-2-2 = call i8* @concat_strings(i8* %expression_texte-2-0, i8* %expression_texte-2-1)
+%expression_texte-2-fin = getelementptr i8, i8* %expression_texte-2-2, i32 0
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-2-fin)
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
+%A-0 = add i64 0, 0
+%expression_nombre-2-1 = add i64 1, 0
+%expression_nombre-2-fin = add i64 %expression_nombre-2-1, 0
+%A-1 = add i64 %expression_nombre-2-fin, 0
+%expression_texte-3-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+%expression_nombre-3-1 = add i64 %A-1, 0
+%expression_nombre-3-2 = add i64 7, 0
+%expression_nombre-3-3 = mul i64 %expression_nombre-3-1, %expression_nombre-3-2
+%expression_nombre-3-fin = add i64 %expression_nombre-3-3, 0
+%expression_texte-3-1 = call i8* @texte_nombre(i64 %expression_nombre-3-fin)
+%expression_texte-3-2 = call i8* @concat_strings(i8* %expression_texte-3-0, i8* %expression_texte-3-1)
+%expression_texte-3-fin = getelementptr i8, i8* %expression_texte-3-2, i32 0
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-3-fin)
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
+%expression_nombre-4-1 = add i64 %A-1, 0
+%expression_nombre-4-2 = add i64 2, 0
+%expression_nombre-4-3 = add i64 %expression_nombre-4-1, %expression_nombre-4-2
+%expression_nombre-4-fin = add i64 %expression_nombre-4-3, 0
+%A-2 = add i64 %expression_nombre-4-fin, 0
+%expression_texte-4-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+%expression_nombre-5-1 = add i64 %A-2, 0
+%expression_nombre-5-2 = add i64 1, 0
+%expression_nombre-5-3 = add i64 %expression_nombre-5-1, %expression_nombre-5-2
+%expression_nombre-5-fin = add i64 %expression_nombre-5-3, 0
+%expression_texte-4-1 = call i8* @texte_nombre(i64 %expression_nombre-5-fin)
+%expression_texte-4-2 = call i8* @concat_strings(i8* %expression_texte-4-0, i8* %expression_texte-4-1)
+%expression_texte-4-fin = getelementptr i8, i8* %expression_texte-4-2, i32 0
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-4-fin)
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
+%B-0 = add i1 0, 0
+%expression_texte-5-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+%expression_booleen-2-1 = add i1 %B-0, 0
+%expression_booleen-2-fin = add i1 %expression_booleen-2-1, 0
+%expression_texte-5-1 = call i8* @texte_booleen(i1 %expression_booleen-2-fin)
+%expression_texte-5-2 = call i8* @concat_strings(i8* %expression_texte-5-0, i8* %expression_texte-5-1)
+%expression_texte-5-fin = getelementptr i8, i8* %expression_texte-5-2, i32 0
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-5-fin)
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
+%expression_booleen-3-1 = add i1 1, 0
+%expression_booleen-3-2 = add i1 0, 0
+%expression_booleen-3-3 = or i1 %expression_booleen-3-2, %expression_booleen-3-1
+%expression_booleen-3-fin = add i1 %expression_booleen-3-3, 0
+%B-1 = add i1 %expression_booleen-3-fin, 0
+%expression_texte-6-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+%expression_booleen-4-1 = add i1 1, 0
+%expression_booleen-4-2 = add i1 %B-1, 0
+%expression_booleen-4-3 = and i1 %expression_booleen-4-2, %expression_booleen-4-1
+%expression_booleen-4-fin = add i1 %expression_booleen-4-3, 0
+%expression_texte-6-1 = call i8* @texte_booleen(i1 %expression_booleen-4-fin)
+%expression_texte-6-2 = call i8* @concat_strings(i8* %expression_texte-6-0, i8* %expression_texte-6-1)
+%expression_texte-6-fin = getelementptr i8, i8* %expression_texte-6-2, i32 0
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-6-fin)
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
+%T-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+%expression_texte-7-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+%expression_texte-7-1 = call i8* @concat_strings(i8* %expression_texte-7-0, i8* %T-0)
+%expression_booleen-5-1 = add i1 %B-1, 0
+%expression_booleen-5-fin = add i1 %expression_booleen-5-1, 0
+%expression_texte-7-2 = call i8* @texte_booleen(i1 %expression_booleen-5-fin)
+%expression_texte-7-3 = call i8* @concat_strings(i8* %expression_texte-7-1, i8* %expression_texte-7-2)
+%texte_global-0-str = getelementptr [23 x i8], [23 x i8]* @texte_global-0, i32 0, i32 0
+%expression_texte-7-4 = call i8* @concat_strings(i8* %expression_texte-7-3, i8* %texte_global-0-str)
+%expression_nombre-6-1 = add i64 7, 0
+%expression_nombre-6-2 = add i64 6, 0
+%expression_nombre-6-3 = mul i64 %expression_nombre-6-1, %expression_nombre-6-2
+%expression_nombre-6-fin = add i64 %expression_nombre-6-3, 0
+%expression_texte-7-5 = call i8* @texte_nombre(i64 %expression_nombre-6-fin)
+%expression_texte-7-6 = call i8* @concat_strings(i8* %expression_texte-7-4, i8* %expression_texte-7-5)
+%expression_texte-7-fin = getelementptr i8, i8* %expression_texte-7-6, i32 0
+%T-1 = getelementptr i8, i8* %expression_texte-7-fin, i32 0
+%expression_texte-8-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+%expression_texte-8-1 = call i8* @concat_strings(i8* %expression_texte-8-0, i8* %T-1)
+%expression_texte-8-fin = getelementptr i8, i8* %expression_texte-8-1, i32 0
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-8-fin)
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
+%expression_texte-9-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+%texte_global-1-str = getelementptr [17 x i8], [17 x i8]* @texte_global-1, i32 0, i32 0
+%expression_texte-9-1 = call i8* @concat_strings(i8* %expression_texte-9-0, i8* %texte_global-1-str)
+%expression_texte-9-fin = getelementptr i8, i8* %expression_texte-9-1, i32 0
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-9-fin)
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
+%expression_texte-10-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+%expression_nombre-7-1 = add i64 1555, 0
+%expression_nombre-7-fin = add i64 %expression_nombre-7-1, 0
+%expression_texte-10-1 = call i8* @texte_nombre(i64 %expression_nombre-7-fin)
+%expression_texte-10-2 = call i8* @concat_strings(i8* %expression_texte-10-0, i8* %expression_texte-10-1)
+%expression_texte-10-fin = getelementptr i8, i8* %expression_texte-10-2, i32 0
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-10-fin)
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
+%expression_texte-11-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+%expression_nombre-8-1 = add i64 1, 0
+%expression_nombre-8-2 = add i64 2, 0
+%expression_nombre-8-3 = sub i64 %expression_nombre-8-1, %expression_nombre-8-2
+%expression_nombre-8-fin = add i64 %expression_nombre-8-3, 0
+%expression_texte-11-1 = call i8* @texte_nombre(i64 %expression_nombre-8-fin)
+%expression_texte-11-2 = call i8* @concat_strings(i8* %expression_texte-11-0, i8* %expression_texte-11-1)
+%expression_texte-11-fin = getelementptr i8, i8* %expression_texte-11-2, i32 0
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-11-fin)
+call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
+
+ret i32 0
+}
