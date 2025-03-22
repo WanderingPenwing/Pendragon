@@ -7,11 +7,13 @@ pub fn calcule_booleen(
 	let mut instruction = Instruction::new(var);
 	let current_index = instruction.var.entry(EXPRESSION_BOOLEEN.to_string()).and_modify(|e| *e += 1).or_insert(0).clone();
 	let mut expression_index: usize = 0;
+	let mut booleens: Vec<usize> = Vec::new();
 	
 	for element in expression {
 		if let Element::Booleen(booleen) = element {
 			expression_index += 1;
 			instruction.body += &format!("%{}-{}-{} = add i1 {}, 0\n", EXPRESSION_BOOLEEN, current_index, expression_index, booleen as i32);
+			booleens.push(expression_index);
 			continue
 		}
 		if let Element::Variable(nom, _) = element {
@@ -22,6 +24,7 @@ pub fn calcule_booleen(
 			instruction.body += &format!("%{}-{}-{} = add i1 %{}-{}, 0\n", 
 				EXPRESSION_BOOLEEN, current_index, expression_index,
 				nom, current_var_index);
+			booleens.push(expression_index);
 			continue
 		}
 		let Element::Operateur(ref operateur) = element else {
@@ -35,21 +38,26 @@ pub fn calcule_booleen(
 				expression_index += 1;
 				instruction.body += &format!("%{}-{}-{} = xor i1 %{}-{}-{}, true\n", 
 					EXPRESSION_BOOLEEN, current_index, expression_index, 
-					EXPRESSION_BOOLEEN, current_index, expression_index-1);
+					EXPRESSION_BOOLEEN, current_index, booleens[booleens.len()-1]);
+				booleens.pop();
 			}
 			Operateur::Et => {
 				expression_index += 1;
 				instruction.body += &format!("%{}-{}-{} = and i1 %{}-{}-{}, %{}-{}-{}\n", 
 					EXPRESSION_BOOLEEN, current_index, expression_index, 
-					EXPRESSION_BOOLEEN, current_index, expression_index-1,
-					EXPRESSION_BOOLEEN, current_index, expression_index-2);
+					EXPRESSION_BOOLEEN, current_index, booleens[booleens.len()-2],
+					EXPRESSION_BOOLEEN, current_index, booleens[booleens.len()-1]);
+				booleens.pop();
+				booleens.pop();
 			}
 			Operateur::Ou => {
 				expression_index += 1;
 				instruction.body += &format!("%{}-{}-{} = or i1 %{}-{}-{}, %{}-{}-{}\n", 
 					EXPRESSION_BOOLEEN, current_index, expression_index, 
-					EXPRESSION_BOOLEEN, current_index, expression_index-1,
-					EXPRESSION_BOOLEEN, current_index, expression_index-2);
+					EXPRESSION_BOOLEEN, current_index, booleens[booleens.len()-2],
+					EXPRESSION_BOOLEEN, current_index, booleens[booleens.len()-1]);
+				booleens.pop();
+				booleens.pop();
 			}
 			_ => {
 				return Err(ErreurMorgan::MauvaisArgument(format!(
@@ -58,6 +66,7 @@ pub fn calcule_booleen(
 				)))
 			}
 		}
+		booleens.push(expression_index);
 	}
 	if expression_index > 0 {
 		instruction.body += &format!("%{}-{}-fin = add i1 %{}-{}-{}, 0\n", 

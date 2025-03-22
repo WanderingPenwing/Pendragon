@@ -13,10 +13,11 @@ Affiche "---------".
 Affiche deux fois Patate plus un fois Cornichon plus cinq plus douze fois Cornichon plus trois fois Patate moins un.
 Affiche douze divisé par zéro.
 
-
 Modifie Patate avec ouvre la parenthèse un plus deux plus trois fois quatorze plus six moins deux moins deux plus quatre fois huit moins un plus quarante fois trois fois trois moins cinquante ferme la parenthèse fois zéro plus un.
 Affiche Patate.
 
 Nota Bene : Affiche douze fois un plus sept est égal à dix-neuf.
-
 Nota Bene : Affiche douze fois Patate plus sept est égal à dix-neuf.
+
+
+Affiche faux ou vrai et vrai ou faux.

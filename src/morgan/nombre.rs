@@ -7,11 +7,13 @@ pub fn calcule_nombre(
 	let mut instruction = Instruction::new(var);
 	let current_index = instruction.var.entry(EXPRESSION_NOMBRE.to_string()).and_modify(|e| *e += 1).or_insert(0).clone();
 	let mut expression_index: usize = 0;
+	let mut nombres: Vec<usize> = Vec::new();
 	
 	for element in expression {
 		if let Element::Entier(nombre) = element {
 			expression_index += 1;
 			instruction.body += &format!("%{}-{}-{} = add i64 {}, 0\n", EXPRESSION_NOMBRE, current_index, expression_index, nombre);
+			nombres.push(expression_index);
 			continue;
 		}
 		if let Element::Variable(nom, _) = element {
@@ -22,6 +24,7 @@ pub fn calcule_nombre(
 			instruction.body += &format!("%{}-{}-{} = add i64 %{}-{}, 0\n", 
 				EXPRESSION_NOMBRE, current_index, expression_index,
 				nom, current_var_index);
+			nombres.push(expression_index);
 			continue
 		}
 		let Element::Operateur(ref operateur) = element else {
@@ -40,8 +43,11 @@ pub fn calcule_nombre(
 		expression_index += 1;
 		instruction.body += &format!("%{}-{}-{} = {} i64 %{}-{}-{}, %{}-{}-{}\n", 
 			EXPRESSION_NOMBRE, current_index, expression_index, operation,
-			EXPRESSION_NOMBRE, current_index, expression_index-2,
-			EXPRESSION_NOMBRE, current_index, expression_index-1);
+			EXPRESSION_NOMBRE, current_index, nombres[nombres.len()-2],
+			EXPRESSION_NOMBRE, current_index, nombres[nombres.len()-1]);
+		nombres.pop();
+		nombres.pop();
+		nombres.push(expression_index);
 	}
 	if expression_index > 0 {
 		instruction.body += &format!("%{}-{}-fin = add i64 %{}-{}-{}, 0\n", 
