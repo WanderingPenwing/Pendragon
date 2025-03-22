@@ -18,6 +18,10 @@ Définis T comme texte.
 Modifie T avec T puis B puis " je suis trop content " puis sept fois six.
 Affiche T.
 Affiche "Général kenobi".
+Modifie B avec T est égal à "vrai je suis trop content quarante-deux".
+Affiche "T condition =" puis B.
+Modifie B avec "texte" est égal à "texte".
+Affiche B.
 
 Affiche mille-cinq-cent-cinquante-cinq.
 
@@ -26,3 +30,4 @@ Affiche un moins deux.
 Modifie B avec A est supérieur ou égal à deux.
 
 Affiche "(" puis A puis ">=2)=" puis B.
+

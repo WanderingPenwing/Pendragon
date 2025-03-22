@@ -336,7 +336,15 @@ entry:
   ret i8* %result
 }
 
+define i1 @compare_texte(i8* %str1, i8* %str2, i1 %egalite) {
+	%cmp = call i32 @strcmp(i8* %str1, i8* %str2)
+    %is_equal = icmp ne i32 %cmp, 0
+	%resultat = xor i1 %is_equal, %egalite
+	ret i1 %resultat
+}
+
 declare i64 @strlen(i8*)
 declare i8* @malloc(i64)
 declare void @memcpy(i8*, i8*, i64)
+declare i32 @strcmp(i8*, i8*)
 

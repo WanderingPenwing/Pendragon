@@ -125,11 +125,22 @@ impl Comparaison {
 				
 			}
 			TypeElement::Texte => {
-				return Err(ErreurMorgan::ComparaisonInvalide("texte pas implémenté".to_string()));
-//				instruction.add(texte::calcule_texte(self.membre_a.clone(), instruction.var.clone())?);
-//				let membre_a_index = instruction.var[EXPRESSION_TEXTE];
-//				instruction.add(texte::calcule_texte(self.membre_b.clone(), instruction.var.clone())?);
-//				let membre_b_index = instruction.var[EXPRESSION_TEXTE];
+//				return Err(ErreurMorgan::ComparaisonInvalide("texte pas implémenté".to_string()));
+				instruction.add(texte::calcule_texte(self.membre_a.clone(), instruction.var.clone())?);
+				let membre_a_index = instruction.var[EXPRESSION_TEXTE];
+				instruction.add(texte::calcule_texte(self.membre_b.clone(), instruction.var.clone())?);
+				let membre_b_index = instruction.var[EXPRESSION_TEXTE];
+				
+				let egalite: usize = match comparaison {
+					TypeComparaison::Egal => 1,
+					TypeComparaison::Different => 0,
+					_ => return Err(ErreurMorgan::ComparaisonInvalide(format!("{} de textes", comparaison))),
+				};
+				
+				instruction.body += &format!("%{}-{} = call i1 @compare_texte(i8* %{}-{}-fin, i8* %{}-{}-fin, i1 {})\n", 
+					COMPARAISON, current_index, EXPRESSION_TEXTE, membre_a_index, EXPRESSION_TEXTE, membre_b_index, egalite
+				);
+				
 				
 			}
 			TypeElement::Booleen => {
