@@ -421,3 +421,318 @@ redemande:
 	ret i1 %nouvelle-reponse
 }
 
+@vingts = private constant [7 x i8] c"vingts\00"
+
+define i1 @verifie_unite(i8* %mot, i32 %x) {
+	%nombre_ptr = getelementptr [20 x i8*], [20 x i8*]* @petits_nombres, i32 0, i32 %x
+	%nombre_str = load i8*, i8** %nombre_ptr
+	%resultat = call i1 @compare_texte(i8* %mot, i8* %nombre_str, i1 1)
+	ret i1 %resultat
+}
+
+define i1 @verifie_dizaine(i8* %mot, i32 %x) {
+	%nombre_ptr = getelementptr [10 x i8*], [10 x i8*]* @dizaine, i32 0, i32 %x
+	%nombre_str = load i8*, i8** %nombre_ptr
+	%resultat = call i1 @compare_texte(i8* %mot, i8* %nombre_str, i1 1)
+	ret i1 %resultat
+}
+
+define i1 @verifie_separateur(i8* %mot, i32 %x) {
+	%nombre_ptr = getelementptr [8 x i8*], [8 x i8*]* @separateurs, i32 0, i32 %x
+	%nombre_str = load i8*, i8** %nombre_ptr
+	%resultat = call i1 @compare_texte(i8* %mot, i8* %nombre_str, i1 1)
+	ret i1 %resultat
+}
+
+define i64 @mot_comme_unite(i8* %mot) {
+entry:
+	%val = alloca i32
+	store i32 0, i32* %val
+	br label %check
+
+check:
+	%idx = load i32, i32* %val
+	%est_valide = call i1 @verifie_unite(i8* %mot, i32 %idx)
+	br i1 %est_valide, label %return, label %next
+
+next:
+	%new_idx = add i32 %idx, 1
+	store i32 %new_idx, i32* %val
+	%cond = icmp slt i32 %new_idx, 20   ; Replace N with your max expected value
+	br i1 %cond, label %check, label %default
+
+return:
+	%result = load i32, i32* %val
+	%result_ext = zext i32 %result to i64
+	ret i64 %result_ext
+
+default:
+	ret i64 0 
+}
+
+define i64 @mot_comme_dizaine(i8* %mot) {
+entry:
+	%val = alloca i32
+	store i32 0, i32* %val
+	br label %check
+check:
+	%idx = load i32, i32* %val
+	%est_valide = call i1 @verifie_dizaine(i8* %mot, i32 %idx)
+	br i1 %est_valide, label %return, label %next
+
+next:
+	%new_idx = add i32 %idx, 1
+	store i32 %new_idx, i32* %val
+	%cond = icmp slt i32 %new_idx, 10
+	br i1 %cond, label %check, label %default
+
+return:
+	%result = load i32, i32* %val
+	%result_ext = zext i32 %result to i64
+	%est-cent = icmp eq i64 %result_ext, 0
+	br i1 %est-cent, label %cent, label %pas-cent
+cent:
+	ret i64 100
+pas-cent:
+	%nombre_dizaine = mul i64 %result_ext, 10
+	ret i64 %nombre_dizaine
+default:
+	ret i64 0
+}
+
+define i64 @mot_comme_separateur(i8* %mot) {
+entry:
+	%val = alloca i32
+	store i32 0, i32* %val
+	br label %check
+check:
+	%idx = load i32, i32* %val
+	%est_valide = call i1 @verifie_separateur(i8* %mot, i32 %idx)
+	br i1 %est_valide, label %return, label %next
+next:
+	%new_idx = add i32 %idx, 1
+	store i32 %new_idx, i32* %val
+	%cond = icmp slt i32 %new_idx, 8
+	br i1 %cond, label %check, label %default
+return:
+	%result = load i32, i32* %val
+	%puissance = call i64 @mille_puissance(i32 %result)
+	ret i64 %puissance
+default:
+	ret i64 0
+}
+
+define i64 @mot_comme_entier(i8* %str) {
+entry:
+	%vingts = getelementptr [7 x i8], [7 x i8]* @vingts, i32 0, i32 0
+	%est-vingts = call i1 @compare_texte(i8* %str, i8* %vingts, i1 1)
+	br i1 %est-vingts, label %quatre-vingts, label %normal
+quatre-vingts:
+	ret i64 76
+normal:
+	%unite = call i64 @mot_comme_unite(i8* %str)
+	%dizaine = call i64 @mot_comme_dizaine(i8* %str)
+	%separateur = call i64 @mot_comme_separateur(i8* %str)
+	%unite-dizaine = add i64 %unite, %dizaine
+	%total = add i64 %unite-dizaine, %separateur
+	%est-zero = call i1 @verifie_unite(i8* %str, i32 0)
+	%pas-zero = xor i1 %est-zero, true
+	%total-zero = icmp eq i64 %total, 0
+	%probleme = and i1 %pas-zero, %total-zero
+	br i1 %probleme, label %erreur, label %bon
+erreur:
+	ret i64 -1
+bon:
+	ret i64 %total
+}
+
+; External function declarations
+declare i8 @tolower(i8)
+declare i1 @isalpha(i8)
+
+define i64 @texte_comme_entier(i8* %str) {
+entry:
+  %strlen = call i32 @strlen(i8* %str)
+  %sum = alloca i64, align 8
+  %total = alloca i64, align 8
+  %i = alloca i32, align 4
+  %token_start = alloca i8*, align 8
+  %token_buf = alloca [50 x i8], align 1  ; Buffer for current token
+  %token_len = alloca i32, align 4
+
+  ; Initialize variables
+  store i64 0, ptr %sum
+  store i64 0, ptr %total
+  store i32 0, ptr %i
+  store i8* %str, ptr %token_start
+  store i32 0, ptr %token_len
+
+  br label %loop_start
+
+loop_start:
+  %current_i = load i32, ptr %i
+  %cmp = icmp slt i32 %current_i, %strlen
+  br i1 %cmp, label %loop_body, label %process_last_token
+
+loop_body:
+  ; Get current character
+  %idx_ptr = getelementptr i8, i8* %str, i32 %current_i
+  %current_char = load i8, i8* %idx_ptr
+
+  ; Check if this is a hyphen (delimiter)
+  %is_delim = icmp eq i8 %current_char, 45  ; 45 is ASCII for '-'
+  br i1 %is_delim, label %process_token, label %continue_token
+
+continue_token:
+  ; Add character to token buffer
+  %token_len_val = load i32, ptr %token_len
+  %buf_idx = getelementptr [50 x i8], [50 x i8]* %token_buf, i32 0, i32 %token_len_val
+  store i8 %current_char, i8* %buf_idx
+  
+  ; Increment token length
+  %token_len_inc = add i32 %token_len_val, 1
+  store i32 %token_len_inc, ptr %token_len
+  
+  ; Move to next character
+  br label %next_char
+
+process_token:
+  ; Only process if we have a token
+  %token_len_check = load i32, ptr %token_len
+  %has_token = icmp sgt i32 %token_len_check, 0
+  br i1 %has_token, label %do_process_token, label %reset_token
+
+do_process_token:
+  ; Null-terminate the token
+  %term_idx = getelementptr [50 x i8], [50 x i8]* %token_buf, i32 0, i32 %token_len_check
+  store i8 0, i8* %term_idx
+  
+  ; Process the token
+  %token_ptr = getelementptr [50 x i8], [50 x i8]* %token_buf, i32 0, i32 0
+  %token_value = call i64 @mot_comme_entier(i8* %token_ptr)
+  %token_erreur = icmp eq i64 %token_value, -1
+  br i1 %token_erreur, label %erreur, label %update_sum
+update_sum:
+  ; Update sum or total based on token value
+  %current_sum = load i64, ptr %sum
+  %is_separator = icmp sge i64 %token_value, 100
+  br i1 %is_separator, label %handle_separator, label %handle_unit
+
+handle_separator:
+  %cur_total = load i64, ptr %total
+  %is_sep_alone = icmp eq i64 %current_sum, 0
+  br i1 %is_sep_alone, label %sep_alone, label %sep_with_value
+
+sep_alone:
+  %sep_val = mul i64 1, %token_value
+  %new_total_sep = add i64 %cur_total, %sep_val
+  store i64 %new_total_sep, ptr %total
+  br label %reset_token
+
+sep_with_value:
+  %combined = mul i64 %current_sum, %token_value
+  %new_total_comb = add i64 %cur_total, %combined
+  store i64 %new_total_comb, ptr %total
+  store i64 0, ptr %sum
+  br label %reset_token
+
+handle_unit:
+  %new_sum = add i64 %current_sum, %token_value
+  store i64 %new_sum, ptr %sum
+  br label %reset_token
+
+reset_token:
+  ; Reset token buffer
+  store i32 0, ptr %token_len
+  br label %next_char
+
+next_char:
+  ; Increment index
+  %i_val = load i32, ptr %i
+  %i_inc = add i32 %i_val, 1
+  store i32 %i_inc, ptr %i
+  br label %loop_start
+
+process_last_token:
+  ; Check if we have a final token to process
+  %final_token_len = load i32, ptr %token_len
+  %has_final_token = icmp sgt i32 %final_token_len, 0
+  br i1 %has_final_token, label %process_final, label %finish
+
+process_final:
+  ; Null-terminate the token
+  %final_term_idx = getelementptr [50 x i8], [50 x i8]* %token_buf, i32 0, i32 %final_token_len
+  store i8 0, i8* %final_term_idx
+  
+  ; Process the token
+  %final_token_ptr = getelementptr [50 x i8], [50 x i8]* %token_buf, i32 0, i32 0
+  %final_token_value = call i64 @mot_comme_entier(i8* %final_token_ptr)
+  %final_erreur = icmp eq i64 %final_token_value, -1
+  br i1 %final_erreur, label %erreur, label %update_final_sum
+erreur:
+  ret i64 -1
+update_final_sum:
+  ; Update sum or total based on token value
+  %final_sum = load i64, ptr %sum
+  %final_is_separator = icmp sge i64 %final_token_value, 100
+  br i1 %final_is_separator, label %final_handle_separator, label %final_handle_unit
+
+final_handle_separator:
+  %final_cur_total = load i64, ptr %total
+  %final_is_sep_alone = icmp eq i64 %final_sum, 0
+  br i1 %final_is_sep_alone, label %final_sep_alone, label %final_sep_with_value
+
+final_sep_alone:
+  %final_sep_val = mul i64 1, %final_token_value
+  %final_new_total_sep = add i64 %final_cur_total, %final_sep_val
+  store i64 %final_new_total_sep, ptr %total
+  br label %finish
+
+final_sep_with_value:
+  %final_combined = mul i64 %final_sum, %final_token_value
+  %final_new_total_comb = add i64 %final_cur_total, %final_combined
+  store i64 %final_new_total_comb, ptr %total
+  store i64 0, ptr %sum
+  br label %finish
+
+final_handle_unit:
+  %final_new_sum = add i64 %final_sum, %final_token_value
+  store i64 %final_new_sum, ptr %sum
+  br label %finish
+
+finish:
+  ; Add any remaining sum to the total
+  %remaining_sum = load i64, ptr %sum
+  %final_total = load i64, ptr %total
+  %result = add i64 %final_total, %remaining_sum
+  ret i64 %result
+}
+
+@type_entier = private unnamed_addr constant [7 x i8] c"entier\00"
+@entier_invalide = private unnamed_addr constant [38 x i8] c"Erreur : L'entier '%s' est invalide.\0A\00"
+
+define i64 @demande_entier(i8* %nom_variable) {
+entry:
+	%demande_fmt = getelementptr [30 x i8], [30 x i8]* @demande_str, i32 0, i32 0
+	%type_entier_str = getelementptr [7 x i8], [7 x i8]* @type_entier, i32 0, i32 0
+	call i32 (i8*, ...) @printf(i8* %demande_fmt, i8* %nom_variable, i8* %type_entier_str)
+	%reponse = call i8* @read_line()
+	%is_null = icmp eq ptr %reponse, null
+	br i1 %is_null, label %vide, label %texte
+vide:
+	%vide_str = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+	br label %redemande
+texte:
+	%resultat = call i64 @texte_comme_entier(i8* %reponse)
+	%pas-bon = icmp eq i64 %resultat, -1
+	br i1 %pas-bon, label %redemande, label %bon-nombre
+bon-nombre:
+	ret i64 %resultat
+redemande:
+	%erreur = phi i8* [%vide_str, %vide], [%reponse, %texte]
+	%erreur_fmt = getelementptr [38 x i8], [38 x i8]* @entier_invalide, i32 0, i32 0
+	call i32 (i8*, ...) @printf(i8* %erreur_fmt, i8* %erreur)
+	%nouvelle-reponse = call i64 @demande_entier(i8* %nom_variable)
+	ret i64 %nouvelle-reponse
+}
+

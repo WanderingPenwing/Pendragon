@@ -1,5 +1,3 @@
-Définis T comme texte. Définis B comme booléen.
+Définis T comme entier.
 Demande T.
-Modifie B avec T est égal à "hello".
-Affiche "c'est un hello : " puis B.
-Demande B.
+Affiche "T+1 : " puis T plus un.

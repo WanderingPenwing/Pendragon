@@ -127,7 +127,9 @@ impl Commande {
 				);
 				match var_types[nom] {
 					TypeElement::Entier => {
-						return Err(ErreurMorgan::MauvaisArgument("Demande entier pas implémenté".to_string()));
+						instruction.body += &format!("%{}-{} = call i64 @demande_entier(i8* %{}-{}-nom)\n",
+							nom, current_variable_index, nom, current_variable_index
+						);
 					}
 					TypeElement::Texte => {
 						instruction.body += &format!("%{}-{} = call i8* @demande_texte(i8* %{}-{}-nom)\n",
