@@ -1,3 +1,6 @@
 Définis T comme entier.
 Demande T.
-Affiche "T+1 : " puis T plus un.
+Affiche "T*10 : " puis T fois dix.
+
+Affiche quatre-vingts-dix.
+Affiche soixante-dix.

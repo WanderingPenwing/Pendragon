@@ -62,7 +62,7 @@ impl Programme {
 			}
 		}
 		
-		let main_start: &str = "\ndefine i32 @main() {\n%fmt_ptr = getelementptr [3 x i8], [3 x i8]* @format_str, i32 0, i32 0\n%nouvelle_ligne = getelementptr [3 x i8], [3 x i8]* @newline, i32 0, i32 0\n";
+		let main_start: &str = "\ndefine i32 @main() {\n%fmt_ptr = getelementptr [3 x i8], [3 x i8]* @format_str, i32 0, i32 0\n%nouvelle_ligne = getelementptr [2 x i8], [2 x i8]* @newline, i32 0, i32 0\n";
 		let main_end: &str = "\nret i32 0\n}";
 		let programme: String = format!("{}{}{}{}{}", MAIN_IR, main_instruction.declaration, main_start, main_instruction.body, main_end);
 		

@@ -161,7 +161,12 @@ dizaine:
 	%dizaine_ptr = getelementptr [10 x i8*], [10 x i8*]* @dizaine, i32 0, i32 %chiffre_dizaine
 	%dizaine_str = load i8*, i8** %dizaine_ptr
 	%a_unite = icmp eq i32 %chiffre_unite, 0
-	br i1 %a_unite, label %juste_dizaine, label %pitet-et
+	%sept = icmp eq i32 %chiffre_dizaine, 7
+	%neuf = icmp eq i32 %chiffre_dizaine, 9
+	%special = or i1 %sept, %neuf
+	%non-special = xor i1 %special, true
+	%rien-apres = and i1 %non-special, %a_unite
+	br i1 %rien-apres, label %juste_dizaine, label %pitet-et
 juste_dizaine:
 	ret i8* %dizaine_str
 pitet-et:
@@ -177,9 +182,6 @@ pitet-special:
 	%dizaine_finale_str = phi i8* [ %dizaine_str, %pitet-et ], [ %concat_str, %affiche-et ]
 	%tiret_str = getelementptr [2 x i8], [2 x i8]* @tiret, i32 0, i32 0
 	%dizaine_complete_str = call i8* @concat_strings(i8* %dizaine_finale_str, i8* %tiret_str)
-	%sept = icmp eq i32 %chiffre_dizaine, 7
-	%neuf = icmp eq i32 %chiffre_dizaine, 9
-	%special = add i1 %sept, %neuf
 	br i1 %special, label %unite-special, label %unite-simple
 unite-special:
 	%chiffre_special = add i32 %chiffre_unite, 10
@@ -353,18 +355,18 @@ declare i8* @gets(i8*)
 
 define i8* @read_line() {
 entry:
-    %buffer_ptr = getelementptr inbounds [100 x i8], i8* @buffer, i32 0, i32 0
-    %call = call i8* @gets(i8* %buffer_ptr)  ; Read input
+	%buffer_ptr = getelementptr inbounds [100 x i8], [100 x i8]* @buffer, i32 0, i32 0
+	%call = call i8* @gets(i8* %buffer_ptr)  ; Read input
 
-    ; Check if input was read successfully
-    %is_null = icmp eq i8* %call, null
-    br i1 %is_null, label %return_null, label %return_buffer
+	; Check if input was read successfully
+	%is_null = icmp eq i8* %call, null
+	br i1 %is_null, label %return_null, label %return_buffer
 
 return_null:
-    ret i8* null
+	ret i8* null
 
 return_buffer:
-    ret i8* %buffer_ptr
+	ret i8* %buffer_ptr
 }
 
 @demande_str = private unnamed_addr constant [30 x i8] c"Quelle valeur pour %s (%s) ?\0A\00"
@@ -376,7 +378,7 @@ entry:
 	%type_texte_str = getelementptr [6 x i8], [6 x i8]* @type_texte, i32 0, i32 0
 	call i32 (i8*, ...) @printf(i8* %demande_fmt, i8* %nom_variable, i8* %type_texte_str)
 	%reponse = call i8* @read_line()
-	%is_null = icmp eq ptr %reponse, null
+	%is_null = icmp eq i8* %reponse, null
 	br i1 %is_null, label %vide, label %texte
 texte:
 	ret i8* %reponse
@@ -394,7 +396,7 @@ entry:
 	%type_booleen_str = getelementptr [9 x i8], [9 x i8]* @type_booleen, i32 0, i32 0
 	call i32 (i8*, ...) @printf(i8* %demande_fmt, i8* %nom_variable, i8* %type_booleen_str)
 	%reponse = call i8* @read_line()
-	%is_null = icmp eq ptr %reponse, null
+	%is_null = icmp eq i8* %reponse, null
 	br i1 %is_null, label %vide, label %texte
 vide:
 	%vide_str = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
@@ -498,6 +500,11 @@ return:
 cent:
 	ret i64 100
 pas-cent:
+	%est-dix = icmp eq i64 %result_ext, 1
+	br i1 %est-dix, label %dix, label %pas-dix
+dix:
+	ret i64 0
+pas-dix:
 	%nombre_dizaine = mul i64 %result_ext, 10
 	ret i64 %nombre_dizaine
 default:
@@ -526,6 +533,8 @@ default:
 	ret i64 0
 }
 
+@juste-et = private unnamed_addr constant [3 x i8] c"et\00"
+
 define i64 @mot_comme_entier(i8* %str) {
 entry:
 	%vingts = getelementptr [7 x i8], [7 x i8]* @vingts, i32 0, i32 0
@@ -534,6 +543,12 @@ entry:
 quatre-vingts:
 	ret i64 76
 normal:
+	%et_str = getelementptr [3 x i8], [3 x i8]* @juste-et, i32 0, i32 0
+	%est-et = call i1 @compare_texte(i8* %str, i8* %et_str, i1 1)
+	br i1 %est-et, label %et, label %pas-et
+et:
+	ret i64 0
+pas-et:
 	%unite = call i64 @mot_comme_unite(i8* %str)
 	%dizaine = call i64 @mot_comme_dizaine(i8* %str)
 	%separateur = call i64 @mot_comme_separateur(i8* %str)
@@ -556,7 +571,8 @@ declare i1 @isalpha(i8)
 
 define i64 @texte_comme_entier(i8* %str) {
 entry:
-  %strlen = call i32 @strlen(i8* %str)
+  %strlen_64 = call i64 @strlen(i8* %str)
+  %strlen = trunc i64 %strlen_64 to i32
   %sum = alloca i64, align 8
   %total = alloca i64, align 8
   %i = alloca i32, align 4
@@ -565,16 +581,16 @@ entry:
   %token_len = alloca i32, align 4
 
   ; Initialize variables
-  store i64 0, ptr %sum
-  store i64 0, ptr %total
-  store i32 0, ptr %i
-  store i8* %str, ptr %token_start
-  store i32 0, ptr %token_len
+  store i64 0, i64* %sum
+  store i64 0, i64* %total
+  store i32 0, i32* %i
+  store i8* %str, i8** %token_start
+  store i32 0, i32* %token_len
 
   br label %loop_start
 
 loop_start:
-  %current_i = load i32, ptr %i
+  %current_i = load i32, i32* %i
   %cmp = icmp slt i32 %current_i, %strlen
   br i1 %cmp, label %loop_body, label %process_last_token
 
@@ -589,20 +605,20 @@ loop_body:
 
 continue_token:
   ; Add character to token buffer
-  %token_len_val = load i32, ptr %token_len
+  %token_len_val = load i32, i32* %token_len
   %buf_idx = getelementptr [50 x i8], [50 x i8]* %token_buf, i32 0, i32 %token_len_val
   store i8 %current_char, i8* %buf_idx
   
   ; Increment token length
   %token_len_inc = add i32 %token_len_val, 1
-  store i32 %token_len_inc, ptr %token_len
+  store i32 %token_len_inc, i32* %token_len
   
   ; Move to next character
   br label %next_char
 
 process_token:
   ; Only process if we have a token
-  %token_len_check = load i32, ptr %token_len
+  %token_len_check = load i32, i32* %token_len
   %has_token = icmp sgt i32 %token_len_check, 0
   br i1 %has_token, label %do_process_token, label %reset_token
 
@@ -618,7 +634,7 @@ do_process_token:
   br i1 %token_erreur, label %erreur, label %update_sum
 update_sum:
   ; Update sum or total based on token value
-  %current_sum = load i64, ptr %sum
+  %current_sum = load i64, i64* %sum
   %is_cent = icmp eq i64 %token_value, 100
   br i1 %is_cent, label %handle_cent, label %handle_pas_cent
 
@@ -627,11 +643,11 @@ handle_cent:
   br i1 %is_cent_alone, label %handle_cent_alone, label %handle_centaine
 handle_cent_alone:
   %new_sum_ca = add i64 100, 0
-  store i64 %new_sum_ca, ptr %sum
+  store i64 %new_sum_ca, i64* %sum
   br label %reset_token
 handle_centaine:
   %new_sum_c = mul i64 %current_sum, 100
-  store i64 %new_sum_c, ptr %sum
+  store i64 %new_sum_c, i64* %sum
   br label %reset_token
 
 handle_pas_cent:
@@ -639,43 +655,43 @@ handle_pas_cent:
   br i1 %is_separator, label %handle_separator, label %handle_unit
 
 handle_separator:
-  %cur_total = load i64, ptr %total
+  %cur_total = load i64, i64* %total
   %is_sep_alone = icmp eq i64 %current_sum, 0
   br i1 %is_sep_alone, label %sep_alone, label %sep_with_value
 
 sep_alone:
   %sep_val = mul i64 1, %token_value
   %new_total_sep = add i64 %cur_total, %sep_val
-  store i64 %new_total_sep, ptr %total
+  store i64 %new_total_sep, i64* %total
   br label %reset_token
 
 sep_with_value:
   %combined = mul i64 %current_sum, %token_value
   %new_total_comb = add i64 %cur_total, %combined
-  store i64 %new_total_comb, ptr %total
-  store i64 0, ptr %sum
+  store i64 %new_total_comb, i64* %total
+  store i64 0, i64* %sum
   br label %reset_token
 
 handle_unit:
   %new_sum = add i64 %current_sum, %token_value
-  store i64 %new_sum, ptr %sum
+  store i64 %new_sum, i64* %sum
   br label %reset_token
 
 reset_token:
   ; Reset token buffer
-  store i32 0, ptr %token_len
+  store i32 0, i32* %token_len
   br label %next_char
 
 next_char:
   ; Increment index
-  %i_val = load i32, ptr %i
+  %i_val = load i32, i32* %i
   %i_inc = add i32 %i_val, 1
-  store i32 %i_inc, ptr %i
+  store i32 %i_inc, i32* %i
   br label %loop_start
 
 process_last_token:
   ; Check if we have a final token to process
-  %final_token_len = load i32, ptr %token_len
+  %final_token_len = load i32, i32* %token_len
   %has_final_token = icmp sgt i32 %final_token_len, 0
   br i1 %has_final_token, label %process_final, label %finish
 
@@ -693,7 +709,7 @@ erreur:
   ret i64 -1
 update_final_sum:
   ; Update sum or total based on token value
-  %final_sum = load i64, ptr %sum
+  %final_sum = load i64, i64* %sum
   %final_is_cent = icmp eq i64 %final_token_value, 100
   br i1 %final_is_cent, label %final_handle_cent, label %final_handle_pas_cent
 
@@ -702,11 +718,11 @@ final_handle_cent:
   br i1 %final_is_cent_alone, label %final_handle_cent_alone, label %final_handle_centaine
 final_handle_cent_alone:
   %final_new_sum_ca = add i64 100, 0
-  store i64 %final_new_sum_ca, ptr %sum
+  store i64 %final_new_sum_ca, i64* %sum
   br label %reset_token
 final_handle_centaine:
   %final_new_sum_c = mul i64 %final_sum, 100
-  store i64 %final_new_sum_c, ptr %sum
+  store i64 %final_new_sum_c, i64* %sum
   br label %reset_token
 
 final_handle_pas_cent:
@@ -714,32 +730,32 @@ final_handle_pas_cent:
   br i1 %final_is_separator, label %final_handle_separator, label %final_handle_unit
 
 final_handle_separator:
-  %final_cur_total = load i64, ptr %total
+  %final_cur_total = load i64, i64* %total
   %final_is_sep_alone = icmp eq i64 %final_sum, 0
   br i1 %final_is_sep_alone, label %final_sep_alone, label %final_sep_with_value
 
 final_sep_alone:
   %final_sep_val = mul i64 1, %final_token_value
   %final_new_total_sep = add i64 %final_cur_total, %final_sep_val
-  store i64 %final_new_total_sep, ptr %total
+  store i64 %final_new_total_sep, i64* %total
   br label %finish
 
 final_sep_with_value:
   %final_combined = mul i64 %final_sum, %final_token_value
   %final_new_total_comb = add i64 %final_cur_total, %final_combined
-  store i64 %final_new_total_comb, ptr %total
-  store i64 0, ptr %sum
+  store i64 %final_new_total_comb, i64* %total
+  store i64 0, i64* %sum
   br label %finish
 
 final_handle_unit:
   %final_new_sum = add i64 %final_sum, %final_token_value
-  store i64 %final_new_sum, ptr %sum
+  store i64 %final_new_sum, i64* %sum
   br label %finish
 
 finish:
   ; Add any remaining sum to the total
-  %remaining_sum = load i64, ptr %sum
-  %final_total = load i64, ptr %total
+  %remaining_sum = load i64, i64* %sum
+  %final_total = load i64, i64* %total
   %result = add i64 %final_total, %remaining_sum
   ret i64 %result
 }
@@ -753,7 +769,7 @@ entry:
 	%type_entier_str = getelementptr [7 x i8], [7 x i8]* @type_entier, i32 0, i32 0
 	call i32 (i8*, ...) @printf(i8* %demande_fmt, i8* %nom_variable, i8* %type_entier_str)
 	%reponse = call i8* @read_line()
-	%is_null = icmp eq ptr %reponse, null
+	%is_null = icmp eq i8* %reponse, null
 	br i1 %is_null, label %vide, label %texte
 vide:
 	%vide_str = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
@@ -771,4 +787,3 @@ redemande:
 	%nouvelle-reponse = call i64 @demande_entier(i8* %nom_variable)
 	ret i64 %nouvelle-reponse
 }
-
