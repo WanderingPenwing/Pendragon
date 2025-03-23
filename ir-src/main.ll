@@ -440,7 +440,11 @@ define i1 @verifie_dizaine(i8* %mot, i32 %x) {
 define i1 @verifie_separateur(i8* %mot, i32 %x) {
 	%nombre_ptr = getelementptr [8 x i8*], [8 x i8*]* @separateurs, i32 0, i32 %x
 	%nombre_str = load i8*, i8** %nombre_ptr
-	%resultat = call i1 @compare_texte(i8* %mot, i8* %nombre_str, i1 1)
+	%resultat_singulier = call i1 @compare_texte(i8* %mot, i8* %nombre_str, i1 1)
+	%s_str = getelementptr [2 x i8], [2 x i8]* @s, i32 0, i32 0
+	%nombre_str_pluriel = call i8* @concat_strings(i8* %nombre_str, i8* %s_str)
+	%resultat_pluriel = call i1 @compare_texte(i8* %mot, i8* %nombre_str_pluriel, i1 1)
+	%resultat = or i1 %resultat_singulier, %resultat_pluriel
 	ret i1 %resultat
 }
 
@@ -615,7 +619,23 @@ do_process_token:
 update_sum:
   ; Update sum or total based on token value
   %current_sum = load i64, ptr %sum
-  %is_separator = icmp sge i64 %token_value, 100
+  %is_cent = icmp eq i64 %token_value, 100
+  br i1 %is_cent, label %handle_cent, label %handle_pas_cent
+
+handle_cent:
+  %is_cent_alone = icmp eq i64 %current_sum, 0
+  br i1 %is_cent_alone, label %handle_cent_alone, label %handle_centaine
+handle_cent_alone:
+  %new_sum_ca = add i64 100, 0
+  store i64 %new_sum_ca, ptr %sum
+  br label %reset_token
+handle_centaine:
+  %new_sum_c = mul i64 %current_sum, 100
+  store i64 %new_sum_c, ptr %sum
+  br label %reset_token
+
+handle_pas_cent:
+  %is_separator = icmp sgt i64 %token_value, 100
   br i1 %is_separator, label %handle_separator, label %handle_unit
 
 handle_separator:
@@ -674,7 +694,23 @@ erreur:
 update_final_sum:
   ; Update sum or total based on token value
   %final_sum = load i64, ptr %sum
-  %final_is_separator = icmp sge i64 %final_token_value, 100
+  %final_is_cent = icmp eq i64 %final_token_value, 100
+  br i1 %final_is_cent, label %final_handle_cent, label %final_handle_pas_cent
+
+final_handle_cent:
+  %final_is_cent_alone = icmp eq i64 %final_sum, 0
+  br i1 %final_is_cent_alone, label %final_handle_cent_alone, label %final_handle_centaine
+final_handle_cent_alone:
+  %final_new_sum_ca = add i64 100, 0
+  store i64 %final_new_sum_ca, ptr %sum
+  br label %reset_token
+final_handle_centaine:
+  %final_new_sum_c = mul i64 %final_sum, 100
+  store i64 %final_new_sum_c, ptr %sum
+  br label %reset_token
+
+final_handle_pas_cent:
+  %final_is_separator = icmp sgt i64 %final_token_value, 100
   br i1 %final_is_separator, label %final_handle_separator, label %final_handle_unit
 
 final_handle_separator:
