@@ -118,8 +118,29 @@ impl Commande {
 				instruction.body += &format!("%{}-0 = {}\n", nom, default_value);
 				Ok(instruction)
 			}
-			Commande::Demande(_nom) => {
-				Ok(Instruction::default())
+			Commande::Demande(nom) => {
+				let mut instruction = Instruction::new(var);
+				let current_variable_index = instruction.var.entry(nom.to_string()).and_modify(|e| *e += 1).or_insert(0);
+				instruction.declaration += &format!("@{}-{}-nom = private unnamed_addr constant [{} x i8] c\"{}\\00\"\n", nom, current_variable_index, nom.len()+1, nom);
+				instruction.body += &format!("%{}-{}-nom = getelementptr [{} x i8], [{} x i8]* @{}-{}-nom, i32 0, i32 0\n", 
+					nom, current_variable_index,nom.len()+1,nom.len()+1,nom, current_variable_index
+				);
+				match var_types[nom] {
+					TypeElement::Entier => {
+						return Err(ErreurMorgan::MauvaisArgument("Demande entier pas implémenté".to_string()));
+					}
+					TypeElement::Texte => {
+						instruction.body += &format!("%{}-{} = call i8* @demande_texte(i8* %{}-{}-nom)\n",
+							nom, current_variable_index, nom, current_variable_index
+						);
+					}
+					TypeElement::Booleen => {
+						instruction.body += &format!("%{}-{} = call i1 @demande_booleen(i8* %{}-{}-nom)\n",
+							nom, current_variable_index, nom, current_variable_index
+						);
+					}
+				}
+				Ok(instruction)
 			}
 			Commande::Modifie(nom, expression) => {
 				let mut instruction = Instruction::default();				

@@ -31,3 +31,7 @@ Modifie B avec A est supérieur ou égal à deux.
 
 Affiche "(" puis A puis ">=2)=" puis B.
 
+Demande T.
+Modifie B avec T est égal à "hello".
+Affiche "c'est un hello".
+

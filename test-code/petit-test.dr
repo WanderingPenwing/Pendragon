@@ -1,0 +1,5 @@
+Définis T comme texte. Définis B comme booléen.
+Demande T.
+Modifie B avec T est égal à "hello".
+Affiche "c'est un hello : " puis B.
+Demande B.

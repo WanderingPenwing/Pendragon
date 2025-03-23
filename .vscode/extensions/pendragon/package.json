@@ -1,0 +1,29 @@
+{
+  "name": "pendragon",
+  "displayName": "Pendragon",
+  "description": "Mon language très descriptif",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.98.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "pendragon",
+      "aliases": ["Pendragon", "pendragon"],
+      "extensions": [".dr"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "pendragon",
+      "scopeName": "source.pendragon",
+      "path": "./syntaxes/pendragon.tmLanguage.json"
+    }],
+    "commands": [{
+      "command": "extension.runPendragon",
+      "title": "Compile Pendragon"
+    }]
+  }
+}

@@ -6,8 +6,7 @@
             "type": "shell",
             "command": "/usr/local/cargo/bin/pendragon",
             "args": [
-                "${file}",  // This passes the current open .dr file as an argument
-                "-i"
+                "${file}"
             ],
             "group": {
                 "kind": "build",

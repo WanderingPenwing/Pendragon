@@ -1,0 +1,50 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Pendragon",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#operators"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#comments"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.pendragon",
+				"match": "\\b(Définis|Modifie|Tant|que|Affiche|Demande|Si)\\b"
+			}]
+		},
+		"operators": {
+			"patterns": [{
+				"name": "keyword.operator.pendragon",
+				"match": "\\b(puis|et|ou|non|plus|moins|fois|divisé|supérieur|inférieur|égal|parenthèse)\\b"
+			}]
+		},
+		"strings": {
+			"name": "string.quoted.double.pendragon",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.pendragon",
+					"match": "\\\\."
+				}
+			]
+		},
+		"comments": {
+			"patterns": [{
+				"name": "comment.line.pendragon",
+				"match": "\\bNota Bene : .*"
+			}]
+		}
+	},
+	"scopeName": "source.pendragon"
+}

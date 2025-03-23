@@ -338,7 +338,7 @@ entry:
 
 define i1 @compare_texte(i8* %str1, i8* %str2, i1 %egalite) {
 	%cmp = call i32 @strcmp(i8* %str1, i8* %str2)
-    %is_equal = icmp ne i32 %cmp, 0
+	%is_equal = icmp ne i32 %cmp, 0
 	%resultat = xor i1 %is_equal, %egalite
 	ret i1 %resultat
 }
@@ -347,4 +347,77 @@ declare i64 @strlen(i8*)
 declare i8* @malloc(i64)
 declare void @memcpy(i8*, i8*, i64)
 declare i32 @strcmp(i8*, i8*)
+declare i8* @gets(i8*)
+
+@buffer = common global [100 x i8] zeroinitializer, align 1
+
+define i8* @read_line() {
+entry:
+    %buffer_ptr = getelementptr inbounds [100 x i8], i8* @buffer, i32 0, i32 0
+    %call = call i8* @gets(i8* %buffer_ptr)  ; Read input
+
+    ; Check if input was read successfully
+    %is_null = icmp eq i8* %call, null
+    br i1 %is_null, label %return_null, label %return_buffer
+
+return_null:
+    ret i8* null
+
+return_buffer:
+    ret i8* %buffer_ptr
+}
+
+@demande_str = private unnamed_addr constant [30 x i8] c"Quelle valeur pour %s (%s) ?\0A\00"
+@type_texte = private unnamed_addr constant [6 x i8] c"texte\00"
+
+define i8* @demande_texte(i8* %nom_variable) {
+entry:
+	%demande_fmt = getelementptr [30 x i8], [30 x i8]* @demande_str, i32 0, i32 0
+	%type_texte_str = getelementptr [6 x i8], [6 x i8]* @type_texte, i32 0, i32 0
+	call i32 (i8*, ...) @printf(i8* %demande_fmt, i8* %nom_variable, i8* %type_texte_str)
+	%reponse = call i8* @read_line()
+	%is_null = icmp eq ptr %reponse, null
+	br i1 %is_null, label %vide, label %texte
+texte:
+	ret i8* %reponse
+vide:
+	%vide_str = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+	ret i8* %vide_str
+}
+
+@type_booleen = private unnamed_addr constant [9 x i8] c"booléen\00"
+@booleen_invalide = private unnamed_addr constant [41 x i8] c"Erreur : Le booléen '%s' est invalide.\0A\00"
+
+define i1 @demande_booleen(i8* %nom_variable) {
+entry:
+	%demande_fmt = getelementptr [30 x i8], [30 x i8]* @demande_str, i32 0, i32 0
+	%type_booleen_str = getelementptr [9 x i8], [9 x i8]* @type_booleen, i32 0, i32 0
+	call i32 (i8*, ...) @printf(i8* %demande_fmt, i8* %nom_variable, i8* %type_booleen_str)
+	%reponse = call i8* @read_line()
+	%is_null = icmp eq ptr %reponse, null
+	br i1 %is_null, label %vide, label %texte
+vide:
+	%vide_str = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+	br label %redemande
+texte:
+	%vrai_ptr = getelementptr [2 x i8*], [2 x i8*]* @booleen, i32 0, i32 1
+	%vrai_str = load i8*, i8** %vrai_ptr
+	%est_vrai = call i1 @compare_texte(i8* %reponse, i8* %vrai_str, i1 1)
+	br i1 %est_vrai, label %vrai, label %pas-vrai
+vrai:
+	ret i1 1
+pas-vrai:
+	%faux_ptr = getelementptr [2 x i8*], [2 x i8*]* @booleen, i32 0, i32 0
+	%faux_str = load i8*, i8** %faux_ptr
+	%est_faux = call i1 @compare_texte(i8* %reponse, i8* %faux_str, i1 1)
+	br i1 %est_faux, label %faux, label %redemande
+faux:
+	ret i1 0
+redemande:
+	%erreur = phi i8* [%vide_str, %vide], [%reponse, %pas-vrai]
+	%erreur_fmt = getelementptr [41 x i8], [41 x i8]* @booleen_invalide, i32 0, i32 0
+	call i32 (i8*, ...) @printf(i8* %erreur_fmt, i8* %erreur)
+	%nouvelle-reponse = call i1 @demande_booleen(i8* %nom_variable)
+	ret i1 %nouvelle-reponse
+}
 
