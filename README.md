@@ -9,10 +9,13 @@ Avec de la [Documentation](https://doc.penwing.org) !
 - La parte sophie/ interprète l'AST
 - La partie morgan/ convertit l'AST en IR de LLVM
 - Compilation avec LLVM
+- Linkage avec Clang
 
 ## Exécution
 
-Dans le codespace github, utilisez Ctrl+Shift+B, ou la commande ```pendragon <fichier>```
+Dans le codespace github, utilisez Ctrl+Shift+B, ou la commande ```pendragon <fichier>```. 
+
+[![Ouvrir dans le GitHub Codespace](https://github.com/codespaces/badge.svg)](https://codespaces.new/WanderingPenwing/Pendragon)
 
 ## Exemple
 Voici un exemple de code :
