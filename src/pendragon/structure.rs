@@ -81,6 +81,8 @@ pub struct Bloc {
 	pub condition: Vec<Element>,
 	pub repete: bool,
 	pub contenu: Vec<Phrase>,
+	pub variables_internes: HashMap<String, TypeElement>,
+	pub variables_externes: Vec<String>,
 }
 
 impl Bloc {
@@ -89,14 +91,54 @@ impl Bloc {
 			condition,
 			repete,
 			contenu: vec![],
+			variables_internes: HashMap::new(),
+			variables_externes: vec![],
 		}
 	}
 
 	pub fn ajoute_commande(&mut self, commande: Commande) {
-		self.contenu.push(Phrase::Commande(commande));
+		match commande.clone() {
+			Commande::Definis(nom, type_element) => {
+				self.variables_internes.insert(nom.to_string(), type_element);
+			}
+			Commande::Demande(nom) => {
+				if !self.variables_internes.contains_key(&nom) && !self.variables_externes.contains(&nom) {
+					self.variables_externes.push(nom)
+				}
+			}
+			Commande::Modifie(nom, expression) => {
+				if !self.variables_internes.contains_key(&nom) && !self.variables_externes.contains(&nom) {
+					self.variables_externes.push(nom)
+				}
+				for element in expression.iter() {
+					let Element::Variable(nom_element, _type) = element else {
+						continue
+					};
+					if !self.variables_internes.contains_key(nom_element) && !self.variables_externes.contains(nom_element) {
+						self.variables_externes.push(nom_element.clone())
+					}
+				}
+			}
+			Commande::Affiche(expression) => {
+				for element in expression.iter() {
+					let Element::Variable(nom_element, _type) = element else {
+						continue
+					};
+					if !self.variables_internes.contains_key(nom_element) && !self.variables_externes.contains(nom_element) {
+						self.variables_externes.push(nom_element.clone())
+					}
+				}
+			}
+		}
+		self.contenu.push(Phrase::Commande(commande)); //check variable
 	}
 
 	pub fn ajoute_bloc(&mut self, bloc: Bloc) {
+		for variable in bloc.variables_externes.iter() {
+			if !self.variables_internes.contains_key(variable) && !self.variables_externes.contains(variable) {
+				self.variables_externes.push(variable.clone())
+			}
+		}
 		self.contenu.push(Phrase::Bloc(bloc));
 	}
 }
@@ -107,7 +149,7 @@ pub enum Phrase {
 	Commande(Commande),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Commande {
 	Definis(String, TypeElement),
 	Demande(String),
