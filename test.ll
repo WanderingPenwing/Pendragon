@@ -844,7 +844,6 @@ continue:
 	ret { i64 } %result-1-0
 }
 
-@texte_global-2 = private unnamed_addr constant [3 x i8] c"Ah\00"
 
 define i32 @main() {
 	%fmt_ptr = getelementptr [3 x i8], [3 x i8]* @format_str, i32 0, i32 0
@@ -856,12 +855,6 @@ define i32 @main() {
 	%A-2 = extractvalue { i64 } %result-bloc-0, 0
 	%result-bloc-1 = call { i64 } @bloc-1( i64 %A-2)
 	%A-3 = extractvalue { i64 } %result-bloc-1, 0
-	%expression_texte-2-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-	%texte_global-2-str = getelementptr [3 x i8], [3 x i8]* @texte_global-2, i32 0, i32 0
-	%expression_texte-2-1 = call i8* @concat_strings(i8* %expression_texte-2-0, i8* %texte_global-2-str)
-	%expression_texte-2-fin = getelementptr i8, i8* %expression_texte-2-1, i32 0
-	call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-2-fin)
-	call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
 
 ret i32 0
 }

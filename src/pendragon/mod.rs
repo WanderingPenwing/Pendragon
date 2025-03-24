@@ -81,7 +81,6 @@ impl Pendragon {
 					continue;
 				}
 				if let Some(contenu) = phrase.strip_suffix(",") {
-					println!(", : {}",contenu);
 					match self.analyse_bloc(contenu) {
 						Ok(bloc) => {
 							pile_bloc.push(bloc);
@@ -104,6 +103,27 @@ impl Pendragon {
 					ErreurPendragon::ManquePonctuation,
 				)]);
 			}
+		}
+		
+		while indentation_niveau > 0 {
+			let Some(bloc_actuel) = pile_bloc.pop() else {
+				erreurs.push(ErreurCompilation::nouvelle(
+					usize::MAX,
+					"".into(),
+					ErreurPendragon::MauvaiseIndentation(format!(
+						"croyais être à {} niveau",
+						indentation_niveau
+					)),
+				));
+				indentation_niveau = 0;
+				continue;
+			};
+			if let Some(bloc_precedent) = pile_bloc.last_mut() {
+				bloc_precedent.ajoute_bloc(bloc_actuel);
+			} else {
+				self.programme.ajoute_bloc(bloc_actuel);
+			}
+			indentation_niveau -= 1;
 		}
 		if !erreurs.is_empty() {
 			return Err(erreurs);

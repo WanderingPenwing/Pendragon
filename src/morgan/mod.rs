@@ -210,9 +210,7 @@ impl Commande {
 impl Bloc {
 	fn traduit_contenu(&self, var: HashMap<String, usize>, var_types: HashMap<String, TypeElement>) -> Result<Instruction, ErreurMorgan> {
 		let mut instruction = Instruction::new(var);
-		println!("traduit contenu {:?}",var_types);
 		instruction.var_types = var_types;
-		println!("traduit contenu instruction {:?}",instruction.var_types);
 		instruction.add(booleen::calcule_booleen(self.condition.clone(), instruction.var.clone())?);
 		let current_condition_index = instruction.var[EXPRESSION_BOOLEEN];
 		instruction.body += &format!("\tbr i1 %{}-{}-fin, label %continue, label %stop\n", EXPRESSION_BOOLEEN, current_condition_index);
@@ -235,7 +233,6 @@ impl Bloc {
 	fn return_expression(&self, var: HashMap<String, usize>, var_types: HashMap<String, TypeElement>, return_index: usize) -> Result<String, ErreurMorgan> {
 		let mut expression = String::new();
 		let mut result_index: usize = 0;
-		println!("expression {:?}",var_types);
 		let return_type = self.return_type(var_types.clone())?;
 		for variable in self.variables_externes.iter() {
 			let Some(current_var_index) = var.get(variable) else {
@@ -254,7 +251,6 @@ impl Bloc {
 			);
 			result_index += 1;
 		}
-		println!("expression {:?}",self.variables_externes);
 		expression += &format!("\tret {} %result-{}-{}\n", return_type, return_index, result_index-1);
 		Ok(expression)
 	}
@@ -263,7 +259,6 @@ impl Bloc {
 		let mut function_type = "{".to_string();
 		for variable in self.variables_externes.iter() {
 			let Some(type_var) = var_types.get(variable) else {
-				println!("{:?}",var_types);
 				return Err(ErreurMorgan::ManqueVariable(format!("{}:var_type in return_type",variable)));
 			};
 			let comma: &str = if &function_type == "{" {
@@ -281,7 +276,6 @@ impl Bloc {
 		let mut instruction = Instruction::new(var);
 		let current_index = instruction.var.entry(BLOC.to_string()).and_modify(|e| *e += 1).or_insert(0).clone();
 		let mut result_index: usize = 0;
-		println!("traduit {:?}",var_types);
 		let return_type = self.return_type(var_types.clone())?;
 		
 		let mut input: String = String::new();

@@ -1225,39 +1225,16 @@ demande_entier:                         # @demande_entier
 main:                                   # @main
 	.cfi_startproc
 # %bb.0:
-	pushq	%r14
-	.cfi_def_cfa_offset 16
-	pushq	%rbx
-	.cfi_def_cfa_offset 24
 	pushq	%rax
-	.cfi_def_cfa_offset 32
-	.cfi_offset %rbx, -24
-	.cfi_offset %r14, -16
-	leaq	.Lformat_str(%rip), %rbx
-	leaq	.Lnewline(%rip), %r14
+	.cfi_def_cfa_offset 16
 	leaq	".LA-1-nom"(%rip), %rdi
 	callq	demande_entier@PLT
 	movq	%rax, %rdi
 	callq	"bloc-0"@PLT
 	movq	%rax, %rdi
 	callq	"bloc-1"@PLT
-	leaq	.Lvide(%rip), %rdi
-	leaq	".Ltexte_global-2"(%rip), %rsi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
 	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	xorl	%eax, %eax
-	addq	$8, %rsp
-	.cfi_def_cfa_offset 24
-	popq	%rbx
-	.cfi_def_cfa_offset 16
-	popq	%r14
+	popq	%rcx
 	.cfi_def_cfa_offset 8
 	retq
 .Lfunc_end24:
@@ -1618,10 +1595,5 @@ booleen:
 ".Ltexte_global-1":
 	.asciz	"kenobi"
 	.size	".Ltexte_global-1", 7
-
-	.type	".Ltexte_global-2",@object      # @texte_global-2
-".Ltexte_global-2":
-	.asciz	"Ah"
-	.size	".Ltexte_global-2", 3
 
 	.section	".note.GNU-stack","",@progbits
