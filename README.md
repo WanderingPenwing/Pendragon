@@ -7,9 +7,13 @@ Avec de la [Documentation](https://doc.penwing.org) !
 ## Pour l'instant
 - La partie pendragon/ transforme le fichier '.dr' en AST (arbre de syntaxe)
 - La parte sophie/ interprète l'AST
-## Objectif
-- La partie hurle/ pour convertir l'AST en IR de LLVM
+- La partie morgan/ convertit l'AST en IR de LLVM
 - Compilation avec LLVM
+
+## Exécution
+
+Dans le codespace github, utilisez Ctrl+Shift+B, ou la commande ```pendragon <fichier>```
+
 ## Exemple
 Voici un exemple de code :
 
