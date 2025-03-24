@@ -229,7 +229,6 @@ impl Bloc {
 				}
 			}
 		}
-		instruction.body += &self.return_expression(instruction.var.clone(), instruction.var_types.clone(), 1)?;
 		Ok(instruction)
 	}
 	
@@ -308,6 +307,26 @@ impl Bloc {
 		contenu.body += &format!("define {} @bloc-{}({}) ", return_type, current_index, input);
 		contenu.body += "{\nentry:\n\t%fmt_ptr = getelementptr [3 x i8], [3 x i8]* @format_str, i32 0, i32 0\n\t%nouvelle_ligne = getelementptr [2 x i8], [2 x i8]* @newline, i32 0, i32 0\n";
 		contenu.add(self.traduit_contenu(instruction.var.clone(), var_types.clone())?);
+		if self.repete {
+			let mut output: String = String::new();
+			for variable in self.variables_externes.iter() {
+				let Some(current_var_index) = contenu.var.get(variable) else {
+					return Err(ErreurMorgan::ManqueVariable(format!("{}:var_index in traduit",variable)));
+				};
+				let Some(type_var) = var_types.get(variable) else {
+					return Err(ErreurMorgan::ManqueVariable(format!("{}:var_type in traduit",variable)));
+				};
+				let comma: &str = if &output == "" {
+					""
+				} else {
+					","
+				};
+				output += &format!("{} {} %{}-{}", comma, type_var.type_ir(), variable, current_var_index);
+			}
+			contenu.body += &format!("\t%result-fin = call {} @bloc-{}({})\n\t ret {} %result-fin\n", return_type, current_index, output, return_type);
+		} else {
+			contenu.body += &self.return_expression(instruction.var.clone(), var_types.clone(), 1)?;
+		}
 		contenu.body += "}\n";
 		instruction.add_bloc(contenu);
 		
