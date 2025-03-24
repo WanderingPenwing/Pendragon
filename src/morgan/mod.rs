@@ -225,7 +225,7 @@ impl Bloc {
 					instruction.add(commande.traduit(instruction.var.clone(), instruction.var_types.clone())?);
 				}
 				Phrase::Bloc(bloc) => {
-					instruction.add_bloc(bloc.traduit(instruction.var.clone(), instruction.var_types.clone())?);
+					instruction.add(bloc.traduit(instruction.var.clone(), instruction.var_types.clone())?);
 				}
 			}
 		}
@@ -325,7 +325,7 @@ impl Bloc {
 			}
 			contenu.body += &format!("\t%result-fin = call {} @bloc-{}({})\n\t ret {} %result-fin\n", return_type, current_index, output, return_type);
 		} else {
-			contenu.body += &self.return_expression(instruction.var.clone(), var_types.clone(), 1)?;
+			contenu.body += &self.return_expression(contenu.var.clone(), var_types.clone(), 1)?;
 		}
 		contenu.body += "}\n";
 		instruction.add_bloc(contenu);

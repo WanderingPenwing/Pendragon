@@ -1,0 +1,24 @@
+Définis Nombre comme entier. Définis Diviseur comme entier.
+Demande Nombre.
+
+Tant que Nombre est supérieur à un,
+	Modifie Diviseur avec un.
+	Définis Index comme entier.
+	Modifie Index avec un.
+	Tant que Index fois Index est inférieur ou égal à Nombre et Nombre moins Diviseur fois Index est différent de zéro,
+		Modifie Index avec Index plus un.
+		Modifie Diviseur avec Nombre divisé par Index.
+	Modifie Index avec Index.
+	Si Index fois Index est supérieur à Nombre,
+		Affiche Nombre.
+		Modifie Nombre avec un.
+	Modifie Index avec Index.
+	Si Index fois Index est inférieur ou égal à Nombre,
+		Affiche Index.
+		Modifie Nombre avec Diviseur.
+	Affiche "Index : " puis Index puis " | Diviseur : " puis Diviseur puis " | Nombre : " puis Nombre.
+	Modifie Index avec Index.
+
+Affiche "Fin".
+
+Nota Bene : Ceci est un programme qui affiche la décomposition en facteurs premiers de "Nombre". 
