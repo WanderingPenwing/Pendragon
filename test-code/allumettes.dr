@@ -1,0 +1,19 @@
+Définis Allumettes comme entier.
+Modifie Allumettes avec quinze.
+
+Tant que Allumettes est supérieur à un,
+	Affiche "Allumettes : ".
+	Définis Nombre comme entier.
+	Modifie Nombre avec Allumettes.
+	Tant que Nombre est supérieur à zéro,
+		Affiche "=====o".
+		Modifie Nombre avec Nombre moins un.
+	Définis Enleve comme entier.
+	Tant que Enleve est inférieur à un ou Enleve est supérieur à trois,
+		Affiche "Choisissez un nombre entre un et trois".
+		Demande Enleve.
+	Modifie Allumettes avec Allumettes moins Enleve.
+	Affiche "------------".
+Affiche "Allumettes : ".
+Affiche "=====o".
+Affiche "Joueur suivant : Tu as perdu !".
