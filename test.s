@@ -70,7 +70,7 @@ texte_unite:                            # @texte_unite
 texte_dizaine:                          # @texte_dizaine
 	.cfi_startproc
 # %bb.0:                                # %entry
-	pushq	%r15
+	pushq	%rbp
 	.cfi_def_cfa_offset 16
 	pushq	%r14
 	.cfi_def_cfa_offset 24
@@ -78,69 +78,70 @@ texte_dizaine:                          # @texte_dizaine
 	.cfi_def_cfa_offset 32
 	.cfi_offset %rbx, -32
 	.cfi_offset %r14, -24
-	.cfi_offset %r15, -16
+	.cfi_offset %rbp, -16
 	cmpl	$19, %edi
 	jg	.LBB2_2
 # %bb.1:                                # %unite
 	callq	texte_unite@PLT
-	jmp	.LBB2_4
+	jmp	.LBB2_5
 .LBB2_2:                                # %dizaine
 	movslq	%edi, %rax
-	imulq	$1717986919, %rax, %r15         # imm = 0x66666667
-	movq	%r15, %rax
-	shrq	$63, %rax
-	sarq	$34, %r15
-	addl	%eax, %r15d
-	leal	(%r15,%r15), %eax
-	leal	(%rax,%rax,4), %eax
-	subl	%eax, %edi
-	movslq	%r15d, %rax
-	movq	dizaine@GOTPCREL(%rip), %rcx
-	movq	(%rcx,%rax,8), %rcx
-	je	.LBB2_3
-# %bb.5:                                # %pitet-et
+	imulq	$1717986919, %rax, %rax         # imm = 0x66666667
+	movq	%rax, %rsi
+	shrq	$63, %rsi
+	sarq	$34, %rax
+	leal	(%rax,%rsi), %edx
+	leal	(%rdx,%rdx), %ecx
+	leal	(%rcx,%rcx,4), %ecx
+	subl	%ecx, %edi
+	movslq	%edx, %rcx
+	movq	dizaine@GOTPCREL(%rip), %r8
+	movq	(%r8,%rcx,8), %rcx
+	leal	-7(%rax,%rsi), %eax
+	testl	$-3, %eax
+	sete	%bpl
+	je	.LBB2_6
+# %bb.3:                                # %dizaine
+	testl	%edi, %edi
+	jne	.LBB2_6
+# %bb.4:                                # %juste_dizaine
+	movq	%rcx, %rax
+	jmp	.LBB2_5
+.LBB2_6:                                # %pitet-et
 	movl	%edi, %ebx
 	cmpl	$1, %edi
 	sete	%al
-	cmpl	$8, %r15d
+	cmpl	$8, %edx
 	setl	%dl
 	mulb	%dl
 	cmpb	$1, %al
-	jne	.LBB2_7
-# %bb.6:                                # %affiche-et
+	jne	.LBB2_8
+# %bb.7:                                # %affiche-et
 	leaq	.Let(%rip), %rsi
 	movq	%rcx, %rdi
 	callq	concat_strings@PLT
 	movq	%rax, %rcx
-.LBB2_7:                                # %pitet-special
+.LBB2_8:                                # %pitet-special
 	leaq	.Ltiret(%rip), %rsi
 	movq	%rcx, %rdi
 	callq	concat_strings@PLT
 	movq	%rax, %r14
-	cmpl	$7, %r15d
-	sete	%al
-	cmpl	$9, %r15d
-	sete	%cl
-	addb	%al, %cl
-	testb	$1, %cl
-	je	.LBB2_9
-# %bb.8:                                # %unite-special
+	testb	%bpl, %bpl
+	je	.LBB2_10
+# %bb.9:                                # %unite-special
 	addl	$10, %ebx
-.LBB2_9:                                # %unite-simple
+.LBB2_10:                               # %unite-simple
 	movl	%ebx, %edi
 	callq	texte_unite@PLT
 	movq	%r14, %rdi
 	movq	%rax, %rsi
 	callq	concat_strings@PLT
-	jmp	.LBB2_4
-.LBB2_3:                                # %juste_dizaine
-	movq	%rcx, %rax
-.LBB2_4:                                # %juste_dizaine
+.LBB2_5:                                # %juste_dizaine
 	popq	%rbx
 	.cfi_def_cfa_offset 24
 	popq	%r14
 	.cfi_def_cfa_offset 16
-	popq	%r15
+	popq	%rbp
 	.cfi_def_cfa_offset 8
 	retq
 .Lfunc_end2:
@@ -535,291 +536,713 @@ demande_texte:                          # @demande_texte
 	.size	demande_texte, .Lfunc_end11-demande_texte
 	.cfi_endproc
                                         # -- End function
+	.globl	demande_booleen                 # -- Begin function demande_booleen
+	.p2align	4, 0x90
+	.type	demande_booleen,@function
+demande_booleen:                        # @demande_booleen
+	.cfi_startproc
+# %bb.0:                                # %entry
+	pushq	%r15
+	.cfi_def_cfa_offset 16
+	pushq	%r14
+	.cfi_def_cfa_offset 24
+	pushq	%rbx
+	.cfi_def_cfa_offset 32
+	.cfi_offset %rbx, -32
+	.cfi_offset %r14, -24
+	.cfi_offset %r15, -16
+	movq	%rdi, %rbx
+	leaq	.Ldemande_str(%rip), %rdi
+	leaq	.Ltype_booleen(%rip), %rdx
+	movq	%rbx, %rsi
+	xorl	%eax, %eax
+	callq	printf@PLT
+	callq	read_line@PLT
+	testq	%rax, %rax
+	je	.LBB12_1
+# %bb.3:                                # %texte
+	movq	%rax, %r14
+	movq	booleen@GOTPCREL(%rip), %r15
+	movq	8(%r15), %rsi
+	movq	%rax, %rdi
+	movl	$1, %edx
+	callq	compare_texte@PLT
+	testb	$1, %al
+	je	.LBB12_6
+# %bb.4:                                # %vrai
+	movb	$1, %al
+	jmp	.LBB12_5
+.LBB12_1:                               # %vide
+	leaq	.Lvide(%rip), %r14
+	jmp	.LBB12_2
+.LBB12_6:                               # %pas-vrai
+	movq	(%r15), %rsi
+	movq	%r14, %rdi
+	movl	$1, %edx
+	callq	compare_texte@PLT
+	testb	$1, %al
+	je	.LBB12_2
+# %bb.7:                                # %faux
+	xorl	%eax, %eax
+	jmp	.LBB12_5
+.LBB12_2:                               # %redemande
+	leaq	.Lbooleen_invalide(%rip), %rdi
+	movq	%r14, %rsi
+	xorl	%eax, %eax
+	callq	printf@PLT
+	movq	%rbx, %rdi
+	callq	demande_booleen@PLT
+.LBB12_5:                               # %vrai
+	popq	%rbx
+	.cfi_def_cfa_offset 24
+	popq	%r14
+	.cfi_def_cfa_offset 16
+	popq	%r15
+	.cfi_def_cfa_offset 8
+	retq
+.Lfunc_end12:
+	.size	demande_booleen, .Lfunc_end12-demande_booleen
+	.cfi_endproc
+                                        # -- End function
+	.globl	verifie_unite                   # -- Begin function verifie_unite
+	.p2align	4, 0x90
+	.type	verifie_unite,@function
+verifie_unite:                          # @verifie_unite
+	.cfi_startproc
+# %bb.0:
+	pushq	%rax
+	.cfi_def_cfa_offset 16
+	movslq	%esi, %rax
+	movq	petits_nombres@GOTPCREL(%rip), %rcx
+	movq	(%rcx,%rax,8), %rsi
+	movl	$1, %edx
+	callq	compare_texte@PLT
+	popq	%rcx
+	.cfi_def_cfa_offset 8
+	retq
+.Lfunc_end13:
+	.size	verifie_unite, .Lfunc_end13-verifie_unite
+	.cfi_endproc
+                                        # -- End function
+	.globl	verifie_dizaine                 # -- Begin function verifie_dizaine
+	.p2align	4, 0x90
+	.type	verifie_dizaine,@function
+verifie_dizaine:                        # @verifie_dizaine
+	.cfi_startproc
+# %bb.0:
+	pushq	%rax
+	.cfi_def_cfa_offset 16
+	movslq	%esi, %rax
+	movq	dizaine@GOTPCREL(%rip), %rcx
+	movq	(%rcx,%rax,8), %rsi
+	movl	$1, %edx
+	callq	compare_texte@PLT
+	popq	%rcx
+	.cfi_def_cfa_offset 8
+	retq
+.Lfunc_end14:
+	.size	verifie_dizaine, .Lfunc_end14-verifie_dizaine
+	.cfi_endproc
+                                        # -- End function
+	.globl	verifie_separateur              # -- Begin function verifie_separateur
+	.p2align	4, 0x90
+	.type	verifie_separateur,@function
+verifie_separateur:                     # @verifie_separateur
+	.cfi_startproc
+# %bb.0:
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	pushq	%r14
+	.cfi_def_cfa_offset 24
+	pushq	%rbx
+	.cfi_def_cfa_offset 32
+	.cfi_offset %rbx, -32
+	.cfi_offset %r14, -24
+	.cfi_offset %rbp, -16
+	movq	%rdi, %rbx
+	movslq	%esi, %rax
+	movq	separateurs@GOTPCREL(%rip), %rcx
+	movq	(%rcx,%rax,8), %r14
+	movq	%r14, %rsi
+	movl	$1, %edx
+	callq	compare_texte@PLT
+	movl	%eax, %ebp
+	leaq	.Ls(%rip), %rsi
+	movq	%r14, %rdi
+	callq	concat_strings@PLT
+	movq	%rbx, %rdi
+	movq	%rax, %rsi
+	movl	$1, %edx
+	callq	compare_texte@PLT
+	orb	%bpl, %al
+	popq	%rbx
+	.cfi_def_cfa_offset 24
+	popq	%r14
+	.cfi_def_cfa_offset 16
+	popq	%rbp
+	.cfi_def_cfa_offset 8
+	retq
+.Lfunc_end15:
+	.size	verifie_separateur, .Lfunc_end15-verifie_separateur
+	.cfi_endproc
+                                        # -- End function
+	.globl	mot_comme_unite                 # -- Begin function mot_comme_unite
+	.p2align	4, 0x90
+	.type	mot_comme_unite,@function
+mot_comme_unite:                        # @mot_comme_unite
+	.cfi_startproc
+# %bb.0:                                # %entry
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	pushq	%rbx
+	.cfi_def_cfa_offset 24
+	pushq	%rax
+	.cfi_def_cfa_offset 32
+	.cfi_offset %rbx, -24
+	.cfi_offset %rbp, -16
+	movq	%rdi, %rbx
+	movl	$0, 4(%rsp)
+	.p2align	4, 0x90
+.LBB16_1:                               # %check
+                                        # =>This Inner Loop Header: Depth=1
+	movl	4(%rsp), %ebp
+	movq	%rbx, %rdi
+	movl	%ebp, %esi
+	callq	verifie_unite@PLT
+	testb	$1, %al
+	jne	.LBB16_5
+# %bb.2:                                # %next
+                                        #   in Loop: Header=BB16_1 Depth=1
+	incl	%ebp
+	movl	%ebp, 4(%rsp)
+	cmpl	$20, %ebp
+	jl	.LBB16_1
+# %bb.3:                                # %default
+	xorl	%eax, %eax
+	jmp	.LBB16_4
+.LBB16_5:                               # %return
+	movl	4(%rsp), %eax
+.LBB16_4:                               # %default
+	addq	$8, %rsp
+	.cfi_def_cfa_offset 24
+	popq	%rbx
+	.cfi_def_cfa_offset 16
+	popq	%rbp
+	.cfi_def_cfa_offset 8
+	retq
+.Lfunc_end16:
+	.size	mot_comme_unite, .Lfunc_end16-mot_comme_unite
+	.cfi_endproc
+                                        # -- End function
+	.globl	mot_comme_dizaine               # -- Begin function mot_comme_dizaine
+	.p2align	4, 0x90
+	.type	mot_comme_dizaine,@function
+mot_comme_dizaine:                      # @mot_comme_dizaine
+	.cfi_startproc
+# %bb.0:                                # %entry
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	pushq	%rbx
+	.cfi_def_cfa_offset 24
+	pushq	%rax
+	.cfi_def_cfa_offset 32
+	.cfi_offset %rbx, -24
+	.cfi_offset %rbp, -16
+	movq	%rdi, %rbx
+	movl	$0, 4(%rsp)
+	.p2align	4, 0x90
+.LBB17_1:                               # %check
+                                        # =>This Inner Loop Header: Depth=1
+	movl	4(%rsp), %ebp
+	movq	%rbx, %rdi
+	movl	%ebp, %esi
+	callq	verifie_dizaine@PLT
+	testb	$1, %al
+	jne	.LBB17_3
+# %bb.2:                                # %next
+                                        #   in Loop: Header=BB17_1 Depth=1
+	incl	%ebp
+	movl	%ebp, 4(%rsp)
+	cmpl	$10, %ebp
+	jl	.LBB17_1
+	jmp	.LBB17_7
+.LBB17_3:                               # %return
+	movl	4(%rsp), %eax
+	testq	%rax, %rax
+	je	.LBB17_4
+# %bb.6:                                # %pas-cent
+	cmpl	$1, %eax
+	jne	.LBB17_8
+.LBB17_7:                               # %dix
+	xorl	%eax, %eax
+	jmp	.LBB17_5
+.LBB17_4:                               # %cent
+	movl	$100, %eax
+	jmp	.LBB17_5
+.LBB17_8:                               # %pas-dix
+	addq	%rax, %rax
+	leaq	(%rax,%rax,4), %rax
+.LBB17_5:                               # %cent
+	addq	$8, %rsp
+	.cfi_def_cfa_offset 24
+	popq	%rbx
+	.cfi_def_cfa_offset 16
+	popq	%rbp
+	.cfi_def_cfa_offset 8
+	retq
+.Lfunc_end17:
+	.size	mot_comme_dizaine, .Lfunc_end17-mot_comme_dizaine
+	.cfi_endproc
+                                        # -- End function
+	.globl	mot_comme_separateur            # -- Begin function mot_comme_separateur
+	.p2align	4, 0x90
+	.type	mot_comme_separateur,@function
+mot_comme_separateur:                   # @mot_comme_separateur
+	.cfi_startproc
+# %bb.0:                                # %entry
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	pushq	%rbx
+	.cfi_def_cfa_offset 24
+	pushq	%rax
+	.cfi_def_cfa_offset 32
+	.cfi_offset %rbx, -24
+	.cfi_offset %rbp, -16
+	movq	%rdi, %rbx
+	movl	$0, 4(%rsp)
+	.p2align	4, 0x90
+.LBB18_1:                               # %check
+                                        # =>This Inner Loop Header: Depth=1
+	movl	4(%rsp), %ebp
+	movq	%rbx, %rdi
+	movl	%ebp, %esi
+	callq	verifie_separateur@PLT
+	testb	$1, %al
+	jne	.LBB18_5
+# %bb.2:                                # %next
+                                        #   in Loop: Header=BB18_1 Depth=1
+	incl	%ebp
+	movl	%ebp, 4(%rsp)
+	cmpl	$8, %ebp
+	jl	.LBB18_1
+# %bb.3:                                # %default
+	xorl	%eax, %eax
+	jmp	.LBB18_4
+.LBB18_5:                               # %return
+	movl	4(%rsp), %edi
+	callq	mille_puissance@PLT
+.LBB18_4:                               # %default
+	addq	$8, %rsp
+	.cfi_def_cfa_offset 24
+	popq	%rbx
+	.cfi_def_cfa_offset 16
+	popq	%rbp
+	.cfi_def_cfa_offset 8
+	retq
+.Lfunc_end18:
+	.size	mot_comme_separateur, .Lfunc_end18-mot_comme_separateur
+	.cfi_endproc
+                                        # -- End function
+	.globl	mot_comme_entier                # -- Begin function mot_comme_entier
+	.p2align	4, 0x90
+	.type	mot_comme_entier,@function
+mot_comme_entier:                       # @mot_comme_entier
+	.cfi_startproc
+# %bb.0:                                # %entry
+	pushq	%r15
+	.cfi_def_cfa_offset 16
+	pushq	%r14
+	.cfi_def_cfa_offset 24
+	pushq	%rbx
+	.cfi_def_cfa_offset 32
+	.cfi_offset %rbx, -32
+	.cfi_offset %r14, -24
+	.cfi_offset %r15, -16
+	movq	%rdi, %rbx
+	leaq	.Lvingts(%rip), %rsi
+	movl	$1, %edx
+	callq	compare_texte@PLT
+	testb	$1, %al
+	je	.LBB19_3
+# %bb.1:                                # %quatre-vingts
+	movl	$76, %eax
+	jmp	.LBB19_2
+.LBB19_3:                               # %normal
+	leaq	".Ljuste-et"(%rip), %rsi
+	movq	%rbx, %rdi
+	movl	$1, %edx
+	callq	compare_texte@PLT
+	testb	$1, %al
+	je	.LBB19_5
+# %bb.4:                                # %et
+	xorl	%eax, %eax
+	jmp	.LBB19_2
+.LBB19_5:                               # %pas-et
+	movq	%rbx, %rdi
+	callq	mot_comme_unite@PLT
+	movq	%rax, %r15
+	movq	%rbx, %rdi
+	callq	mot_comme_dizaine@PLT
+	movq	%rax, %r14
+	movq	%rbx, %rdi
+	callq	mot_comme_separateur@PLT
+	addq	%r15, %r14
+	addq	%rax, %r14
+	movq	%rbx, %rdi
+	xorl	%esi, %esi
+	callq	verifie_unite@PLT
+	testb	$1, %al
+	jne	.LBB19_8
+# %bb.6:                                # %pas-et
+	testq	%r14, %r14
+	jne	.LBB19_8
+# %bb.7:                                # %erreur
+	movq	$-1, %rax
+	jmp	.LBB19_2
+.LBB19_8:                               # %bon
+	movq	%r14, %rax
+.LBB19_2:                               # %quatre-vingts
+	popq	%rbx
+	.cfi_def_cfa_offset 24
+	popq	%r14
+	.cfi_def_cfa_offset 16
+	popq	%r15
+	.cfi_def_cfa_offset 8
+	retq
+.Lfunc_end19:
+	.size	mot_comme_entier, .Lfunc_end19-mot_comme_entier
+	.cfi_endproc
+                                        # -- End function
+	.globl	texte_comme_entier              # -- Begin function texte_comme_entier
+	.p2align	4, 0x90
+	.type	texte_comme_entier,@function
+texte_comme_entier:                     # @texte_comme_entier
+	.cfi_startproc
+# %bb.0:                                # %entry
+	pushq	%r15
+	.cfi_def_cfa_offset 16
+	pushq	%r14
+	.cfi_def_cfa_offset 24
+	pushq	%rbx
+	.cfi_def_cfa_offset 32
+	subq	$96, %rsp
+	.cfi_def_cfa_offset 128
+	.cfi_offset %rbx, -32
+	.cfi_offset %r14, -24
+	.cfi_offset %r15, -16
+	movq	%rdi, %rbx
+	callq	strlen@PLT
+	movq	%rax, %r14
+	movq	$0, (%rsp)
+	movq	$0, 16(%rsp)
+	movl	$0, 28(%rsp)
+	movq	%rbx, 32(%rsp)
+	movl	$0, 12(%rsp)
+	leaq	46(%rsp), %r15
+	jmp	.LBB20_4
+	.p2align	4, 0x90
+.LBB20_2:                               # %handle_centaine
+                                        #   in Loop: Header=BB20_4 Depth=1
+	imulq	$100, %rcx, %rax
+	movq	%rax, (%rsp)
+.LBB20_3:                               # %reset_token
+                                        #   in Loop: Header=BB20_4 Depth=1
+	movl	$0, 12(%rsp)
+	incl	28(%rsp)
+.LBB20_4:                               # %loop_start
+                                        # =>This Inner Loop Header: Depth=1
+	movl	28(%rsp), %eax
+	cmpl	%r14d, %eax
+	jge	.LBB20_12
+# %bb.5:                                # %loop_body
+                                        #   in Loop: Header=BB20_4 Depth=1
+	cltq
+	movzbl	(%rbx,%rax), %eax
+	cmpb	$45, %al
+	jne	.LBB20_17
+# %bb.6:                                # %process_token
+                                        #   in Loop: Header=BB20_4 Depth=1
+	movl	12(%rsp), %eax
+	testl	%eax, %eax
+	jle	.LBB20_3
+# %bb.7:                                # %do_process_token
+                                        #   in Loop: Header=BB20_4 Depth=1
+	cltq
+	movb	$0, 46(%rsp,%rax)
+	movq	%r15, %rdi
+	callq	mot_comme_entier@PLT
+	cmpq	$-1, %rax
+	je	.LBB20_20
+# %bb.8:                                # %update_sum
+                                        #   in Loop: Header=BB20_4 Depth=1
+	movq	(%rsp), %rcx
+	cmpq	$100, %rax
+	je	.LBB20_1
+# %bb.9:                                # %handle_pas_cent
+                                        #   in Loop: Header=BB20_4 Depth=1
+	jle	.LBB20_18
+# %bb.10:                               # %handle_separator
+                                        #   in Loop: Header=BB20_4 Depth=1
+	movq	16(%rsp), %rdx
+	testq	%rcx, %rcx
+	je	.LBB20_19
+# %bb.11:                               # %sep_with_value
+                                        #   in Loop: Header=BB20_4 Depth=1
+	imulq	%rax, %rcx
+	addq	%rcx, %rdx
+	movq	%rdx, 16(%rsp)
+	movq	$0, (%rsp)
+	jmp	.LBB20_3
+	.p2align	4, 0x90
+.LBB20_12:                              # %process_last_token
+                                        #   in Loop: Header=BB20_4 Depth=1
+	movl	12(%rsp), %eax
+	testl	%eax, %eax
+	jle	.LBB20_26
+# %bb.13:                               # %process_final
+                                        #   in Loop: Header=BB20_4 Depth=1
+	cltq
+	movb	$0, 46(%rsp,%rax)
+	movq	%r15, %rdi
+	callq	mot_comme_entier@PLT
+	cmpq	$-1, %rax
+	je	.LBB20_20
+# %bb.14:                               # %update_final_sum
+                                        #   in Loop: Header=BB20_4 Depth=1
+	movq	(%rsp), %rcx
+	cmpq	$100, %rax
+	jne	.LBB20_21
+.LBB20_1:                               # %handle_cent
+                                        #   in Loop: Header=BB20_4 Depth=1
+	testq	%rcx, %rcx
+	jne	.LBB20_2
+# %bb.16:                               # %handle_cent_alone
+                                        #   in Loop: Header=BB20_4 Depth=1
+	movq	$100, (%rsp)
+	jmp	.LBB20_3
+	.p2align	4, 0x90
+.LBB20_17:                              # %continue_token
+                                        #   in Loop: Header=BB20_4 Depth=1
+	movslq	12(%rsp), %rcx
+	movb	%al, 46(%rsp,%rcx)
+	leal	1(%rcx), %eax
+	movl	%eax, 12(%rsp)
+	incl	28(%rsp)
+	jmp	.LBB20_4
+.LBB20_18:                              # %handle_unit
+                                        #   in Loop: Header=BB20_4 Depth=1
+	addq	%rax, %rcx
+	movq	%rcx, (%rsp)
+	jmp	.LBB20_3
+.LBB20_19:                              # %sep_alone
+                                        #   in Loop: Header=BB20_4 Depth=1
+	addq	%rax, %rdx
+	movq	%rdx, 16(%rsp)
+	jmp	.LBB20_3
+.LBB20_20:                              # %erreur
+	movq	$-1, %rax
+	jmp	.LBB20_27
+.LBB20_21:                              # %final_handle_pas_cent
+	jle	.LBB20_24
+# %bb.22:                               # %final_handle_separator
+	movq	16(%rsp), %rdx
+	testq	%rcx, %rcx
+	je	.LBB20_25
+# %bb.23:                               # %final_sep_with_value
+	imulq	%rax, %rcx
+	addq	%rcx, %rdx
+	movq	%rdx, 16(%rsp)
+	movq	$0, (%rsp)
+	jmp	.LBB20_26
+.LBB20_24:                              # %final_handle_unit
+	addq	%rax, %rcx
+	movq	%rcx, (%rsp)
+	jmp	.LBB20_26
+.LBB20_25:                              # %final_sep_alone
+	addq	%rax, %rdx
+	movq	%rdx, 16(%rsp)
+.LBB20_26:                              # %finish
+	movq	16(%rsp), %rax
+	addq	(%rsp), %rax
+.LBB20_27:                              # %erreur
+	addq	$96, %rsp
+	.cfi_def_cfa_offset 32
+	popq	%rbx
+	.cfi_def_cfa_offset 24
+	popq	%r14
+	.cfi_def_cfa_offset 16
+	popq	%r15
+	.cfi_def_cfa_offset 8
+	retq
+.Lfunc_end20:
+	.size	texte_comme_entier, .Lfunc_end20-texte_comme_entier
+	.cfi_endproc
+                                        # -- End function
+	.globl	demande_entier                  # -- Begin function demande_entier
+	.p2align	4, 0x90
+	.type	demande_entier,@function
+demande_entier:                         # @demande_entier
+	.cfi_startproc
+# %bb.0:                                # %entry
+	pushq	%r14
+	.cfi_def_cfa_offset 16
+	pushq	%rbx
+	.cfi_def_cfa_offset 24
+	pushq	%rax
+	.cfi_def_cfa_offset 32
+	.cfi_offset %rbx, -24
+	.cfi_offset %r14, -16
+	movq	%rdi, %rbx
+	leaq	.Ldemande_str(%rip), %rdi
+	leaq	.Ltype_entier(%rip), %rdx
+	movq	%rbx, %rsi
+	xorl	%eax, %eax
+	callq	printf@PLT
+	callq	read_line@PLT
+	testq	%rax, %rax
+	je	.LBB21_1
+# %bb.2:                                # %texte
+	movq	%rax, %r14
+	movq	%rax, %rdi
+	callq	texte_comme_entier@PLT
+	cmpq	$-1, %rax
+	jne	.LBB21_4
+	jmp	.LBB21_3
+.LBB21_1:                               # %vide
+	leaq	.Lvide(%rip), %r14
+.LBB21_3:                               # %redemande
+	leaq	.Lentier_invalide(%rip), %rdi
+	movq	%r14, %rsi
+	xorl	%eax, %eax
+	callq	printf@PLT
+	movq	%rbx, %rdi
+	callq	demande_entier@PLT
+.LBB21_4:                               # %bon-nombre
+	addq	$8, %rsp
+	.cfi_def_cfa_offset 24
+	popq	%rbx
+	.cfi_def_cfa_offset 16
+	popq	%r14
+	.cfi_def_cfa_offset 8
+	retq
+.Lfunc_end21:
+	.size	demande_entier, .Lfunc_end21-demande_entier
+	.cfi_endproc
+                                        # -- End function
+	.globl	"bloc-0"                        # -- Begin function bloc-0
+	.p2align	4, 0x90
+	.type	"bloc-0",@function
+"bloc-0":                               # @bloc-0
+	.cfi_startproc
+# %bb.0:                                # %entry
+	pushq	%r15
+	.cfi_def_cfa_offset 16
+	pushq	%r14
+	.cfi_def_cfa_offset 24
+	pushq	%rbx
+	.cfi_def_cfa_offset 32
+	.cfi_offset %rbx, -32
+	.cfi_offset %r14, -24
+	.cfi_offset %r15, -16
+	movq	%rdi, %rbx
+	cmpq	$3, %rdi
+	jle	.LBB22_2
+# %bb.1:                                # %continue
+	leaq	.Lformat_str(%rip), %r14
+	leaq	.Lnewline(%rip), %r15
+	leaq	.Lvide(%rip), %rdi
+	leaq	".Ltexte_global-0"(%rip), %rsi
+	callq	concat_strings@PLT
+	movq	%r14, %rdi
+	movq	%rax, %rsi
+	xorl	%eax, %eax
+	callq	printf@PLT
+	movq	%r14, %rdi
+	movq	%r15, %rsi
+	xorl	%eax, %eax
+	callq	printf@PLT
+.LBB22_2:                               # %stop
+	movq	%rbx, %rax
+	popq	%rbx
+	.cfi_def_cfa_offset 24
+	popq	%r14
+	.cfi_def_cfa_offset 16
+	popq	%r15
+	.cfi_def_cfa_offset 8
+	retq
+.Lfunc_end22:
+	.size	"bloc-0", .Lfunc_end22-"bloc-0"
+	.cfi_endproc
+                                        # -- End function
+	.globl	"bloc-1"                        # -- Begin function bloc-1
+	.p2align	4, 0x90
+	.type	"bloc-1",@function
+"bloc-1":                               # @bloc-1
+	.cfi_startproc
+# %bb.0:                                # %entry
+	pushq	%r15
+	.cfi_def_cfa_offset 16
+	pushq	%r14
+	.cfi_def_cfa_offset 24
+	pushq	%rbx
+	.cfi_def_cfa_offset 32
+	.cfi_offset %rbx, -32
+	.cfi_offset %r14, -24
+	.cfi_offset %r15, -16
+	movq	%rdi, %rbx
+	cmpq	$4, %rdi
+	jge	.LBB23_2
+# %bb.1:                                # %continue
+	leaq	.Lformat_str(%rip), %r14
+	leaq	.Lnewline(%rip), %r15
+	leaq	.Lvide(%rip), %rdi
+	leaq	".Ltexte_global-1"(%rip), %rsi
+	callq	concat_strings@PLT
+	movq	%r14, %rdi
+	movq	%rax, %rsi
+	xorl	%eax, %eax
+	callq	printf@PLT
+	movq	%r14, %rdi
+	movq	%r15, %rsi
+	xorl	%eax, %eax
+	callq	printf@PLT
+.LBB23_2:                               # %stop
+	movq	%rbx, %rax
+	popq	%rbx
+	.cfi_def_cfa_offset 24
+	popq	%r14
+	.cfi_def_cfa_offset 16
+	popq	%r15
+	.cfi_def_cfa_offset 8
+	retq
+.Lfunc_end23:
+	.size	"bloc-1", .Lfunc_end23-"bloc-1"
+	.cfi_endproc
+                                        # -- End function
 	.globl	main                            # -- Begin function main
 	.p2align	4, 0x90
 	.type	main,@function
 main:                                   # @main
 	.cfi_startproc
 # %bb.0:
-	pushq	%rbp
-	.cfi_def_cfa_offset 16
-	pushq	%r15
-	.cfi_def_cfa_offset 24
 	pushq	%r14
-	.cfi_def_cfa_offset 32
-	pushq	%r13
-	.cfi_def_cfa_offset 40
-	pushq	%r12
-	.cfi_def_cfa_offset 48
+	.cfi_def_cfa_offset 16
 	pushq	%rbx
-	.cfi_def_cfa_offset 56
+	.cfi_def_cfa_offset 24
 	pushq	%rax
-	.cfi_def_cfa_offset 64
-	.cfi_offset %rbx, -56
-	.cfi_offset %r12, -48
-	.cfi_offset %r13, -40
-	.cfi_offset %r14, -32
-	.cfi_offset %r15, -24
-	.cfi_offset %rbp, -16
+	.cfi_def_cfa_offset 32
+	.cfi_offset %rbx, -24
+	.cfi_offset %r14, -16
 	leaq	.Lformat_str(%rip), %rbx
 	leaq	.Lnewline(%rip), %r14
-	leaq	.Lvide(%rip), %r15
-	movl	$36004, %edi                    # imm = 0x8CA4
-	callq	texte_nombre@PLT
-	movq	%r15, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rax, %r12
-	movl	$61, %edi
-	callq	texte_nombre@PLT
-	movq	%r12, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movl	$1, %edi
-	callq	texte_booleen@PLT
-	movq	%r15, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movl	$1, %edi
-	callq	texte_booleen@PLT
-	movq	%r15, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movl	$7, %edi
-	callq	texte_nombre@PLT
-	movq	%r15, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movl	$4, %edi
-	callq	texte_nombre@PLT
-	movq	%r15, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	xorl	%edi, %edi
-	callq	texte_booleen@PLT
-	movq	%r15, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movl	$1, %edi
-	callq	texte_booleen@PLT
-	movq	%r15, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%r15, %rdi
-	movq	%r15, %rsi
-	callq	concat_strings@PLT
-	movq	%rax, %r12
-	movl	$1, %edi
-	callq	texte_booleen@PLT
-	movq	%r12, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	leaq	".Ltexte_global-0"(%rip), %rsi
+	leaq	".LA-1-nom"(%rip), %rdi
+	callq	demande_entier@PLT
 	movq	%rax, %rdi
-	callq	concat_strings@PLT
-	movq	%rax, %r12
-	movl	$42, %edi
-	callq	texte_nombre@PLT
-	movq	%r12, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rax, %r12
-	movq	%r15, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	leaq	".Ltexte_global-1"(%rip), %rsi
-	movq	%r15, %rdi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%r15, %rdi
-	movq	%r12, %rsi
-	callq	concat_strings@PLT
-	movq	%rax, %r13
+	callq	"bloc-0"@PLT
+	movq	%rax, %rdi
+	callq	"bloc-1"@PLT
+	leaq	.Lvide(%rip), %rdi
 	leaq	".Ltexte_global-2"(%rip), %rsi
-	movq	%r15, %rdi
-	callq	concat_strings@PLT
-	movq	%r13, %rdi
-	movq	%rax, %rsi
-	movl	$1, %edx
-	callq	compare_texte@PLT
-	movl	%eax, %ebp
-	leaq	".Ltexte_global-3"(%rip), %rsi
-	movq	%r15, %rdi
-	callq	concat_strings@PLT
-	movq	%rax, %r13
-	movzbl	%bpl, %edi
-	callq	texte_booleen@PLT
-	movq	%r13, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	leaq	".Ltexte_global-4"(%rip), %rsi
-	movq	%r15, %rdi
-	callq	concat_strings@PLT
-	movq	%rax, %r13
-	leaq	".Ltexte_global-5"(%rip), %rsi
-	movq	%r15, %rdi
-	callq	concat_strings@PLT
-	movq	%r13, %rdi
-	movq	%rax, %rsi
-	movl	$1, %edx
-	callq	compare_texte@PLT
-	movzbl	%al, %edi
-	callq	texte_booleen@PLT
-	movq	%r15, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movl	$1555, %edi                     # imm = 0x613
-	callq	texte_nombre@PLT
-	movq	%r15, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	$-1, %rdi
-	callq	texte_nombre@PLT
-	movq	%r15, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	leaq	".Ltexte_global-6"(%rip), %rsi
-	movq	%r15, %rdi
-	callq	concat_strings@PLT
-	movq	%rax, %r13
-	movl	$3, %edi
-	callq	texte_nombre@PLT
-	movq	%r13, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	leaq	".Ltexte_global-7"(%rip), %rsi
-	movq	%rax, %rdi
-	callq	concat_strings@PLT
-	movq	%rax, %r13
-	movl	$1, %edi
-	callq	texte_booleen@PLT
-	movq	%r13, %rdi
-	movq	%rax, %rsi
-	callq	concat_strings@PLT
-	movq	%rbx, %rdi
-	movq	%rax, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%rbx, %rdi
-	movq	%r14, %rsi
-	xorl	%eax, %eax
-	callq	printf@PLT
-	movq	%r15, %rdi
-	movq	%r12, %rsi
-	callq	concat_strings@PLT
-	movq	%rax, %r12
-	leaq	".Ltexte_global-8"(%rip), %rsi
-	movq	%r15, %rdi
-	callq	concat_strings@PLT
-	movq	%r12, %rdi
-	movq	%rax, %rsi
-	movl	$1, %edx
-	callq	compare_texte@PLT
-	leaq	".Ltexte_global-9"(%rip), %rsi
-	movq	%r15, %rdi
 	callq	concat_strings@PLT
 	movq	%rbx, %rdi
 	movq	%rax, %rsi
@@ -831,22 +1254,14 @@ main:                                   # @main
 	callq	printf@PLT
 	xorl	%eax, %eax
 	addq	$8, %rsp
-	.cfi_def_cfa_offset 56
-	popq	%rbx
-	.cfi_def_cfa_offset 48
-	popq	%r12
-	.cfi_def_cfa_offset 40
-	popq	%r13
-	.cfi_def_cfa_offset 32
-	popq	%r14
 	.cfi_def_cfa_offset 24
-	popq	%r15
+	popq	%rbx
 	.cfi_def_cfa_offset 16
-	popq	%rbp
+	popq	%r14
 	.cfi_def_cfa_offset 8
 	retq
-.Lfunc_end12:
-	.size	main, .Lfunc_end12-main
+.Lfunc_end24:
+	.size	main, .Lfunc_end24-main
 	.cfi_endproc
                                         # -- End function
 	.type	.Lzero,@object                  # @zero
@@ -1152,59 +1567,61 @@ booleen:
 	.asciz	"texte"
 	.size	.Ltype_texte, 6
 
-	.type	".Ltexte_global-0",@object      # @texte_global-0
+	.type	.Ltype_booleen,@object          # @type_booleen
+.Ltype_booleen:
+	.asciz	"bool\303\251en"
+	.size	.Ltype_booleen, 9
+
+	.type	.Lbooleen_invalide,@object      # @booleen_invalide
 	.section	.rodata.str1.16,"aMS",@progbits,1
 	.p2align	4, 0x0
+.Lbooleen_invalide:
+	.asciz	"Erreur : Le bool\303\251en '%s' est invalide.\n"
+	.size	.Lbooleen_invalide, 41
+
+	.type	.Lvingts,@object                # @vingts
+	.section	.rodata,"a",@progbits
+.Lvingts:
+	.asciz	"vingts"
+	.size	.Lvingts, 7
+
+	.type	".Ljuste-et",@object            # @juste-et
+	.section	.rodata.str1.1,"aMS",@progbits,1
+".Ljuste-et":
+	.asciz	"et"
+	.size	".Ljuste-et", 3
+
+	.type	.Ltype_entier,@object           # @type_entier
+.Ltype_entier:
+	.asciz	"entier"
+	.size	.Ltype_entier, 7
+
+	.type	.Lentier_invalide,@object       # @entier_invalide
+	.section	.rodata.str1.16,"aMS",@progbits,1
+	.p2align	4, 0x0
+.Lentier_invalide:
+	.asciz	"Erreur : L'entier '%s' est invalide.\n"
+	.size	.Lentier_invalide, 38
+
+	.type	".LA-1-nom",@object             # @A-1-nom
+	.section	.rodata.str1.1,"aMS",@progbits,1
+".LA-1-nom":
+	.asciz	"A"
+	.size	".LA-1-nom", 2
+
+	.type	".Ltexte_global-0",@object      # @texte_global-0
 ".Ltexte_global-0":
-	.asciz	" je suis trop content "
-	.size	".Ltexte_global-0", 23
+	.asciz	"General"
+	.size	".Ltexte_global-0", 8
 
 	.type	".Ltexte_global-1",@object      # @texte_global-1
-	.p2align	4, 0x0
 ".Ltexte_global-1":
-	.asciz	"G\303\251n\303\251ral kenobi"
-	.size	".Ltexte_global-1", 17
+	.asciz	"kenobi"
+	.size	".Ltexte_global-1", 7
 
 	.type	".Ltexte_global-2",@object      # @texte_global-2
-	.p2align	4, 0x0
 ".Ltexte_global-2":
-	.asciz	"vrai je suis trop content quarante-deux"
-	.size	".Ltexte_global-2", 40
-
-	.type	".Ltexte_global-3",@object      # @texte_global-3
-	.section	.rodata.str1.1,"aMS",@progbits,1
-".Ltexte_global-3":
-	.asciz	"T condition ="
-	.size	".Ltexte_global-3", 14
-
-	.type	".Ltexte_global-4",@object      # @texte_global-4
-".Ltexte_global-4":
-	.asciz	"texte"
-	.size	".Ltexte_global-4", 6
-
-	.type	".Ltexte_global-5",@object      # @texte_global-5
-".Ltexte_global-5":
-	.asciz	"texte"
-	.size	".Ltexte_global-5", 6
-
-	.type	".Ltexte_global-6",@object      # @texte_global-6
-".Ltexte_global-6":
-	.asciz	"("
-	.size	".Ltexte_global-6", 2
-
-	.type	".Ltexte_global-7",@object      # @texte_global-7
-".Ltexte_global-7":
-	.asciz	">=2)="
-	.size	".Ltexte_global-7", 6
-
-	.type	".Ltexte_global-8",@object      # @texte_global-8
-".Ltexte_global-8":
-	.asciz	"hello"
-	.size	".Ltexte_global-8", 6
-
-	.type	".Ltexte_global-9",@object      # @texte_global-9
-".Ltexte_global-9":
-	.asciz	"c'est un hello"
-	.size	".Ltexte_global-9", 15
+	.asciz	"Ah"
+	.size	".Ltexte_global-2", 3
 
 	.section	".note.GNU-stack","",@progbits

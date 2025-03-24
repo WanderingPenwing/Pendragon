@@ -9,7 +9,7 @@ pub fn calcule_texte(
 	let mut instruction = Instruction::new(var);
 	let current_index = instruction.var.entry(EXPRESSION_TEXTE.to_string()).and_modify(|e| *e += 1).or_insert(0).clone();
 	let mut expression_index: usize = 0;
-	instruction.body += &format!("%{}-{}-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0\n", EXPRESSION_TEXTE, current_index);
+	instruction.body += &format!("\t%{}-{}-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0\n", EXPRESSION_TEXTE, current_index);
 
 	for element in expression {
 		let Element::Operateur(ref operateur) = element else {
@@ -29,12 +29,12 @@ pub fn calcule_texte(
 				return Err(ErreurMorgan::ManqueVariable(EXPRESSION_BOOLEEN.to_string()));
 			};
 			expression_index += 1;
-			instruction.body += &format!("%{}-{}-{} = call i8* @texte_booleen(i1 %{}-{}-fin)\n", 
+			instruction.body += &format!("\t%{}-{}-{} = call i8* @texte_booleen(i1 %{}-{}-fin)\n", 
 				EXPRESSION_TEXTE, current_index, expression_index, 
 				EXPRESSION_BOOLEEN, current_bool_index
 			);
 			expression_index += 1;
-			instruction.body += &format!("%{}-{}-{} = call i8* @concat_strings(i8* %{}-{}-{}, i8* %{}-{}-{})\n", 
+			instruction.body += &format!("\t%{}-{}-{} = call i8* @concat_strings(i8* %{}-{}-{}, i8* %{}-{}-{})\n", 
 				EXPRESSION_TEXTE, current_index, expression_index, 
 				EXPRESSION_TEXTE, current_index, expression_index-2, 
 				EXPRESSION_TEXTE, current_index, expression_index-1
@@ -48,12 +48,12 @@ pub fn calcule_texte(
 				return Err(ErreurMorgan::ManqueVariable(EXPRESSION_NOMBRE.to_string()));
 			};
 			expression_index += 1;
-			instruction.body += &format!("%{}-{}-{} = call i8* @texte_nombre(i64 %{}-{}-fin)\n", 
+			instruction.body += &format!("\t%{}-{}-{} = call i8* @texte_nombre(i64 %{}-{}-fin)\n", 
 				EXPRESSION_TEXTE, current_index, expression_index, 
 				EXPRESSION_NOMBRE, current_numb_index
 			);
 			expression_index += 1;
-			instruction.body += &format!("%{}-{}-{} = call i8* @concat_strings(i8* %{}-{}-{}, i8* %{}-{}-{})\n", 
+			instruction.body += &format!("\t%{}-{}-{} = call i8* @concat_strings(i8* %{}-{}-{}, i8* %{}-{}-{})\n", 
 				EXPRESSION_TEXTE, current_index, expression_index, 
 				EXPRESSION_TEXTE, current_index, expression_index-2, 
 				EXPRESSION_TEXTE, current_index, expression_index-1
@@ -65,11 +65,11 @@ pub fn calcule_texte(
 			Element::Texte(contenu) => {
 				let current_texte_index = instruction.var.entry(TEXTE_GLOBAL.to_string()).and_modify(|e| *e += 1).or_insert(0).clone();
 				instruction.declaration += &format!("@{}-{} = private unnamed_addr constant [{} x i8] c\"{}\\00\"\n", TEXTE_GLOBAL, current_texte_index, contenu.len()+1, contenu);
-				instruction.body += &format!("%{}-{}-str = getelementptr [{} x i8], [{} x i8]* @{}-{}, i32 0, i32 0\n", 
+				instruction.body += &format!("\t%{}-{}-str = getelementptr [{} x i8], [{} x i8]* @{}-{}, i32 0, i32 0\n", 
 					TEXTE_GLOBAL, current_texte_index,contenu.len()+1,contenu.len()+1,TEXTE_GLOBAL, current_texte_index
 				);
 				expression_index += 1;
-				instruction.body += &format!("%{}-{}-{} = call i8* @concat_strings(i8* %{}-{}-{}, i8* %{}-{}-str)\n", 
+				instruction.body += &format!("\t%{}-{}-{} = call i8* @concat_strings(i8* %{}-{}-{}, i8* %{}-{}-str)\n", 
 					EXPRESSION_TEXTE, current_index, expression_index, 
 					EXPRESSION_TEXTE, current_index, expression_index-1, 
 					TEXTE_GLOBAL, current_texte_index
@@ -81,7 +81,7 @@ pub fn calcule_texte(
 				}
 				let current_variable_index = instruction.var[nom];
 				expression_index += 1;
-				instruction.body += &format!("%{}-{}-{} = call i8* @concat_strings(i8* %{}-{}-{}, i8* %{}-{})\n", 
+				instruction.body += &format!("\t%{}-{}-{} = call i8* @concat_strings(i8* %{}-{}-{}, i8* %{}-{})\n", 
 					EXPRESSION_TEXTE, current_index, expression_index, 
 					EXPRESSION_TEXTE, current_index, expression_index-1, 
 					nom, current_variable_index
@@ -91,7 +91,7 @@ pub fn calcule_texte(
 		}
 		pile = Vec::new();
 	}
-	instruction.body += &format!("%{}-{}-fin = getelementptr i8, i8* %{}-{}-{}, i32 0\n", 
+	instruction.body += &format!("\t%{}-{}-fin = getelementptr i8, i8* %{}-{}-{}, i32 0\n", 
 		EXPRESSION_TEXTE, current_index, EXPRESSION_TEXTE, current_index, expression_index
 	);
 		

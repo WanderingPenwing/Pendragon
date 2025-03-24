@@ -161,7 +161,12 @@ dizaine:
 	%dizaine_ptr = getelementptr [10 x i8*], [10 x i8*]* @dizaine, i32 0, i32 %chiffre_dizaine
 	%dizaine_str = load i8*, i8** %dizaine_ptr
 	%a_unite = icmp eq i32 %chiffre_unite, 0
-	br i1 %a_unite, label %juste_dizaine, label %pitet-et
+	%sept = icmp eq i32 %chiffre_dizaine, 7
+	%neuf = icmp eq i32 %chiffre_dizaine, 9
+	%special = or i1 %sept, %neuf
+	%non-special = xor i1 %special, true
+	%rien-apres = and i1 %non-special, %a_unite
+	br i1 %rien-apres, label %juste_dizaine, label %pitet-et
 juste_dizaine:
 	ret i8* %dizaine_str
 pitet-et:
@@ -177,9 +182,6 @@ pitet-special:
 	%dizaine_finale_str = phi i8* [ %dizaine_str, %pitet-et ], [ %concat_str, %affiche-et ]
 	%tiret_str = getelementptr [2 x i8], [2 x i8]* @tiret, i32 0, i32 0
 	%dizaine_complete_str = call i8* @concat_strings(i8* %dizaine_finale_str, i8* %tiret_str)
-	%sept = icmp eq i32 %chiffre_dizaine, 7
-	%neuf = icmp eq i32 %chiffre_dizaine, 9
-	%special = add i1 %sept, %neuf
 	br i1 %special, label %unite-special, label %unite-simple
 unite-special:
 	%chiffre_special = add i32 %chiffre_unite, 10
@@ -353,18 +355,18 @@ declare i8* @gets(i8*)
 
 define i8* @read_line() {
 entry:
-    %buffer_ptr = getelementptr inbounds [100 x i8], i8* @buffer, i32 0, i32 0
-    %call = call i8* @gets(i8* %buffer_ptr)  ; Read input
+	%buffer_ptr = getelementptr inbounds [100 x i8], [100 x i8]* @buffer, i32 0, i32 0
+	%call = call i8* @gets(i8* %buffer_ptr)  ; Read input
 
-    ; Check if input was read successfully
-    %is_null = icmp eq i8* %call, null
-    br i1 %is_null, label %return_null, label %return_buffer
+	; Check if input was read successfully
+	%is_null = icmp eq i8* %call, null
+	br i1 %is_null, label %return_null, label %return_buffer
 
 return_null:
-    ret i8* null
+	ret i8* null
 
 return_buffer:
-    ret i8* %buffer_ptr
+	ret i8* %buffer_ptr
 }
 
 @demande_str = private unnamed_addr constant [30 x i8] c"Quelle valeur pour %s (%s) ?\0A\00"
@@ -376,7 +378,7 @@ entry:
 	%type_texte_str = getelementptr [6 x i8], [6 x i8]* @type_texte, i32 0, i32 0
 	call i32 (i8*, ...) @printf(i8* %demande_fmt, i8* %nom_variable, i8* %type_texte_str)
 	%reponse = call i8* @read_line()
-	%is_null = icmp eq ptr %reponse, null
+	%is_null = icmp eq i8* %reponse, null
 	br i1 %is_null, label %vide, label %texte
 texte:
 	ret i8* %reponse
@@ -384,236 +386,482 @@ vide:
 	%vide_str = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
 	ret i8* %vide_str
 }
-@texte_global-0 = private unnamed_addr constant [23 x i8] c" je suis trop content \00"
-@texte_global-1 = private unnamed_addr constant [17 x i8] c"Général kenobi\00"
-@texte_global-2 = private unnamed_addr constant [40 x i8] c"vrai je suis trop content quarante-deux\00"
-@texte_global-3 = private unnamed_addr constant [14 x i8] c"T condition =\00"
-@texte_global-4 = private unnamed_addr constant [6 x i8] c"texte\00"
-@texte_global-5 = private unnamed_addr constant [6 x i8] c"texte\00"
-@texte_global-6 = private unnamed_addr constant [2 x i8] c"(\00"
-@texte_global-7 = private unnamed_addr constant [6 x i8] c">=2)=\00"
-@texte_global-8 = private unnamed_addr constant [6 x i8] c"hello\00"
-@texte_global-9 = private unnamed_addr constant [15 x i8] c"c'est un hello\00"
+
+@type_booleen = private unnamed_addr constant [9 x i8] c"booléen\00"
+@booleen_invalide = private unnamed_addr constant [41 x i8] c"Erreur : Le booléen '%s' est invalide.\0A\00"
+
+define i1 @demande_booleen(i8* %nom_variable) {
+entry:
+	%demande_fmt = getelementptr [30 x i8], [30 x i8]* @demande_str, i32 0, i32 0
+	%type_booleen_str = getelementptr [9 x i8], [9 x i8]* @type_booleen, i32 0, i32 0
+	call i32 (i8*, ...) @printf(i8* %demande_fmt, i8* %nom_variable, i8* %type_booleen_str)
+	%reponse = call i8* @read_line()
+	%is_null = icmp eq i8* %reponse, null
+	br i1 %is_null, label %vide, label %texte
+vide:
+	%vide_str = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+	br label %redemande
+texte:
+	%vrai_ptr = getelementptr [2 x i8*], [2 x i8*]* @booleen, i32 0, i32 1
+	%vrai_str = load i8*, i8** %vrai_ptr
+	%est_vrai = call i1 @compare_texte(i8* %reponse, i8* %vrai_str, i1 1)
+	br i1 %est_vrai, label %vrai, label %pas-vrai
+vrai:
+	ret i1 1
+pas-vrai:
+	%faux_ptr = getelementptr [2 x i8*], [2 x i8*]* @booleen, i32 0, i32 0
+	%faux_str = load i8*, i8** %faux_ptr
+	%est_faux = call i1 @compare_texte(i8* %reponse, i8* %faux_str, i1 1)
+	br i1 %est_faux, label %faux, label %redemande
+faux:
+	ret i1 0
+redemande:
+	%erreur = phi i8* [%vide_str, %vide], [%reponse, %pas-vrai]
+	%erreur_fmt = getelementptr [41 x i8], [41 x i8]* @booleen_invalide, i32 0, i32 0
+	call i32 (i8*, ...) @printf(i8* %erreur_fmt, i8* %erreur)
+	%nouvelle-reponse = call i1 @demande_booleen(i8* %nom_variable)
+	ret i1 %nouvelle-reponse
+}
+
+@vingts = private constant [7 x i8] c"vingts\00"
+
+define i1 @verifie_unite(i8* %mot, i32 %x) {
+	%nombre_ptr = getelementptr [20 x i8*], [20 x i8*]* @petits_nombres, i32 0, i32 %x
+	%nombre_str = load i8*, i8** %nombre_ptr
+	%resultat = call i1 @compare_texte(i8* %mot, i8* %nombre_str, i1 1)
+	ret i1 %resultat
+}
+
+define i1 @verifie_dizaine(i8* %mot, i32 %x) {
+	%nombre_ptr = getelementptr [10 x i8*], [10 x i8*]* @dizaine, i32 0, i32 %x
+	%nombre_str = load i8*, i8** %nombre_ptr
+	%resultat = call i1 @compare_texte(i8* %mot, i8* %nombre_str, i1 1)
+	ret i1 %resultat
+}
+
+define i1 @verifie_separateur(i8* %mot, i32 %x) {
+	%nombre_ptr = getelementptr [8 x i8*], [8 x i8*]* @separateurs, i32 0, i32 %x
+	%nombre_str = load i8*, i8** %nombre_ptr
+	%resultat_singulier = call i1 @compare_texte(i8* %mot, i8* %nombre_str, i1 1)
+	%s_str = getelementptr [2 x i8], [2 x i8]* @s, i32 0, i32 0
+	%nombre_str_pluriel = call i8* @concat_strings(i8* %nombre_str, i8* %s_str)
+	%resultat_pluriel = call i1 @compare_texte(i8* %mot, i8* %nombre_str_pluriel, i1 1)
+	%resultat = or i1 %resultat_singulier, %resultat_pluriel
+	ret i1 %resultat
+}
+
+define i64 @mot_comme_unite(i8* %mot) {
+entry:
+	%val = alloca i32
+	store i32 0, i32* %val
+	br label %check
+
+check:
+	%idx = load i32, i32* %val
+	%est_valide = call i1 @verifie_unite(i8* %mot, i32 %idx)
+	br i1 %est_valide, label %return, label %next
+
+next:
+	%new_idx = add i32 %idx, 1
+	store i32 %new_idx, i32* %val
+	%cond = icmp slt i32 %new_idx, 20   ; Replace N with your max expected value
+	br i1 %cond, label %check, label %default
+
+return:
+	%result = load i32, i32* %val
+	%result_ext = zext i32 %result to i64
+	ret i64 %result_ext
+
+default:
+	ret i64 0 
+}
+
+define i64 @mot_comme_dizaine(i8* %mot) {
+entry:
+	%val = alloca i32
+	store i32 0, i32* %val
+	br label %check
+check:
+	%idx = load i32, i32* %val
+	%est_valide = call i1 @verifie_dizaine(i8* %mot, i32 %idx)
+	br i1 %est_valide, label %return, label %next
+
+next:
+	%new_idx = add i32 %idx, 1
+	store i32 %new_idx, i32* %val
+	%cond = icmp slt i32 %new_idx, 10
+	br i1 %cond, label %check, label %default
+
+return:
+	%result = load i32, i32* %val
+	%result_ext = zext i32 %result to i64
+	%est-cent = icmp eq i64 %result_ext, 0
+	br i1 %est-cent, label %cent, label %pas-cent
+cent:
+	ret i64 100
+pas-cent:
+	%est-dix = icmp eq i64 %result_ext, 1
+	br i1 %est-dix, label %dix, label %pas-dix
+dix:
+	ret i64 0
+pas-dix:
+	%nombre_dizaine = mul i64 %result_ext, 10
+	ret i64 %nombre_dizaine
+default:
+	ret i64 0
+}
+
+define i64 @mot_comme_separateur(i8* %mot) {
+entry:
+	%val = alloca i32
+	store i32 0, i32* %val
+	br label %check
+check:
+	%idx = load i32, i32* %val
+	%est_valide = call i1 @verifie_separateur(i8* %mot, i32 %idx)
+	br i1 %est_valide, label %return, label %next
+next:
+	%new_idx = add i32 %idx, 1
+	store i32 %new_idx, i32* %val
+	%cond = icmp slt i32 %new_idx, 8
+	br i1 %cond, label %check, label %default
+return:
+	%result = load i32, i32* %val
+	%puissance = call i64 @mille_puissance(i32 %result)
+	ret i64 %puissance
+default:
+	ret i64 0
+}
+
+@juste-et = private unnamed_addr constant [3 x i8] c"et\00"
+
+define i64 @mot_comme_entier(i8* %str) {
+entry:
+	%vingts = getelementptr [7 x i8], [7 x i8]* @vingts, i32 0, i32 0
+	%est-vingts = call i1 @compare_texte(i8* %str, i8* %vingts, i1 1)
+	br i1 %est-vingts, label %quatre-vingts, label %normal
+quatre-vingts:
+	ret i64 76
+normal:
+	%et_str = getelementptr [3 x i8], [3 x i8]* @juste-et, i32 0, i32 0
+	%est-et = call i1 @compare_texte(i8* %str, i8* %et_str, i1 1)
+	br i1 %est-et, label %et, label %pas-et
+et:
+	ret i64 0
+pas-et:
+	%unite = call i64 @mot_comme_unite(i8* %str)
+	%dizaine = call i64 @mot_comme_dizaine(i8* %str)
+	%separateur = call i64 @mot_comme_separateur(i8* %str)
+	%unite-dizaine = add i64 %unite, %dizaine
+	%total = add i64 %unite-dizaine, %separateur
+	%est-zero = call i1 @verifie_unite(i8* %str, i32 0)
+	%pas-zero = xor i1 %est-zero, true
+	%total-zero = icmp eq i64 %total, 0
+	%probleme = and i1 %pas-zero, %total-zero
+	br i1 %probleme, label %erreur, label %bon
+erreur:
+	ret i64 -1
+bon:
+	ret i64 %total
+}
+
+; External function declarations
+declare i8 @tolower(i8)
+declare i1 @isalpha(i8)
+
+define i64 @texte_comme_entier(i8* %str) {
+entry:
+  %strlen_64 = call i64 @strlen(i8* %str)
+  %strlen = trunc i64 %strlen_64 to i32
+  %sum = alloca i64, align 8
+  %total = alloca i64, align 8
+  %i = alloca i32, align 4
+  %token_start = alloca i8*, align 8
+  %token_buf = alloca [50 x i8], align 1  ; Buffer for current token
+  %token_len = alloca i32, align 4
+
+  ; Initialize variables
+  store i64 0, i64* %sum
+  store i64 0, i64* %total
+  store i32 0, i32* %i
+  store i8* %str, i8** %token_start
+  store i32 0, i32* %token_len
+
+  br label %loop_start
+
+loop_start:
+  %current_i = load i32, i32* %i
+  %cmp = icmp slt i32 %current_i, %strlen
+  br i1 %cmp, label %loop_body, label %process_last_token
+
+loop_body:
+  ; Get current character
+  %idx_ptr = getelementptr i8, i8* %str, i32 %current_i
+  %current_char = load i8, i8* %idx_ptr
+
+  ; Check if this is a hyphen (delimiter)
+  %is_delim = icmp eq i8 %current_char, 45  ; 45 is ASCII for '-'
+  br i1 %is_delim, label %process_token, label %continue_token
+
+continue_token:
+  ; Add character to token buffer
+  %token_len_val = load i32, i32* %token_len
+  %buf_idx = getelementptr [50 x i8], [50 x i8]* %token_buf, i32 0, i32 %token_len_val
+  store i8 %current_char, i8* %buf_idx
+  
+  ; Increment token length
+  %token_len_inc = add i32 %token_len_val, 1
+  store i32 %token_len_inc, i32* %token_len
+  
+  ; Move to next character
+  br label %next_char
+
+process_token:
+  ; Only process if we have a token
+  %token_len_check = load i32, i32* %token_len
+  %has_token = icmp sgt i32 %token_len_check, 0
+  br i1 %has_token, label %do_process_token, label %reset_token
+
+do_process_token:
+  ; Null-terminate the token
+  %term_idx = getelementptr [50 x i8], [50 x i8]* %token_buf, i32 0, i32 %token_len_check
+  store i8 0, i8* %term_idx
+  
+  ; Process the token
+  %token_ptr = getelementptr [50 x i8], [50 x i8]* %token_buf, i32 0, i32 0
+  %token_value = call i64 @mot_comme_entier(i8* %token_ptr)
+  %token_erreur = icmp eq i64 %token_value, -1
+  br i1 %token_erreur, label %erreur, label %update_sum
+update_sum:
+  ; Update sum or total based on token value
+  %current_sum = load i64, i64* %sum
+  %is_cent = icmp eq i64 %token_value, 100
+  br i1 %is_cent, label %handle_cent, label %handle_pas_cent
+
+handle_cent:
+  %is_cent_alone = icmp eq i64 %current_sum, 0
+  br i1 %is_cent_alone, label %handle_cent_alone, label %handle_centaine
+handle_cent_alone:
+  %new_sum_ca = add i64 100, 0
+  store i64 %new_sum_ca, i64* %sum
+  br label %reset_token
+handle_centaine:
+  %new_sum_c = mul i64 %current_sum, 100
+  store i64 %new_sum_c, i64* %sum
+  br label %reset_token
+
+handle_pas_cent:
+  %is_separator = icmp sgt i64 %token_value, 100
+  br i1 %is_separator, label %handle_separator, label %handle_unit
+
+handle_separator:
+  %cur_total = load i64, i64* %total
+  %is_sep_alone = icmp eq i64 %current_sum, 0
+  br i1 %is_sep_alone, label %sep_alone, label %sep_with_value
+
+sep_alone:
+  %sep_val = mul i64 1, %token_value
+  %new_total_sep = add i64 %cur_total, %sep_val
+  store i64 %new_total_sep, i64* %total
+  br label %reset_token
+
+sep_with_value:
+  %combined = mul i64 %current_sum, %token_value
+  %new_total_comb = add i64 %cur_total, %combined
+  store i64 %new_total_comb, i64* %total
+  store i64 0, i64* %sum
+  br label %reset_token
+
+handle_unit:
+  %new_sum = add i64 %current_sum, %token_value
+  store i64 %new_sum, i64* %sum
+  br label %reset_token
+
+reset_token:
+  ; Reset token buffer
+  store i32 0, i32* %token_len
+  br label %next_char
+
+next_char:
+  ; Increment index
+  %i_val = load i32, i32* %i
+  %i_inc = add i32 %i_val, 1
+  store i32 %i_inc, i32* %i
+  br label %loop_start
+
+process_last_token:
+  ; Check if we have a final token to process
+  %final_token_len = load i32, i32* %token_len
+  %has_final_token = icmp sgt i32 %final_token_len, 0
+  br i1 %has_final_token, label %process_final, label %finish
+
+process_final:
+  ; Null-terminate the token
+  %final_term_idx = getelementptr [50 x i8], [50 x i8]* %token_buf, i32 0, i32 %final_token_len
+  store i8 0, i8* %final_term_idx
+  
+  ; Process the token
+  %final_token_ptr = getelementptr [50 x i8], [50 x i8]* %token_buf, i32 0, i32 0
+  %final_token_value = call i64 @mot_comme_entier(i8* %final_token_ptr)
+  %final_erreur = icmp eq i64 %final_token_value, -1
+  br i1 %final_erreur, label %erreur, label %update_final_sum
+erreur:
+  ret i64 -1
+update_final_sum:
+  ; Update sum or total based on token value
+  %final_sum = load i64, i64* %sum
+  %final_is_cent = icmp eq i64 %final_token_value, 100
+  br i1 %final_is_cent, label %final_handle_cent, label %final_handle_pas_cent
+
+final_handle_cent:
+  %final_is_cent_alone = icmp eq i64 %final_sum, 0
+  br i1 %final_is_cent_alone, label %final_handle_cent_alone, label %final_handle_centaine
+final_handle_cent_alone:
+  %final_new_sum_ca = add i64 100, 0
+  store i64 %final_new_sum_ca, i64* %sum
+  br label %reset_token
+final_handle_centaine:
+  %final_new_sum_c = mul i64 %final_sum, 100
+  store i64 %final_new_sum_c, i64* %sum
+  br label %reset_token
+
+final_handle_pas_cent:
+  %final_is_separator = icmp sgt i64 %final_token_value, 100
+  br i1 %final_is_separator, label %final_handle_separator, label %final_handle_unit
+
+final_handle_separator:
+  %final_cur_total = load i64, i64* %total
+  %final_is_sep_alone = icmp eq i64 %final_sum, 0
+  br i1 %final_is_sep_alone, label %final_sep_alone, label %final_sep_with_value
+
+final_sep_alone:
+  %final_sep_val = mul i64 1, %final_token_value
+  %final_new_total_sep = add i64 %final_cur_total, %final_sep_val
+  store i64 %final_new_total_sep, i64* %total
+  br label %finish
+
+final_sep_with_value:
+  %final_combined = mul i64 %final_sum, %final_token_value
+  %final_new_total_comb = add i64 %final_cur_total, %final_combined
+  store i64 %final_new_total_comb, i64* %total
+  store i64 0, i64* %sum
+  br label %finish
+
+final_handle_unit:
+  %final_new_sum = add i64 %final_sum, %final_token_value
+  store i64 %final_new_sum, i64* %sum
+  br label %finish
+
+finish:
+  ; Add any remaining sum to the total
+  %remaining_sum = load i64, i64* %sum
+  %final_total = load i64, i64* %total
+  %result = add i64 %final_total, %remaining_sum
+  ret i64 %result
+}
+
+@type_entier = private unnamed_addr constant [7 x i8] c"entier\00"
+@entier_invalide = private unnamed_addr constant [38 x i8] c"Erreur : L'entier '%s' est invalide.\0A\00"
+
+define i64 @demande_entier(i8* %nom_variable) {
+entry:
+	%demande_fmt = getelementptr [30 x i8], [30 x i8]* @demande_str, i32 0, i32 0
+	%type_entier_str = getelementptr [7 x i8], [7 x i8]* @type_entier, i32 0, i32 0
+	call i32 (i8*, ...) @printf(i8* %demande_fmt, i8* %nom_variable, i8* %type_entier_str)
+	%reponse = call i8* @read_line()
+	%is_null = icmp eq i8* %reponse, null
+	br i1 %is_null, label %vide, label %texte
+vide:
+	%vide_str = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+	br label %redemande
+texte:
+	%resultat = call i64 @texte_comme_entier(i8* %reponse)
+	%pas-bon = icmp eq i64 %resultat, -1
+	br i1 %pas-bon, label %redemande, label %bon-nombre
+bon-nombre:
+	ret i64 %resultat
+redemande:
+	%erreur = phi i8* [%vide_str, %vide], [%reponse, %texte]
+	%erreur_fmt = getelementptr [38 x i8], [38 x i8]* @entier_invalide, i32 0, i32 0
+	call i32 (i8*, ...) @printf(i8* %erreur_fmt, i8* %erreur)
+	%nouvelle-reponse = call i64 @demande_entier(i8* %nom_variable)
+	ret i64 %nouvelle-reponse
+}
+@A-1-nom = private unnamed_addr constant [2 x i8] c"A\00"
+@texte_global-0 = private unnamed_addr constant [8 x i8] c"General\00"
+
+define { i64 } @bloc-0( i64 %A-1) {
+entry:
+	%fmt_ptr = getelementptr [3 x i8], [3 x i8]* @format_str, i32 0, i32 0
+	%nouvelle_ligne = getelementptr [2 x i8], [2 x i8]* @newline, i32 0, i32 0
+	%expression_nombre-0-1 = add i64 %A-1, 0
+	%expression_nombre-0-fin = add i64 %expression_nombre-0-1, 0
+	%expression_nombre-1-1 = add i64 3, 0
+	%expression_nombre-1-fin = add i64 %expression_nombre-1-1, 0
+	%comparaison-0 = icmp sgt i64 %expression_nombre-0-fin, %expression_nombre-1-fin
+	%expression_booleen-0-1 = add i1 %comparaison-0, 0
+	%expression_booleen-0-fin = add i1 %expression_booleen-0-1, 0
+	br i1 %expression_booleen-0-fin, label %continue, label %stop
+stop:
+	%result-0-0 = insertvalue { i64 } undef, i64 %A-1, 0
+	ret { i64 } %result-0-0
+continue:
+	%expression_texte-0-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+	%texte_global-0-str = getelementptr [8 x i8], [8 x i8]* @texte_global-0, i32 0, i32 0
+	%expression_texte-0-1 = call i8* @concat_strings(i8* %expression_texte-0-0, i8* %texte_global-0-str)
+	%expression_texte-0-fin = getelementptr i8, i8* %expression_texte-0-1, i32 0
+	call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-0-fin)
+	call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
+	%result-1-0 = insertvalue { i64 } undef, i64 %A-1, 0
+	ret { i64 } %result-1-0
+}
+
+@texte_global-1 = private unnamed_addr constant [7 x i8] c"kenobi\00"
+
+define { i64 } @bloc-1( i64 %A-2) {
+entry:
+	%fmt_ptr = getelementptr [3 x i8], [3 x i8]* @format_str, i32 0, i32 0
+	%nouvelle_ligne = getelementptr [2 x i8], [2 x i8]* @newline, i32 0, i32 0
+	%expression_nombre-2-1 = add i64 %A-2, 0
+	%expression_nombre-2-fin = add i64 %expression_nombre-2-1, 0
+	%expression_nombre-3-1 = add i64 3, 0
+	%expression_nombre-3-fin = add i64 %expression_nombre-3-1, 0
+	%comparaison-1 = icmp sle i64 %expression_nombre-2-fin, %expression_nombre-3-fin
+	%expression_booleen-1-1 = add i1 %comparaison-1, 0
+	%expression_booleen-1-fin = add i1 %expression_booleen-1-1, 0
+	br i1 %expression_booleen-1-fin, label %continue, label %stop
+stop:
+	%result-0-0 = insertvalue { i64 } undef, i64 %A-2, 0
+	ret { i64 } %result-0-0
+continue:
+	%expression_texte-1-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+	%texte_global-1-str = getelementptr [7 x i8], [7 x i8]* @texte_global-1, i32 0, i32 0
+	%expression_texte-1-1 = call i8* @concat_strings(i8* %expression_texte-1-0, i8* %texte_global-1-str)
+	%expression_texte-1-fin = getelementptr i8, i8* %expression_texte-1-1, i32 0
+	call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-1-fin)
+	call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
+	%result-1-0 = insertvalue { i64 } undef, i64 %A-2, 0
+	ret { i64 } %result-1-0
+}
+
+@texte_global-2 = private unnamed_addr constant [3 x i8] c"Ah\00"
 
 define i32 @main() {
-%fmt_ptr = getelementptr [3 x i8], [3 x i8]* @format_str, i32 0, i32 0
-%nouvelle_ligne = getelementptr [3 x i8], [3 x i8]* @newline, i32 0, i32 0
-%expression_texte-0-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_nombre-0-1 = add i64 36004, 0
-%expression_nombre-0-fin = add i64 %expression_nombre-0-1, 0
-%expression_texte-0-1 = call i8* @texte_nombre(i64 %expression_nombre-0-fin)
-%expression_texte-0-2 = call i8* @concat_strings(i8* %expression_texte-0-0, i8* %expression_texte-0-1)
-%expression_nombre-1-1 = add i64 4, 0
-%expression_nombre-1-2 = add i64 17, 0
-%expression_nombre-1-3 = mul i64 %expression_nombre-1-1, %expression_nombre-1-2
-%expression_nombre-1-4 = add i64 7, 0
-%expression_nombre-1-5 = sub i64 %expression_nombre-1-3, %expression_nombre-1-4
-%expression_nombre-1-fin = add i64 %expression_nombre-1-5, 0
-%expression_texte-0-3 = call i8* @texte_nombre(i64 %expression_nombre-1-fin)
-%expression_texte-0-4 = call i8* @concat_strings(i8* %expression_texte-0-2, i8* %expression_texte-0-3)
-%expression_texte-0-fin = getelementptr i8, i8* %expression_texte-0-4, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-0-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
-%expression_texte-1-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_booleen-0-1 = add i1 1, 0
-%expression_booleen-0-fin = add i1 %expression_booleen-0-1, 0
-%expression_texte-1-1 = call i8* @texte_booleen(i1 %expression_booleen-0-fin)
-%expression_texte-1-2 = call i8* @concat_strings(i8* %expression_texte-1-0, i8* %expression_texte-1-1)
-%expression_texte-1-fin = getelementptr i8, i8* %expression_texte-1-2, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-1-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
-%expression_texte-2-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_booleen-1-1 = add i1 0, 0
-%expression_booleen-1-2 = add i1 0, 0
-%expression_booleen-1-3 = xor i1 %expression_booleen-1-2, true
-%expression_booleen-1-4 = or i1 %expression_booleen-1-1, %expression_booleen-1-3
-%expression_booleen-1-fin = add i1 %expression_booleen-1-4, 0
-%expression_texte-2-1 = call i8* @texte_booleen(i1 %expression_booleen-1-fin)
-%expression_texte-2-2 = call i8* @concat_strings(i8* %expression_texte-2-0, i8* %expression_texte-2-1)
-%expression_texte-2-fin = getelementptr i8, i8* %expression_texte-2-2, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-2-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
-%A-0 = add i64 0, 0
-%expression_nombre-2-1 = add i64 1, 0
-%expression_nombre-2-fin = add i64 %expression_nombre-2-1, 0
-%A-1 = add i64 %expression_nombre-2-fin, 0
-%expression_texte-3-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_nombre-3-1 = add i64 %A-1, 0
-%expression_nombre-3-2 = add i64 7, 0
-%expression_nombre-3-3 = mul i64 %expression_nombre-3-1, %expression_nombre-3-2
-%expression_nombre-3-fin = add i64 %expression_nombre-3-3, 0
-%expression_texte-3-1 = call i8* @texte_nombre(i64 %expression_nombre-3-fin)
-%expression_texte-3-2 = call i8* @concat_strings(i8* %expression_texte-3-0, i8* %expression_texte-3-1)
-%expression_texte-3-fin = getelementptr i8, i8* %expression_texte-3-2, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-3-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
-%expression_nombre-4-1 = add i64 %A-1, 0
-%expression_nombre-4-2 = add i64 2, 0
-%expression_nombre-4-3 = add i64 %expression_nombre-4-1, %expression_nombre-4-2
-%expression_nombre-4-fin = add i64 %expression_nombre-4-3, 0
-%A-2 = add i64 %expression_nombre-4-fin, 0
-%expression_texte-4-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_nombre-5-1 = add i64 %A-2, 0
-%expression_nombre-5-2 = add i64 1, 0
-%expression_nombre-5-3 = add i64 %expression_nombre-5-1, %expression_nombre-5-2
-%expression_nombre-5-fin = add i64 %expression_nombre-5-3, 0
-%expression_texte-4-1 = call i8* @texte_nombre(i64 %expression_nombre-5-fin)
-%expression_texte-4-2 = call i8* @concat_strings(i8* %expression_texte-4-0, i8* %expression_texte-4-1)
-%expression_texte-4-fin = getelementptr i8, i8* %expression_texte-4-2, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-4-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
-%B-0 = add i1 0, 0
-%expression_texte-5-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_booleen-2-1 = add i1 %B-0, 0
-%expression_booleen-2-fin = add i1 %expression_booleen-2-1, 0
-%expression_texte-5-1 = call i8* @texte_booleen(i1 %expression_booleen-2-fin)
-%expression_texte-5-2 = call i8* @concat_strings(i8* %expression_texte-5-0, i8* %expression_texte-5-1)
-%expression_texte-5-fin = getelementptr i8, i8* %expression_texte-5-2, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-5-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
-%expression_booleen-3-1 = add i1 1, 0
-%expression_booleen-3-2 = add i1 0, 0
-%expression_booleen-3-3 = or i1 %expression_booleen-3-1, %expression_booleen-3-2
-%expression_booleen-3-fin = add i1 %expression_booleen-3-3, 0
-%B-1 = add i1 %expression_booleen-3-fin, 0
-%expression_texte-6-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_booleen-4-1 = add i1 1, 0
-%expression_booleen-4-2 = add i1 %B-1, 0
-%expression_booleen-4-3 = and i1 %expression_booleen-4-1, %expression_booleen-4-2
-%expression_booleen-4-fin = add i1 %expression_booleen-4-3, 0
-%expression_texte-6-1 = call i8* @texte_booleen(i1 %expression_booleen-4-fin)
-%expression_texte-6-2 = call i8* @concat_strings(i8* %expression_texte-6-0, i8* %expression_texte-6-1)
-%expression_texte-6-fin = getelementptr i8, i8* %expression_texte-6-2, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-6-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
-%T-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_texte-7-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_texte-7-1 = call i8* @concat_strings(i8* %expression_texte-7-0, i8* %T-0)
-%expression_booleen-5-1 = add i1 %B-1, 0
-%expression_booleen-5-fin = add i1 %expression_booleen-5-1, 0
-%expression_texte-7-2 = call i8* @texte_booleen(i1 %expression_booleen-5-fin)
-%expression_texte-7-3 = call i8* @concat_strings(i8* %expression_texte-7-1, i8* %expression_texte-7-2)
-%texte_global-0-str = getelementptr [23 x i8], [23 x i8]* @texte_global-0, i32 0, i32 0
-%expression_texte-7-4 = call i8* @concat_strings(i8* %expression_texte-7-3, i8* %texte_global-0-str)
-%expression_nombre-6-1 = add i64 7, 0
-%expression_nombre-6-2 = add i64 6, 0
-%expression_nombre-6-3 = mul i64 %expression_nombre-6-1, %expression_nombre-6-2
-%expression_nombre-6-fin = add i64 %expression_nombre-6-3, 0
-%expression_texte-7-5 = call i8* @texte_nombre(i64 %expression_nombre-6-fin)
-%expression_texte-7-6 = call i8* @concat_strings(i8* %expression_texte-7-4, i8* %expression_texte-7-5)
-%expression_texte-7-fin = getelementptr i8, i8* %expression_texte-7-6, i32 0
-%T-1 = getelementptr i8, i8* %expression_texte-7-fin, i32 0
-%expression_texte-8-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_texte-8-1 = call i8* @concat_strings(i8* %expression_texte-8-0, i8* %T-1)
-%expression_texte-8-fin = getelementptr i8, i8* %expression_texte-8-1, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-8-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
-%expression_texte-9-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%texte_global-1-str = getelementptr [17 x i8], [17 x i8]* @texte_global-1, i32 0, i32 0
-%expression_texte-9-1 = call i8* @concat_strings(i8* %expression_texte-9-0, i8* %texte_global-1-str)
-%expression_texte-9-fin = getelementptr i8, i8* %expression_texte-9-1, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-9-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
-%expression_texte-10-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_texte-10-1 = call i8* @concat_strings(i8* %expression_texte-10-0, i8* %T-1)
-%expression_texte-10-fin = getelementptr i8, i8* %expression_texte-10-1, i32 0
-%expression_texte-11-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%texte_global-2-str = getelementptr [40 x i8], [40 x i8]* @texte_global-2, i32 0, i32 0
-%expression_texte-11-1 = call i8* @concat_strings(i8* %expression_texte-11-0, i8* %texte_global-2-str)
-%expression_texte-11-fin = getelementptr i8, i8* %expression_texte-11-1, i32 0
-%comparaison-0 = call i1 @compare_texte(i8* %expression_texte-10-fin, i8* %expression_texte-11-fin, i1 1)
-%expression_booleen-6-1 = add i1 %comparaison-0, 0
-%expression_booleen-6-fin = add i1 %expression_booleen-6-1, 0
-%B-2 = add i1 %expression_booleen-6-fin, 0
-%expression_texte-12-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%texte_global-3-str = getelementptr [14 x i8], [14 x i8]* @texte_global-3, i32 0, i32 0
-%expression_texte-12-1 = call i8* @concat_strings(i8* %expression_texte-12-0, i8* %texte_global-3-str)
-%expression_booleen-7-1 = add i1 %B-2, 0
-%expression_booleen-7-fin = add i1 %expression_booleen-7-1, 0
-%expression_texte-12-2 = call i8* @texte_booleen(i1 %expression_booleen-7-fin)
-%expression_texte-12-3 = call i8* @concat_strings(i8* %expression_texte-12-1, i8* %expression_texte-12-2)
-%expression_texte-12-fin = getelementptr i8, i8* %expression_texte-12-3, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-12-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
-%expression_texte-13-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%texte_global-4-str = getelementptr [6 x i8], [6 x i8]* @texte_global-4, i32 0, i32 0
-%expression_texte-13-1 = call i8* @concat_strings(i8* %expression_texte-13-0, i8* %texte_global-4-str)
-%expression_texte-13-fin = getelementptr i8, i8* %expression_texte-13-1, i32 0
-%expression_texte-14-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%texte_global-5-str = getelementptr [6 x i8], [6 x i8]* @texte_global-5, i32 0, i32 0
-%expression_texte-14-1 = call i8* @concat_strings(i8* %expression_texte-14-0, i8* %texte_global-5-str)
-%expression_texte-14-fin = getelementptr i8, i8* %expression_texte-14-1, i32 0
-%comparaison-1 = call i1 @compare_texte(i8* %expression_texte-13-fin, i8* %expression_texte-14-fin, i1 1)
-%expression_booleen-8-1 = add i1 %comparaison-1, 0
-%expression_booleen-8-fin = add i1 %expression_booleen-8-1, 0
-%B-3 = add i1 %expression_booleen-8-fin, 0
-%expression_texte-15-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_booleen-9-1 = add i1 %B-3, 0
-%expression_booleen-9-fin = add i1 %expression_booleen-9-1, 0
-%expression_texte-15-1 = call i8* @texte_booleen(i1 %expression_booleen-9-fin)
-%expression_texte-15-2 = call i8* @concat_strings(i8* %expression_texte-15-0, i8* %expression_texte-15-1)
-%expression_texte-15-fin = getelementptr i8, i8* %expression_texte-15-2, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-15-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
-%expression_texte-16-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_nombre-7-1 = add i64 1555, 0
-%expression_nombre-7-fin = add i64 %expression_nombre-7-1, 0
-%expression_texte-16-1 = call i8* @texte_nombre(i64 %expression_nombre-7-fin)
-%expression_texte-16-2 = call i8* @concat_strings(i8* %expression_texte-16-0, i8* %expression_texte-16-1)
-%expression_texte-16-fin = getelementptr i8, i8* %expression_texte-16-2, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-16-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
-%expression_texte-17-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_nombre-8-1 = add i64 1, 0
-%expression_nombre-8-2 = add i64 2, 0
-%expression_nombre-8-3 = sub i64 %expression_nombre-8-1, %expression_nombre-8-2
-%expression_nombre-8-fin = add i64 %expression_nombre-8-3, 0
-%expression_texte-17-1 = call i8* @texte_nombre(i64 %expression_nombre-8-fin)
-%expression_texte-17-2 = call i8* @concat_strings(i8* %expression_texte-17-0, i8* %expression_texte-17-1)
-%expression_texte-17-fin = getelementptr i8, i8* %expression_texte-17-2, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-17-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
-%expression_nombre-9-1 = add i64 %A-2, 0
-%expression_nombre-9-fin = add i64 %expression_nombre-9-1, 0
-%expression_nombre-10-1 = add i64 2, 0
-%expression_nombre-10-fin = add i64 %expression_nombre-10-1, 0
-%comparaison-2 = icmp sge i64 %expression_nombre-9-fin, %expression_nombre-10-fin
-%expression_booleen-10-1 = add i1 %comparaison-2, 0
-%expression_booleen-10-fin = add i1 %expression_booleen-10-1, 0
-%B-4 = add i1 %expression_booleen-10-fin, 0
-%expression_texte-18-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%texte_global-6-str = getelementptr [2 x i8], [2 x i8]* @texte_global-6, i32 0, i32 0
-%expression_texte-18-1 = call i8* @concat_strings(i8* %expression_texte-18-0, i8* %texte_global-6-str)
-%expression_nombre-11-1 = add i64 %A-2, 0
-%expression_nombre-11-fin = add i64 %expression_nombre-11-1, 0
-%expression_texte-18-2 = call i8* @texte_nombre(i64 %expression_nombre-11-fin)
-%expression_texte-18-3 = call i8* @concat_strings(i8* %expression_texte-18-1, i8* %expression_texte-18-2)
-%texte_global-7-str = getelementptr [6 x i8], [6 x i8]* @texte_global-7, i32 0, i32 0
-%expression_texte-18-4 = call i8* @concat_strings(i8* %expression_texte-18-3, i8* %texte_global-7-str)
-%expression_booleen-11-1 = add i1 %B-4, 0
-%expression_booleen-11-fin = add i1 %expression_booleen-11-1, 0
-%expression_texte-18-5 = call i8* @texte_booleen(i1 %expression_booleen-11-fin)
-%expression_texte-18-6 = call i8* @concat_strings(i8* %expression_texte-18-4, i8* %expression_texte-18-5)
-%expression_texte-18-fin = getelementptr i8, i8* %expression_texte-18-6, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-18-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
-%expression_texte-19-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%expression_texte-19-1 = call i8* @concat_strings(i8* %expression_texte-19-0, i8* %T-1)
-%expression_texte-19-fin = getelementptr i8, i8* %expression_texte-19-1, i32 0
-%expression_texte-20-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%texte_global-8-str = getelementptr [6 x i8], [6 x i8]* @texte_global-8, i32 0, i32 0
-%expression_texte-20-1 = call i8* @concat_strings(i8* %expression_texte-20-0, i8* %texte_global-8-str)
-%expression_texte-20-fin = getelementptr i8, i8* %expression_texte-20-1, i32 0
-%comparaison-3 = call i1 @compare_texte(i8* %expression_texte-19-fin, i8* %expression_texte-20-fin, i1 1)
-%expression_booleen-12-1 = add i1 %comparaison-3, 0
-%expression_booleen-12-fin = add i1 %expression_booleen-12-1, 0
-%B-5 = add i1 %expression_booleen-12-fin, 0
-%expression_texte-21-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
-%texte_global-9-str = getelementptr [15 x i8], [15 x i8]* @texte_global-9, i32 0, i32 0
-%expression_texte-21-1 = call i8* @concat_strings(i8* %expression_texte-21-0, i8* %texte_global-9-str)
-%expression_texte-21-fin = getelementptr i8, i8* %expression_texte-21-1, i32 0
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-21-fin)
-call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
+	%fmt_ptr = getelementptr [3 x i8], [3 x i8]* @format_str, i32 0, i32 0
+	%nouvelle_ligne = getelementptr [2 x i8], [2 x i8]* @newline, i32 0, i32 0
+	%A-0 = add i64 0, 0
+	%A-1-nom = getelementptr [2 x i8], [2 x i8]* @A-1-nom, i32 0, i32 0
+	%A-1 = call i64 @demande_entier(i8* %A-1-nom)
+	%result-bloc-0 = call { i64 } @bloc-0( i64 %A-1)
+	%A-2 = extractvalue { i64 } %result-bloc-0, 0
+	%result-bloc-1 = call { i64 } @bloc-1( i64 %A-2)
+	%A-3 = extractvalue { i64 } %result-bloc-1, 0
+	%expression_texte-2-0 = getelementptr [1 x i8], [1 x i8]* @vide, i32 0, i32 0
+	%texte_global-2-str = getelementptr [3 x i8], [3 x i8]* @texte_global-2, i32 0, i32 0
+	%expression_texte-2-1 = call i8* @concat_strings(i8* %expression_texte-2-0, i8* %texte_global-2-str)
+	%expression_texte-2-fin = getelementptr i8, i8* %expression_texte-2-1, i32 0
+	call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %expression_texte-2-fin)
+	call i32 (i8*, ...) @printf(i8* %fmt_ptr, i8* %nouvelle_ligne)
 
 ret i32 0
 }

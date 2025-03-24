@@ -12,7 +12,7 @@ pub fn calcule_nombre(
 	for element in expression {
 		if let Element::Entier(nombre) = element {
 			expression_index += 1;
-			instruction.body += &format!("%{}-{}-{} = add i64 {}, 0\n", EXPRESSION_NOMBRE, current_index, expression_index, nombre);
+			instruction.body += &format!("\t%{}-{}-{} = add i64 {}, 0\n", EXPRESSION_NOMBRE, current_index, expression_index, nombre);
 			nombres.push(expression_index);
 			continue;
 		}
@@ -21,7 +21,7 @@ pub fn calcule_nombre(
 			let Some(&current_var_index) = instruction.var.get(&nom) else {
 				return Err(ErreurMorgan::ManqueVariable(nom.to_string()));
 			};
-			instruction.body += &format!("%{}-{}-{} = add i64 %{}-{}, 0\n", 
+			instruction.body += &format!("\t%{}-{}-{} = add i64 %{}-{}, 0\n", 
 				EXPRESSION_NOMBRE, current_index, expression_index,
 				nom, current_var_index);
 			nombres.push(expression_index);
@@ -41,7 +41,7 @@ pub fn calcule_nombre(
 			_ => "",
 		};
 		expression_index += 1;
-		instruction.body += &format!("%{}-{}-{} = {} i64 %{}-{}-{}, %{}-{}-{}\n", 
+		instruction.body += &format!("\t%{}-{}-{} = {} i64 %{}-{}-{}, %{}-{}-{}\n", 
 			EXPRESSION_NOMBRE, current_index, expression_index, operation,
 			EXPRESSION_NOMBRE, current_index, nombres[nombres.len()-2],
 			EXPRESSION_NOMBRE, current_index, nombres[nombres.len()-1]);
@@ -50,7 +50,7 @@ pub fn calcule_nombre(
 		nombres.push(expression_index);
 	}
 	if expression_index > 0 {
-		instruction.body += &format!("%{}-{}-fin = add i64 %{}-{}-{}, 0\n", 
+		instruction.body += &format!("\t%{}-{}-fin = add i64 %{}-{}-{}, 0\n", 
 			EXPRESSION_NOMBRE, current_index, 
 			EXPRESSION_NOMBRE, current_index, expression_index);
 	}

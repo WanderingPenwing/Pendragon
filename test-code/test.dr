@@ -1,37 +1,10 @@
-Affiche trente-six-mille-quatre puis quatre fois dix-sept moins sept.
-Affiche vrai.
-Affiche faux ou non faux.
-
 Définis A comme entier.
-Modifie A avec un.
-Affiche A fois sept.
-Modifie A avec A plus deux.
-Affiche A plus un.
+Demande A.
 
-Définis B comme booléen.
-Affiche B.
-Modifie B avec vrai ou faux.
-Affiche vrai et B.
+Si A est supérieur à trois,
+	Affiche "General".
 
-Définis T comme texte.
+Si A est inférieur ou égal à trois,
+	Affiche "kenobi".
 
-Modifie T avec T puis B puis " je suis trop content " puis sept fois six.
-Affiche T.
-Affiche "Général kenobi".
-Modifie B avec T est égal à "vrai je suis trop content quarante-deux".
-Affiche "T condition =" puis B.
-Modifie B avec "texte" est égal à "texte".
-Affiche B.
-
-Affiche mille-cinq-cent-cinquante-cinq.
-
-Affiche un moins deux.
-
-Modifie B avec A est supérieur ou égal à deux.
-
-Affiche "(" puis A puis ">=2)=" puis B.
-
-Demande T.
-Modifie B avec T est égal à "hello".
-Affiche "c'est un hello".
-
+Affiche "Ah".

@@ -87,12 +87,21 @@ pub struct Bloc {
 
 impl Bloc {
 	pub fn nouveau(condition: Vec<Element>, repete: bool) -> Self {
+		let mut variables_externes: Vec<String> = vec![];
+		for element in condition.iter() {
+			let variables = element.recupere_variables();
+			for nom_element in variables.iter() {
+				if !variables_externes.contains(nom_element) {
+					variables_externes.push(nom_element.clone());
+				}
+			}
+		}
 		Self {
 			condition,
 			repete,
 			contenu: vec![],
 			variables_internes: HashMap::new(),
-			variables_externes: vec![],
+			variables_externes,
 		}
 	}
 
@@ -103,29 +112,29 @@ impl Bloc {
 			}
 			Commande::Demande(nom) => {
 				if !self.variables_internes.contains_key(&nom) && !self.variables_externes.contains(&nom) {
-					self.variables_externes.push(nom)
+					self.variables_externes.push(nom);
 				}
 			}
 			Commande::Modifie(nom, expression) => {
 				if !self.variables_internes.contains_key(&nom) && !self.variables_externes.contains(&nom) {
-					self.variables_externes.push(nom)
+					self.variables_externes.push(nom);
 				}
 				for element in expression.iter() {
-					let Element::Variable(nom_element, _type) = element else {
-						continue
-					};
-					if !self.variables_internes.contains_key(nom_element) && !self.variables_externes.contains(nom_element) {
-						self.variables_externes.push(nom_element.clone())
+					let variables = element.recupere_variables();
+					for nom_element in variables.iter() {
+						if !self.variables_internes.contains_key(nom_element) && !self.variables_externes.contains(nom_element) {
+							self.variables_externes.push(nom_element.clone());
+						}
 					}
 				}
 			}
 			Commande::Affiche(expression) => {
 				for element in expression.iter() {
-					let Element::Variable(nom_element, _type) = element else {
-						continue
-					};
-					if !self.variables_internes.contains_key(nom_element) && !self.variables_externes.contains(nom_element) {
-						self.variables_externes.push(nom_element.clone())
+					let variables = element.recupere_variables();
+					for nom_element in variables.iter() {
+						if !self.variables_internes.contains_key(nom_element) && !self.variables_externes.contains(nom_element) {
+							self.variables_externes.push(nom_element.clone());
+						}
 					}
 				}
 			}
@@ -136,7 +145,7 @@ impl Bloc {
 	pub fn ajoute_bloc(&mut self, bloc: Bloc) {
 		for variable in bloc.variables_externes.iter() {
 			if !self.variables_internes.contains_key(variable) && !self.variables_externes.contains(variable) {
-				self.variables_externes.push(variable.clone())
+				self.variables_externes.push(variable.clone());
 			}
 		}
 		self.contenu.push(Phrase::Bloc(bloc));
@@ -198,6 +207,14 @@ impl TypeElement {
 			Self::Entier => nombre::texte_comme_nombre(texte),
 			Self::Texte => Ok(Element::Texte(texte.into())),
 			Self::Booleen => booleen::texte_comme_booleen(texte),
+		}
+	}
+	
+	pub fn type_ir(&self) -> String {
+		match self{
+			Self::Entier => "i64".into(),
+			Self::Texte => "i8*".into(),
+			Self::Booleen => "i1".into(),
 		}
 	}
 }
