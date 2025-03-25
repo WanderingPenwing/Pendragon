@@ -1,0 +1,96 @@
+Définis Case-un-un comme texte. Modifie Case-un-un avec " ".
+Définis Case-un-deux comme texte. Modifie Case-un-deux avec " ".
+Définis Case-un-trois comme texte. Modifie Case-un-trois avec " ".
+
+Définis Case-deux-un comme texte. Modifie Case-deux-un avec " ".
+Définis Case-deux-deux comme texte. Modifie Case-deux-deux avec " ".
+Définis Case-deux-trois comme texte. Modifie Case-deux-trois avec " ".
+
+Définis Case-trois-un comme texte. Modifie Case-trois-un avec " ".
+Définis Case-trois-deux comme texte. Modifie Case-trois-deux avec " ".
+Définis Case-trois-trois comme texte. Modifie Case-trois-trois avec " ".
+
+Définis Joueur comme texte. Modifie Joueur avec "o".
+
+Définis Fini comme booléen.
+
+Tant que non Fini,
+	Affiche "-------------".
+	Affiche "| " puis Case-un-un puis " | " puis Case-un-deux puis " | " puis Case-un-trois puis " |".
+	Affiche "-------------".
+	Affiche "| " puis Case-deux-un puis " | " puis Case-deux-deux puis " | " puis Case-deux-trois puis " |".
+	Affiche "-------------".
+	Affiche "| " puis Case-trois-un puis " | " puis Case-trois-deux puis " | " puis Case-trois-trois puis " |".
+	Affiche "-------------".
+	Affiche "Au tour de " puis Joueur.
+	Affiche "".
+	
+	Définis Ligne comme entier. Définis Colonne comme entier.
+	Demande Ligne. Demande Colonne.
+
+	Définis CoupValide comme booléen.
+
+	Si Ligne est égal à un,
+		Si Colonne est égal à un et Case-un-un est égal à " ",
+			Modifie Case-un-un avec Joueur.
+			Modifie CoupValide avec vrai.
+		Si Colonne est égal à deux et Case-un-deux est égal à " ",
+			Modifie Case-un-deux avec Joueur.
+			Modifie CoupValide avec vrai.
+		Si Colonne est égal à trois et Case-un-trois est égal à " ",
+			Modifie Case-un-trois avec Joueur.
+			Modifie CoupValide avec vrai.
+	Si Ligne est égal à deux,
+		Si Colonne est égal à un et Case-deux-un est égal à " ",
+			Modifie Case-deux-un avec Joueur.
+			Modifie CoupValide avec vrai.
+		Si Colonne est égal à deux et Case-deux-deux est égal à " ",
+			Modifie Case-deux-deux avec Joueur.
+			Modifie CoupValide avec vrai.
+		Si Colonne est égal à trois et Case-deux-trois est égal à " ",
+			Modifie Case-deux-trois avec Joueur.
+			Modifie CoupValide avec vrai.
+	Si Ligne est égal à trois,
+		Si Colonne est égal à un et Case-trois-un est égal à " ",
+			Modifie Case-trois-un avec Joueur.
+			Modifie CoupValide avec vrai.
+		Si Colonne est égal à deux et Case-trois-deux est égal à " ",
+			Modifie Case-trois-deux avec Joueur.
+			Modifie CoupValide avec vrai.
+		Si Colonne est égal à trois et Case-trois-trois est égal à " ",
+			Modifie Case-trois-trois avec Joueur.
+			Modifie CoupValide avec vrai.
+	Affiche "".
+	Si non CoupValide,
+		Affiche "Coup Invalide".
+	Si CoupValide,
+		Définis ProchainJoueur comme texte.
+		Modifie ProchainJoueur avec "o".
+		Si Joueur est égal à "o",
+			Modifie ProchainJoueur avec "x".
+		Modifie Joueur avec ProchainJoueur.
+
+	Si Case-un-un est égal à Case-un-deux et Case-un-deux est égal à Case-un-trois et Case-un-trois est différent de " ",
+		Affiche Case-un-un puis " a gagné !".
+		Modifie Fini avec vrai.
+	Si Case-deux-un est égal à Case-deux-deux et Case-deux-deux est égal à Case-deux-trois et Case-deux-trois est différent de " ",
+		Affiche Case-deux-un puis " a gagné !".
+		Modifie Fini avec vrai.
+	Si Case-trois-un est égal à Case-trois-deux et Case-trois-deux est égal à Case-trois-trois et Case-trois-trois est différent de " ",
+		Affiche Case-trois-un puis " a gagné !".
+		Modifie Fini avec vrai.
+	Si Case-un-un est égal à Case-deux-un et Case-deux-un est égal à Case-trois-un et Case-trois-un est différent de " ",
+		Affiche Case-un-un puis " a gagné !".
+		Modifie Fini avec vrai.
+	Si Case-un-deux est égal à Case-deux-deux et Case-deux-deux est égal à Case-trois-deux et Case-trois-deux est différent de " ",
+		Affiche Case-un-deux puis " a gagné !".
+		Modifie Fini avec vrai.
+	Si Case-un-trois est égal à Case-deux-trois et Case-deux-trois est égal à Case-trois-trois et Case-trois-trois est différent de " ",
+		Affiche Case-un-trois puis " a gagné !".
+		Modifie Fini avec vrai.
+	Si Case-un-un est égal à Case-deux-deux et Case-deux-deux est égal à Case-trois-trois et Case-trois-trois est différent de " ",
+		Affiche Case-un-un puis " a gagné !".
+		Modifie Fini avec vrai.
+	Si Case-trois-un est égal à Case-deux-deux et Case-deux-deux est égal à Case-un-trois et Case-un-trois est différent de " ",
+		Affiche Case-trois-un puis " a gagné !".
+		Modifie Fini avec vrai.

@@ -1,0 +1,14 @@
+Définis Graine comme entier.
+Demande Graine.
+Définis A comme entier. Modifie A avec treize-milliards-quatre-cent-mille-cent-vingt-sept.
+Définis B comme entier. Modifie B avec neuf-trillions-sept-million-trois.
+Définis Maximum comme entier.
+Demande Maximum.
+
+Définis Compteur comme entier. Demande Compteur.
+Tant que Compteur est supérieur à zéro,
+	Modifie Graine avec A fois Graine plus B.
+	Modifie Graine avec Graine moins ouvre la parenthèse Graine divisé par Maximum ferme la parenthèse fois Maximum.
+	Modifie Compteur avec Compteur moins un.
+	Affiche "Résultat : " puis Graine.
+Affiche "Fin".

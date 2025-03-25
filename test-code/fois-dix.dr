@@ -1,0 +1,4 @@
+Définis A comme entier.
+Demande A.
+Modifie A avec A fois dix.
+Affiche "A fois dix : " puis A.

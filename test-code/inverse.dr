@@ -1,0 +1,11 @@
+Définis Nombre comme entier.
+Demande Nombre.
+Définis NombreInverse comme entier.
+
+Tant que Nombre est supérieur à zéro,
+	Définis Chiffre comme entier.
+	Modifie Chiffre avec Nombre moins ouvre la parenthèse Nombre divisé par dix ferme la parenthèse fois dix.
+	Modifie NombreInverse avec NombreInverse fois dix plus Chiffre.
+	Modifie Nombre avec Nombre divisé par dix.
+
+Affiche "Nombre inversé : " puis NombreInverse.
