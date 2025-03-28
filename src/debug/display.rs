@@ -26,8 +26,8 @@ pub fn message_echec(action: &str) {
 
 pub fn message_ok(action: &str, temps: Duration) {
 	println!(
-		"{}✓ {} Ok.{} ({:.2?}){}",
-		TEXTE_VERT, action, TEXTE_GRIS, temps, TEXTE_NORMAL
+		"{}✓ {} Ok.{} {}({:.2?}){}",
+		TEXTE_VERT, action, TEXTE_NORMAL, TEXTE_GRIS, temps, TEXTE_NORMAL
 	);
 }
 

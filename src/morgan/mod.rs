@@ -88,7 +88,6 @@ impl Programme {
 				if let Err(raison) = fichier.write_all(programme.as_bytes()) {
 					return Err(ErreurMorgan::ErreurSysteme(format!("l'écriture du fichier .ll a échoué : {}", raison)));
 				}
-
 				let status = Command::new("llc") // llc -filetype=asm -relocation-model=pic example.ll -o example.s
 					.arg("-filetype=asm")
 					.arg("-relocation-model=pic") // Generate position-independent code
@@ -99,7 +98,7 @@ impl Programme {
 					.expect("Failed to execute llc");
 				if !status.success() {
 					return Err(ErreurMorgan::ErreurSysteme("llc n'a pas pu compiler le fichier .ll".to_string()));
-				}
+				} 
 				let status = Command::new("clang") // clang -fPIE -pie example.s -o example
 					.arg("-fPIE") // Ensure position-independent code
 					.arg("-pie")  // Generate PIE executable
